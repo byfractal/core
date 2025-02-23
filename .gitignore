@@ -1,0 +1,20 @@
+# Ignore virtual environment
+.env
+.venv/
+
+# Ignore Python cache files
+__pycache__/
+*.pyc
+
+hcentric_interface.egg-info/
+
+# Ignore egg-info
+*.egg-info/
+
+
+# Ignore log files
+*.log
+
+# Ignore data directories
+data/
+datasets/
