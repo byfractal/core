@@ -1,0 +1,6 @@
+{
+    "python.analysis.extraPaths": [
+        "./pipeline"
+    ],
+    "python.pythonPath": "./.venv/bin/python"
+}

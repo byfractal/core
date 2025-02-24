@@ -17,4 +17,7 @@ hcentric_interface.egg-info/
 
 # Ignore data directories
 data/
-datasets/
+datasets/collection_module/.vscode/
+
+
+cles_api
