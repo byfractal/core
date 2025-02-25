@@ -4,6 +4,7 @@ import gzip
 import logging
 from pathlib import Path
 from typing import Any, Dict, List, Optional
+from collection_module.pipeline.utils.config import Config
 
 def setup_logging():
     """Configure le système de logging"""
@@ -16,19 +17,38 @@ def setup_logging():
 
 logger = setup_logging()
 
-def ensure_directory_structure(app_id):
-    """Crée la structure de dossiers nécessaire"""
-    base_path = Path('data')
-    paths = {
-        'raw': base_path / 'raw' / 'output_data' / app_id,
-        'processed': base_path / 'processed' / app_id,
-        'filtered': base_path / 'filtered' / app_id
-    }
+def ensure_directory_structure(app_id=None):
+    """Crée la structure de dossiers nécessaire pour le projet"""
+    # Vérifier si BASE_PATH est défini
+    base_path = Config.BASE_PATH
+    if base_path is None:
+        # Utiliser un chemin par défaut si BASE_PATH n'est pas défini
+        base_path = Path(os.path.expanduser("~")) / "Documents" / "Builds" / "hcentric_interface"
+        print(f"BASE_PATH n'est pas défini, utilisation du chemin par défaut: {base_path}")
+    else:
+        base_path = Path(base_path)
     
-    for path in paths.values():
-        path.mkdir(parents=True, exist_ok=True)
-        
-    return paths
+    # Créer les dossiers nécessaires
+    data_dir = base_path / "data"
+    if app_id:
+        app_dir = data_dir / app_id
+    else:
+        app_dir = data_dir / "default"
+    
+    raw_dir = app_dir / "raw"
+    processed_dir = app_dir / "processed"
+    
+    # Créer les dossiers s'ils n'existent pas
+    for directory in [data_dir, app_dir, raw_dir, processed_dir]:
+        directory.mkdir(parents=True, exist_ok=True)
+    
+    return {
+        "base": base_path,
+        "data": data_dir,
+        "app": app_dir,
+        "raw": raw_dir,
+        "processed": processed_dir
+    }
 
 def get_file_type(file_path):
     """Détermine le type de fichier basé sur son contenu"""

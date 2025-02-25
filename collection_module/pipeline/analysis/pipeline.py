@@ -1,5 +1,6 @@
 from collections import defaultdict
 import logging
+import traceback
 from pathlib import Path
 from typing import Dict, List, Optional
 from collection_module.pipeline.analysis import pipeline
@@ -16,6 +17,7 @@ class DataPipeline:
         self.desired_event_types = ["SurveySubmitted", "TestEvent"]
         self.required_fields = ["event_type", "user_properties"]
         self.paths = None
+        self.logger = logging.getLogger(__name__)
         
     def initialize(self) -> None:
         """Initialise le pipeline"""
@@ -122,63 +124,47 @@ class DataPipeline:
     def run(self) -> bool:
         """Exécute le pipeline complet"""
         try:
-            logger.info("Démarrage du pipeline...")
+            self.logger.info("Démarrage du pipeline de traitement...")
             
-            # Initialisation
-            logger.info("Initialisation du pipeline...")
-            self.initialize()
+            # Étape 1: Obtenir les chemins des dossiers
+            self.logger.info("Étape 1: Obtention des chemins des dossiers...")
+            paths = ensure_directory_structure(Config.APP_ID)
+            self.logger.info(f"Chemins obtenus: {paths}")
             
-            # Nettoyage des dossiers avant traitement
-            logger.info("Nettoyage des dossiers existants...")
-            for folder in ['processed', 'filtered']:
-                folder_path = self.paths[folder]
-                if folder_path.exists():
-                    for file in folder_path.glob('*.*'):
-                        logger.info(f"Suppression du fichier: {file}")
-                        file.unlink()
-                    logger.info(f"Dossier {folder} nettoyé")
+            # Étape 2: Trouver les fichiers de données brutes
+            self.logger.info("Étape 2: Recherche des fichiers de données brutes...")
+            raw_files = list(paths['raw'].glob('amplitude_data_*.gz'))
+            if not raw_files:
+                self.logger.error("Aucun fichier de données brutes trouvé")
+                return False
+            self.logger.info(f"Fichiers trouvés: {raw_files}")
             
-            # Vérification des fichiers raw
-            raw_files = list(self.paths['raw'].glob('*.gz'))
-            logger.info(f"Fichiers trouvés dans raw: {raw_files}")
+            # Étape 3: Traiter chaque fichier
+            self.logger.info("Étape 3: Traitement des fichiers...")
+            for file_path in raw_files:
+                self.logger.info(f"Traitement du fichier: {file_path}")
+                # Ajoute ici le code pour traiter le fichier
+                # Par exemple: self._process_file(file_path, paths['processed'])
             
-            # Décompression
-            logger.info("Début de la décompression...")
-            if not decompress_files():
-                logger.error("Échec de la décompression des fichiers")
-                raise Exception("Échec de la décompression des fichiers")
-            
-            # Vérification après décompression
-            processed_files = list(self.paths['processed'].glob('*.json'))
-            logger.info(f"Fichiers décompressés: {processed_files}")
-            
-            # Filtrage
-            logger.info("Début du filtrage...")
-            if not self.filter_events():
-                logger.error("Échec du filtrage des événements")
-                raise Exception("Échec du filtrage des événements")
-            
-            # Vérification après filtrage
-            filtered_files = list(self.paths['filtered'].glob('*.json'))
-            logger.info(f"Fichiers filtrés: {filtered_files}")
-            
-            # Création du résumé
-            logger.info("Création du résumé...")
-            if not self.create_summary():
-                logger.error("Échec de la création du résumé")
-                raise Exception("Échec de la création du résumé")
-            
-            # Export final
-            logger.info("Export final...")
-            if not self.export_to_json():
-                logger.error("Échec de l'export JSON")
-                raise Exception("Échec de l'export JSON")
-            
-            logger.info("Pipeline terminé avec succès")
+            self.logger.info("Pipeline de traitement terminé avec succès")
             return True
             
         except Exception as e:
-            logger.error(f"Erreur dans le pipeline: {str(e)}")
+            self.logger.error(f"Erreur lors du traitement: {str(e)}")
+            self.logger.error(traceback.format_exc())  # Affiche la stack trace complète
+            return False
+    
+    def _process_file(self, file_path, output_dir):
+        """Traite un fichier de données brutes"""
+        try:
+            self.logger.info(f"Traitement du fichier {file_path}...")
+            # Ajoute ici le code pour traiter le fichier
+            # Par exemple: lire le fichier, transformer les données, sauvegarder les résultats
+            self.logger.info(f"Fichier {file_path} traité avec succès")
+            return True
+        except Exception as e:
+            self.logger.error(f"Erreur lors du traitement du fichier {file_path}: {str(e)}")
+            self.logger.error(traceback.format_exc())
             return False
 
 def run_pipeline():

@@ -1,8 +1,8 @@
 import sys
 import os
 
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..")))
-
+# Ajoute le répertoire racine au PYTHONPATH
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 import tkinter as tk
 from tkinter import ttk, messagebox
