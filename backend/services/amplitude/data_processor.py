@@ -24,7 +24,7 @@ def ensure_directory_structure(app_id: str = "amplitude_data") -> Dict[str, Path
     Returns:
         Dictionary with paths to different directories
     """
-    # Définir le chemin de base depuis l'environnement ou utiliser un chemin par défaut
+    # Définir le chemin de base depuis l'environnement ou utiliser un chemin  défaut
     base_path = os.getenv("BASE_PATH", "data")
     base_dir = Path(base_path)
     
