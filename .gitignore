@@ -1,23 +1,61 @@
-# Ignore virtual environment
+# Environnement et configuration
 .env
-.venv/
+.venv
+env/
+venv/
+ENV/
+.python-version
 
-# Ignore Python cache files
+# Fichiers Python compilés
 __pycache__/
-*.pyc
+*.py[cod]
+*$py.class
+.pytest_cache/
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Logs et données temporaires
+*.log
+*.tmp
+logs/
+temp/
+tmp/
+
+# Fichiers IDE et éditeurs
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# Fichiers spécifiques au projet
+/test_*.py
+/notebook_*.ipynb
 
 hcentric_interface.egg-info/
 
 # Ignore egg-info
 *.egg-info/
 
-
-# Ignore log files
-*.log
-
 # Ignore data directories
 data/
 datasets/collection_module/.vscode/
-
 
 cles_api
