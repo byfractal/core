@@ -59,3 +59,6 @@ data/
 datasets/collection_module/.vscode/
 
 cles_api
+
+# Development tools
+scripts/
