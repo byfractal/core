@@ -9,6 +9,7 @@ import sys
 import json
 from pathlib import Path
 from typing import Dict, List, Any
+from datetime import datetime
 
 # Add root directory to Python path to enable imports
 root_dir = str(Path(__file__).parent.parent.parent)
@@ -120,28 +121,140 @@ class FeedbackAnalysisChains:
     
     def run_complete_analysis(self, feedback: str) -> Dict[str, Any]:
         """
-        Run a complete analysis pipeline on a single feedback.
+        Run a complete analysis of a single feedback item.
         
-        This method runs both sentiment analysis and emotion/theme extraction
-        and combines the results into a single output.
+        This method orchestrates the entire analysis pipeline:
+        1. First determines sentiment
+        2. Then extracts emotions and themes
+        3. Based on sentiment and themes, may perform additional specialized analysis
         
         Args:
             feedback (str): The user feedback text to analyze
             
         Returns:
-            Dict: A dictionary with combined analysis results
+            Dict[str, Any]: A dictionary containing all analysis results
         """
+        # Start with sentiment analysis
         sentiment_results = self.analyze_sentiment(feedback)
-        emotion_theme_results = self.extract_emotions_themes(feedback)
         
-        # Combine the results
-        combined_results = {
-            "feedback": feedback,
+        # Extract emotions and themes
+        themes_results = self.extract_emotions_themes(feedback)
+        
+        # Initialize the complete results dictionary
+        complete_results = {
             "sentiment_analysis": sentiment_results,
-            "emotion_theme_analysis": emotion_theme_results
+            "themes_emotions": themes_results,
+            "specialized_insights": {},
+            "timestamp": str(datetime.now())
         }
         
-        return combined_results
+        # Conditional branching based on sentiment and themes
+        sentiment = sentiment_results.get("sentiment", "").upper()
+        themes = themes_results.get("themes", [])
+        emotions = themes_results.get("emotions", [])
+        
+        # For negative feedback, perform deeper analysis based on detected themes
+        if sentiment == "NEGATIVE":
+            # Check for specific themes that need deeper analysis
+            if any(theme in ["Form Design/Input Fields", "Workflow/Process Flow"] for theme in themes):
+                # Add specialized form analysis
+                complete_results["specialized_insights"]["form_analysis"] = self._analyze_form_issues(feedback)
+                
+            if any(theme in ["Navigation/Information Architecture", "Page Layout/Visual Hierarchy"] for theme in themes):
+                # Add navigation/layout specific analysis
+                complete_results["specialized_insights"]["navigation_analysis"] = self._analyze_navigation_issues(feedback)
+                
+            if any(theme in ["Load Time/Performance"] for theme in themes):
+                # Add performance analysis
+                complete_results["specialized_insights"]["performance_analysis"] = self._analyze_performance_issues(feedback)
+        
+        # For mixed or positive feedback with feature requests
+        if "Specific Feature Requests" in themes:
+            complete_results["specialized_insights"]["feature_request_analysis"] = self._analyze_feature_requests(feedback)
+        
+        return complete_results
+    
+    # Additional specialized analysis methods
+    def _analyze_form_issues(self, feedback: str) -> Dict[str, Any]:
+        """Analyze form-related issues in more detail"""
+        form_analysis_prompt = PromptTemplate(
+            input_variables=["feedback"],
+            template="""
+            Analyze the following feedback focusing specifically on form-related issues:
+            
+            Feedback: {feedback}
+            
+            Identify:
+            1. Which specific form elements are problematic
+            2. The exact user pain points (too many fields, unclear labels, validation errors, etc.)
+            3. Specific recommendations to improve the form experience
+            
+            Return your analysis as a JSON object.
+            """
+        )
+        form_chain = form_analysis_prompt | self.llm | JsonOutputParser()
+        return form_chain.invoke({"feedback": feedback})
+    
+    def _analyze_navigation_issues(self, feedback: str) -> Dict[str, Any]:
+        """Analyze navigation and layout issues in more detail"""
+        navigation_prompt = PromptTemplate(
+            input_variables=["feedback"],
+            template="""
+            Analyze the following feedback focusing specifically on navigation and layout issues:
+            
+            Feedback: {feedback}
+            
+            Identify:
+            1. Which specific navigation elements or page layouts are problematic
+            2. The exact user pain points (confusing menu structure, poor information hierarchy, etc.)
+            3. Specific recommendations to improve the navigation and layout
+            
+            Return your analysis as a JSON object.
+            """
+        )
+        navigation_chain = navigation_prompt | self.llm | JsonOutputParser()
+        return navigation_chain.invoke({"feedback": feedback})
+    
+    def _analyze_performance_issues(self, feedback: str) -> Dict[str, Any]:
+        """Analyze performance issues in more detail"""
+        performance_prompt = PromptTemplate(
+            input_variables=["feedback"],
+            template="""
+            Analyze the following feedback focusing specifically on performance issues:
+            
+            Feedback: {feedback}
+            
+            Identify:
+            1. Which specific performance aspects are problematic (loading time, responsiveness, etc.)
+            2. The user's expectations regarding performance
+            3. Specific recommendations to improve the performance perception
+            
+            Return your analysis as a JSON object.
+            """
+        )
+        performance_chain = performance_prompt | self.llm | JsonOutputParser()
+        return performance_chain.invoke({"feedback": feedback})
+    
+    def _analyze_feature_requests(self, feedback: str) -> Dict[str, Any]:
+        """Analyze feature requests in more detail"""
+        feature_prompt = PromptTemplate(
+            input_variables=["feedback"],
+            template="""
+            Analyze the following feedback focusing specifically on feature requests:
+            
+            Feedback: {feedback}
+            
+            Identify:
+            1. The specific features being requested
+            2. The underlying user needs these features would address
+            3. Priority assessment (how critical this feature might be)
+            4. How this feature would improve the overall user experience
+            
+            Return your analysis as a JSON object.
+            """
+        )
+        feature_chain = feature_prompt | self.llm | JsonOutputParser()
+        return feature_chain.invoke({"feedback": feedback})
     
     def batch_analyze(self, feedback_list: List[str]) -> Dict[str, Any]:
         """

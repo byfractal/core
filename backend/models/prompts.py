@@ -24,6 +24,14 @@ User Feedback: {feedback}
 Analyze the feedback carefully, looking for emotional language, complaints, praise, or neutral observations.
 Consider the context of UI/UX when determining sentiment.
 
+Examples:
+- "I love how easy it is to navigate this app" → POSITIVE
+- "The login process took forever and I couldn't figure out how to reset my password" → NEGATIVE
+- "The dashboard shows all my data but I wish there were filtering options" → MIXED (classify as slightly NEGATIVE since it indicates a missing feature)
+- "The page has a form with 5 fields" → NEUTRAL (purely descriptive)
+
+For mixed feedback, weigh the dominant sentiment and lean towards the user's final impression.
+
 Return your analysis in this exact JSON format:
 {{
     "sentiment": "POSITIVE/NEGATIVE/NEUTRAL",
@@ -44,9 +52,38 @@ Your task is to extract the key emotions, themes, and specific UI/UX issues from
 User Feedback: {feedback}
 
 Analyze the feedback carefully to identify:
-1. Primary emotions expressed (frustration, satisfaction, confusion, etc.)
-2. Key themes or topics mentioned (navigation, forms, layout, performance, etc.)
-3. Specific UI/UX issues or pain points
+
+1. Primary emotions expressed (select from these categories):
+   - Frustration/Annoyance
+   - Confusion/Uncertainty
+   - Satisfaction/Delight
+   - Disappointment
+   - Impatience
+   - Trust/Confidence
+   - Anxiety/Concern
+   - Indifference
+   - Overwhelmed
+   - Other (specify if not in the above categories)
+
+2. Key UX/UI themes or topics mentioned (select all that apply):
+   - Navigation/Information Architecture
+   - Form Design/Input Fields
+   - Page Layout/Visual Hierarchy
+   - Load Time/Performance
+   - Content Clarity/Readability
+   - Accessibility Issues
+   - Mobile Responsiveness
+   - Feedback/Error Messages
+   - Visual Design/Aesthetics
+   - Consistency Issues
+   - Workflow/Process Flow
+   - Specific Feature Requests
+   - Other (specify if not in the above categories)
+
+3. Specific UI/UX issues or pain points:
+   - Describe the exact problem the user is experiencing
+   - Identify where in the interface the issue occurs
+   - Note any workarounds the user attempted
 
 Return your analysis in this exact JSON format:
 {{
@@ -97,16 +134,121 @@ def get_prompt_templates():
 
 # Test function
 if __name__ == "__main__":
-    # Example usage
-    test_feedback = "I found the checkout process confusing and too lengthy. There were too many form fields and the submit button was hard to find."
+    import json 
+    from pathlib import Path
+    import sys
+
+    root_dir = str(Path(__file__).parent.parent.parent)
+    sys.path.append(root_dir)
+
+    # Import data
+    from create_test_data import test_data
+
+    # Display the number of feedbacks loaded
+    print(f"Loaded {len(test_data)} feedback items from create_test_data.py")
+
+    # Browns each feedback in the test data
+    for i, feedback_item in enumerate(test_data):
+        # Extract text from feedback
+        feedback_text = feedback_item.get("event_properties", {}).get("feedback_text", "")
+
+        # Check if the feedback exists
+        if not feedback_text:
+            continue
+
+        # Display feedback informatuon currently being processed
+        print(f"\n{'='*50}\nTesting with feedback {i+1}: {feedback_text}\n{'='*50}\n")
+
+
+        # Test the sentiment classification prompt 
+        sentiment_prompt = sentiment_classification_template.format(feedback=feedback_text)
+        print("Sentiment Classification Prompt:")
+        print(sentiment_prompt)
+        print("\n" + "-"*50 + "\n")
+
+        # Test the emotion/theme extraction prompt
+        emotion_prompt = emotion_theme_extraction_template.format(feedback=feedback_text)
+        print(emotion_prompt)
+        print("\n" + "-"*50 + "\n")
+
+"""
+Module for interacting with LLM models via LangChain.
+Provides functions for sending prompts to LLMs and processing their responses.
+"""
+
+import os
+import json
+from typing import Dict, Any, List, Optional
+from dotenv import load_dotenv
+from langchain_openai import OpenAI, ChatOpenAI
+from langchain.output_parsers import JsonOutputToolsParser
+from langchain.schema import Document
+
+# Load environment variables (API keys)
+load_dotenv()
+
+def get_llm_model(model_name: str = "gpt-4o", temperature: float = 0):
+    """
+    Initializes and returns an LLM model of Langchain
+
+    Args:
+        model_name: Name of the model to be used (default: gpt-4o)
+        temperature: Temperature parameter between 0 and 1 (0 = most deterministic)
+        
+    Returns:
+        An initialised LLM model
+    """
+    if "gpt-3.5" in model_name or "gpt-4" in model_name:
+        # For GPT models, use ChatOpenAI, which is more efficient
+        return ChatOpenAI(model_name=model_name, temperature=temperature)
+    else:
+        # Fallback for other models
+        return OpenAI(model_name=model_name, temperature=temperature)
     
-    # Test sentiment classification prompt
-    sentiment_prompt = sentiment_classification_template.format(feedback=test_feedback)
-    print("Sentiment Classification Prompt:")
-    print(sentiment_prompt)
-    print("\n" + "-"*50 + "\n")
+def send_prompt_to_llm(prompt: str, model_name: str = "gpt-4o", temperature: float = 0) -> str:
+    """
+    Sends a simple prompt to an LLM and returns its response as text.
     
-    # Test emotion/theme extraction prompt
-    emotion_prompt = emotion_theme_extraction_template.format(feedback=test_feedback)
-    print("Emotion/Theme Extraction Prompt:")
-    print(emotion_prompt) 
+    Args:
+        prompt: The text of the prompt to send
+        model_name: Name of the model to use
+        temperature: Temperature parameter
+        
+    Returns:
+        The text response from the LLM
+    """
+    llm = get_llm_model(model_name, temperature)
+    response = llm.invoke(prompt)
+    return response
+
+def analyze_with_json_output(prompt: str, model_name: str = "gpt-4o", temperature: float = 0) -> Dict[str, Any]:
+    """
+    Sends a prompt to the LLM and parses its response as JSON.
+    
+    Args:
+        prompt: The text of the prompt to send
+        model_name: Name of the model to use
+        temperature: Temperature parameter
+        
+    Returns:
+        A Python dictionary containing the parsed JSON data
+    """
+    llm = get_llm_model(model_name, temperature)
+    output_parser = JsonOutputToolsParser()
+
+    try:
+        # Create a LangChain string with JSON parser
+        chain = llm | output_parser
+        result = chain.invoke(prompt)
+        return result
+    except Exception as e:
+        print(f"Error when parsing JSON: {e}")
+        # If this fails, try to recover the raw response
+        raw_response = llm.invoke(prompt)
+        return {"error": str(e), "raw_response": raw_response}
+
+
+    
+
+
+   

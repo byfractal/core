@@ -58,7 +58,5 @@ hcentric_interface.egg-info/
 data/
 datasets/collection_module/.vscode/
 
-cles_api
 
-# Development tools
-scripts/
+cles_api
