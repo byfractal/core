@@ -18,8 +18,9 @@ sys.path.append(root_dir)
 from langchain.prompts import PromptTemplate
 from langchain_openai import OpenAI
 from langchain.output_parsers import ResponseSchema, StructuredOutputParser
-from langchain.output_parsers import JsonOutputParser
+from langchain_core.output_parsers import JsonOutputParser
 from langchain_core.runnables import RunnableSequence
+from langchain_openai import ChatOpenAI
 
 # Import our prompt templates
 from backend.models.prompts import (
@@ -45,28 +46,25 @@ class FeedbackAnalysisChains:
             model (str): The OpenAI model to use for the chains
             temperature (float): The temperature setting for the LLM (0-1)
         """
-        self.llm = OpenAI(model=model, temperature=temperature)
+        # Pour les modèles de chat (comme GPT-3.5 et GPT-4), utiliser ChatOpenAI
+        if any(chat_model in model.lower() for chat_model in ["gpt-3.5", "gpt-4"]):
+            self.llm = ChatOpenAI(model=model, temperature=temperature)
+        else:
+            # Pour les autres modèles, utiliser OpenAI
+            self.llm = OpenAI(model=model, temperature=temperature)
+            
         self._initialize_chains()
         
     def _initialize_chains(self):
         """Initialize all the necessary chains for feedback analysis."""
-        # Create the sentiment analysis chain
-        self.sentiment_chain = RunnableSequence.from_components(
-            sentiment_classification_template, 
-            self.llm
-        )
+        # Create the sentiment analysis chain using pipe syntax instead of from_components
+        self.sentiment_chain = sentiment_classification_template | self.llm
         
         # Create the emotion/theme extraction chain
-        self.emotion_theme_chain = RunnableSequence.from_components(
-            emotion_theme_extraction_template,
-            self.llm
-        )
+        self.emotion_theme_chain = emotion_theme_extraction_template | self.llm
         
         # Create the feedback summary chain
-        self.summary_chain = RunnableSequence.from_components(
-            feedback_summary_template,
-            self.llm
-        )
+        self.summary_chain = feedback_summary_template | self.llm
     
     def analyze_sentiment(self, feedback: str) -> Dict[str, Any]:
         """
@@ -79,11 +77,18 @@ class FeedbackAnalysisChains:
             Dict: A dictionary with sentiment classification results
         """
         result = self.sentiment_chain.invoke({"feedback": feedback})
+        
+        # Si le résultat est un AIMessage (ChatOpenAI), extraire le contenu
+        if hasattr(result, 'content'):
+            result_content = result.content
+        else:
+            result_content = result
+            
         try:
-            return json.loads(result)
+            return json.loads(result_content)
         except (json.JSONDecodeError, TypeError):
             # Fallback if the result isn't a valid JSON
-            return {"raw_result": result}
+            return {"raw_result": str(result_content)}
     
     def extract_emotions_themes(self, feedback: str) -> Dict[str, Any]:
         """
@@ -96,10 +101,17 @@ class FeedbackAnalysisChains:
             Dict: A dictionary with emotions, themes, and issues
         """
         result = self.emotion_theme_chain.invoke({"feedback": feedback})
+        
+        # Si le résultat est un AIMessage (ChatOpenAI), extraire le contenu
+        if hasattr(result, 'content'):
+            result_content = result.content
+        else:
+            result_content = result
+            
         try:
-            return json.loads(result)
+            return json.loads(result_content)
         except (json.JSONDecodeError, TypeError):
-            return {"raw_result": result}
+            return {"raw_result": str(result_content)}
     
     def summarize_feedback(self, feedback_list: List[str]) -> Dict[str, Any]:
         """
@@ -114,10 +126,17 @@ class FeedbackAnalysisChains:
         # Format the feedback list as a numbered list for the prompt
         formatted_feedback = "\n".join([f"{i+1}. {feedback}" for i, feedback in enumerate(feedback_list)])
         result = self.summary_chain.invoke({"feedback_list": formatted_feedback})
+        
+        # Si le résultat est un AIMessage (ChatOpenAI), extraire le contenu
+        if hasattr(result, 'content'):
+            result_content = result.content
+        else:
+            result_content = result
+        
         try:
-            return json.loads(result)
+            return json.loads(result_content)
         except (json.JSONDecodeError, TypeError):
-            return {"raw_result": result}
+            return {"raw_result": str(result_content)}
     
     def run_complete_analysis(self, feedback: str) -> Dict[str, Any]:
         """
@@ -193,7 +212,20 @@ class FeedbackAnalysisChains:
             """
         )
         form_chain = form_analysis_prompt | self.llm | JsonOutputParser()
-        return form_chain.invoke({"feedback": feedback})
+        result = form_chain.invoke({"feedback": feedback})
+        
+        # Si c'est déjà un dictionnaire, le retourner directement
+        if isinstance(result, dict):
+            return result
+        
+        # Sinon, extraire le contenu si c'est un AIMessage
+        if hasattr(result, 'content'):
+            try:
+                return json.loads(result.content)
+            except:
+                return {"raw_result": str(result.content)}
+        
+        return result
     
     def _analyze_navigation_issues(self, feedback: str) -> Dict[str, Any]:
         """Analyze navigation and layout issues in more detail"""
@@ -213,7 +245,20 @@ class FeedbackAnalysisChains:
             """
         )
         navigation_chain = navigation_prompt | self.llm | JsonOutputParser()
-        return navigation_chain.invoke({"feedback": feedback})
+        result = navigation_chain.invoke({"feedback": feedback})
+        
+        # Si c'est déjà un dictionnaire, le retourner directement
+        if isinstance(result, dict):
+            return result
+        
+        # Sinon, extraire le contenu si c'est un AIMessage
+        if hasattr(result, 'content'):
+            try:
+                return json.loads(result.content)
+            except:
+                return {"raw_result": str(result.content)}
+        
+        return result
     
     def _analyze_performance_issues(self, feedback: str) -> Dict[str, Any]:
         """Analyze performance issues in more detail"""
@@ -233,7 +278,20 @@ class FeedbackAnalysisChains:
             """
         )
         performance_chain = performance_prompt | self.llm | JsonOutputParser()
-        return performance_chain.invoke({"feedback": feedback})
+        result = performance_chain.invoke({"feedback": feedback})
+        
+        # Si c'est déjà un dictionnaire, le retourner directement
+        if isinstance(result, dict):
+            return result
+        
+        # Sinon, extraire le contenu si c'est un AIMessage
+        if hasattr(result, 'content'):
+            try:
+                return json.loads(result.content)
+            except:
+                return {"raw_result": str(result.content)}
+        
+        return result
     
     def _analyze_feature_requests(self, feedback: str) -> Dict[str, Any]:
         """Analyze feature requests in more detail"""
@@ -254,7 +312,20 @@ class FeedbackAnalysisChains:
             """
         )
         feature_chain = feature_prompt | self.llm | JsonOutputParser()
-        return feature_chain.invoke({"feedback": feedback})
+        result = feature_chain.invoke({"feedback": feedback})
+        
+        # Si c'est déjà un dictionnaire, le retourner directement
+        if isinstance(result, dict):
+            return result
+        
+        # Sinon, extraire le contenu si c'est un AIMessage
+        if hasattr(result, 'content'):
+            try:
+                return json.loads(result.content)
+            except:
+                return {"raw_result": str(result.content)}
+        
+        return result
     
     def batch_analyze(self, feedback_list: List[str]) -> Dict[str, Any]:
         """

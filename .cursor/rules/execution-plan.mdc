@@ -1,0 +1,70 @@
+---
+description: Execution plan summary for the Figma plugin project
+globs: 
+alwaysApply: false
+---
+## **Execution Plan Summary**
+
+### **1. Backend (Data Ingestion, Processing & Analysis)**
+- **Built with FastAPI (Python)**, using **Pydantic for validation** and **SQLAlchemy ORM**.
+- **User feedback ingestion** via **Amplitude API (or PostHog)**, formatted in JSON.
+- **Embedding generation** using **OpenAI API (text-embedding-ada-002)**.
+- **Vector indexing** in **FAISS or Chroma** to enable **Retrieval-Augmented Generation (RAG)**.
+- **LangChain-powered AI pipeline** extracts **sentiment, emotions, themes**, and generates **design recommendations**.
+
+### **2. Frontend (Figma Plugin UI & Interaction)**
+- **Developed in TypeScript**, using the **Figma Plugin API**.
+- UI built with **React (if advanced UI is needed)**, styled with **Chakra UI or Tailwind CSS**.
+- Users configure parameters (**date range, page analysis**) and view a **dashboard with key insights & layout recommendations**.
+- API interaction via **Axios or fetch**, with state management handled by **React context, Zustand, or Redux**.
+
+### **3. Monorepo Structure & Code Reusability**
+- Organized into **core/backend, plugin, datasets**, ensuring **clear separation of responsibilities**.
+- **Strict modular architecture:** API, services, AI models, and data layers communicate via **well-defined interfaces**.
+- **Common logic centralized** in shared modules to **prevent duplication** and ensure **scalability**.
+
+---
+
+## **Comparison with Direct HTML/CSS Generation Approach**
+- **Flexibility:** Assisted **wireframe generation** allows **iterative improvement & customization**, whereas standalone **HTML/CSS is rigid**.
+- **Designer Validation:** Ensures **human-centric UI adjustments**, unlike direct code generation.
+- **Scalability:** The AI-driven approach can **continuously learn & improve recommendations**, making it more **adaptive to evolving design needs**.
+
+---
+
+## **Data Modeling & UI Architecture Strategy**
+
+### **1. Data Modeling (Backend & Frontend Schema)**
+- **Backend:** Python (Pydantic) schema for **feedback storage**, **embedding metadata**, and **vector indexing**.
+- **Frontend:** TypeScript interfaces for **feedback, insights, and wireframe elements**, ensuring **data consistency**.
+- **Modularized data access layer (DAL)** to **standardize queries & transformations**.
+
+### **2. Figma Plugin UI Structure & API Interaction**
+- **Folder Organization (`plugin/src/`)**  
+  - `components/`: **Reusable UI elements (inputs, modals, dashboards)**.  
+  - `services/`: **Handles API calls to FastAPI backend**.  
+  - `hooks/`: **State & data fetching logic**.  
+  - `manifest.json`: **Plugin configuration & metadata**.  
+
+- **Backend Communication:** Fetch recommendations via **Axios/fetch** with **React state management** for handling API results dynamically.
+
+---
+
+## **Business Logic & Data Flow Overview**
+1. **User Feedback Ingestion:** Fetch feedback from **Amplitude API**.
+2. **Data Processing:** Generate **embeddings** via **OpenAI API** and store in **FAISS/Chroma vector DB**.
+3. **AI Analysis:** LangChain processes **themes, sentiment, and UX insights**.
+4. **Recommendations Generation:** AI suggests **layout adjustments & UI improvements**.
+5. **Frontend Integration:** Figma Plugin displays **wireframe suggestions & key insights**.
+
+---
+
+## **Testing & Error Handling Strategy**
+- **Unit Tests (pytest):** Validate **models, services, and pipeline operations**.
+- **Integration Tests:** Ensure **backend-frontend communication & API reliability**.
+- **Logging & Monitoring:** Centralized error handling via **structured logging & observability tools**.
+
+---
+
+## **Final Notes**
+This structured **modular architecture** ensures **scalability, maintainability, and iterative design improvements**, maximizing **efficiency and UX adaptability**. 🚀
