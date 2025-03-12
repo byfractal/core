@@ -15,7 +15,7 @@ sys.path.append(root_dir)
 
 from langchain.prompts import PromptTemplate
 from langchain_openai import OpenAI
-from langchain.output_parsers import JsonOutputParser
+from langchain_core.output_parsers import JsonOutputParser
 from langchain_core.runnables import RunnableSequence
 
 # Define the prompt template for design recommendations
