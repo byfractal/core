@@ -137,9 +137,8 @@ if __name__ == "__main__":
     import json 
     from pathlib import Path
     import sys
-
-    root_dir = str(Path(__file__).parent.parent.parent)
-    sys.path.append(root_dir)
+    import os
+    sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
 
     # Import data
     from create_test_data import test_data
