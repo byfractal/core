@@ -8,6 +8,7 @@ import sys
 import json
 from pathlib import Path
 from typing import Dict, List, Any
+from datetime import datetime
 
 # Add root directory to Python path to enable imports
 root_dir = str(Path(__file__).parent.parent.parent)
@@ -85,10 +86,7 @@ class DesignRecommendationChain:
         
     def _initialize_chain(self):
         """Initialize the design recommendation chain."""
-        self.recommendation_chain = RunnableSequence.from_components(
-            design_recommendations_template,
-            self.llm
-        )
+        self.recommendation_chain = design_recommendations_template | self.llm
     
     def generate_recommendations(
         self, 
@@ -157,6 +155,19 @@ class DesignRecommendationChain:
         
         # Generate recommendations
         return self.generate_recommendations(summary, page_id)
+
+def analyze_feedbacks(page_id: str, start_date: datetime, end_date: datetime) -> Dict[str, Any]:
+    """
+    Analyse les feedbacks pour une page spécifique dans une plage de dates donnée.
+    
+    Args:
+        page_id: Identifiant de la page (ex: /checkout, /home)
+        start_date: Date de début pour le filtrage
+        end_date: Date de fin pour le filtrage
+        
+    Returns:
+        Résultats d'analyse structurés
+    """
 
 # Test function
 if __name__ == "__main__":

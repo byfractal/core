@@ -4,7 +4,10 @@ It uses the prompt templates defined in prompts.py to create specialized
 chains for sentiment analysis, theme extraction, and summary generation.
 """
 
+# Configure encoding for API requests
 import os
+os.environ['PYTHONIOENCODING'] = 'utf-8'
+
 import sys
 import json
 from pathlib import Path
@@ -85,6 +88,9 @@ class FeedbackAnalysisChains:
             result_content = result
             
         try:
+            # Ensure the result is treated as UTF-8
+            if isinstance(result_content, bytes):
+                result_content = result_content.decode('utf-8')
             return json.loads(result_content)
         except (json.JSONDecodeError, TypeError):
             # Fallback if the result isn't a valid JSON
@@ -109,6 +115,9 @@ class FeedbackAnalysisChains:
             result_content = result
             
         try:
+            # Ensure the result is treated as UTF-8
+            if isinstance(result_content, bytes):
+                result_content = result_content.decode('utf-8')
             return json.loads(result_content)
         except (json.JSONDecodeError, TypeError):
             return {"raw_result": str(result_content)}
