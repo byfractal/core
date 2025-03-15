@@ -18,6 +18,11 @@ from datetime import datetime
 root_dir = str(Path(__file__).parent.parent.parent)
 sys.path.append(root_dir)
 
+# Charger les variables d'environnement
+from dotenv import load_dotenv
+env_path = os.path.join(root_dir, '.env')
+load_dotenv(dotenv_path=env_path)
+
 from langchain.prompts import PromptTemplate
 from langchain_openai import OpenAI
 from langchain.output_parsers import ResponseSchema, StructuredOutputParser
@@ -49,12 +54,22 @@ class FeedbackAnalysisChains:
             model (str): The OpenAI model to use for the chains
             temperature (float): The temperature setting for the LLM (0-1)
         """
+        # Récupérer la clé API depuis les variables d'environnement
+        api_key = os.getenv("OPENAI_API_KEY")
+        
+        # Afficher un message pour debug (masqué pour la sécurité)
+        if api_key:
+            masked_key = api_key[:8] + "..." + api_key[-4:] if len(api_key) > 12 else "***"
+            print(f"Using API key: {masked_key}")
+        else:
+            print("AVERTISSEMENT: Aucune clé API OpenAI trouvée")
+        
         # Pour les modèles de chat (comme GPT-3.5 et GPT-4), utiliser ChatOpenAI
         if any(chat_model in model.lower() for chat_model in ["gpt-3.5", "gpt-4"]):
-            self.llm = ChatOpenAI(model=model, temperature=temperature)
+            self.llm = ChatOpenAI(model=model, temperature=temperature, openai_api_key=api_key)
         else:
             # Pour les autres modèles, utiliser OpenAI
-            self.llm = OpenAI(model=model, temperature=temperature)
+            self.llm = OpenAI(model=model, temperature=temperature, openai_api_key=api_key)
             
         self._initialize_chains()
         

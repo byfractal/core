@@ -1,13 +1,25 @@
 from langchain_openai import OpenAIEmbeddings
 import os
+from dotenv import load_dotenv
+
+# Charger les variables d'environnement du fichier .env
+load_dotenv()
 
 def get_embeddings_model():
+    # Récupérer la clé API depuis les variables d'environnement
     api_key = os.getenv("OPENAI_API_KEY")
-
+    
+    # Afficher un message pour debug
+    if api_key is None:
+        print("ATTENTION: Aucune clé API trouvée dans les variables d'environnement")
+    else:
+        masked_key = api_key[:8] + "..." + api_key[-4:] if len(api_key) > 12 else "***"
+        print(f"Clé API trouvée: {masked_key}")
 
     model = "text-embedding-ada-002"
 
-    embeddings = OpenAIEmbeddings(model=model)
+    # Passer explicitement la clé API
+    embeddings = OpenAIEmbeddings(model=model, openai_api_key=api_key)
     return embeddings
 
 if __name__ == "__main__":
