@@ -21,8 +21,8 @@ import streamlit as st
 from langchain.chains import RetrievalQA
 from langchain.memory import ConversationBufferMemory
 from langchain.chains import ConversationalRetrievalChain
-from langchain_openai import OpenAI
-from backend.models.vector_store import get_vector_store
+from langchain_openai import OpenAI, ChatOpenAI
+from backend.models.vector_store import get_vector_store, docs
 
 # Configuration des paramètres du modèle
 MODEL_NAME = "gpt-4"
@@ -113,7 +113,7 @@ if __name__ == "__main__":
     try:
         # Initialize test environment
         os.environ["OPENAI_API_KEY"] = "test_key"
-        vectorstore = get_vector_store()
+        vectorstore = get_vector_store(docs)
         
         # Test conversation chain creation
         chain = get_conversation_chain(vectorstore)
