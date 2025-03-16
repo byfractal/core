@@ -14,6 +14,7 @@ sys.path.append(root_dir)
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from backend.api.feedback import feedback_router
+from backend.api.design import design_router
 
 # Create the main application
 app = FastAPI(
@@ -33,6 +34,7 @@ app.add_middleware(
 
 # Include routers
 app.mount("/feedback", feedback_router)
+app.mount("/design", design_router)
 
 @app.get("/")
 async def root():
@@ -44,7 +46,8 @@ async def root():
         "version": "1.0.0",
         "status": "online",
         "endpoints": {
-            "feedback": "/feedback"
+            "feedback": "/feedback",
+            "design": "/design"
         }
     }
 

@@ -1,0 +1,46 @@
+{
+  "page_id": "/login",
+  "recommendations": [
+    {
+      "title": "Enhance Login Button Visibility",
+      "description": "Increase the size and contrast of the login button to make it more prominent on the page",
+      "component": "Button",
+      "location": "Login form",
+      "expected_impact": "Higher login conversion rate and reduced user frustration",
+      "priority": "high",
+      "justification": "Users reported difficulty finding the login button in feedback",
+      "before_after": {
+        "before": "Small, low-contrast button blending with the page",
+        "after": "Larger, high-contrast button that stands out visually"
+      }
+    },
+    {
+      "title": "Simplify Login Form",
+      "description": "Reduce the number of form fields to only those essential for login",
+      "component": "Form",
+      "location": "Login page",
+      "expected_impact": "Faster login process and improved user experience",
+      "priority": "medium",
+      "justification": "Analysis shows users spending excessive time on the login form",
+      "before_after": {
+        "before": "Complex form with multiple fields and options",
+        "after": "Streamlined form with only username/email and password fields"
+      }
+    },
+    {
+      "title": "Improve Error Messaging",
+      "description": "Make error messages more specific and helpful, placing them directly next to the relevant field",
+      "component": "Form validation",
+      "location": "Login form fields",
+      "expected_impact": "Reduced login failures and user frustration",
+      "priority": "medium",
+      "justification": "Session recordings show users making repeated login attempts with the same errors",
+      "before_after": {
+        "before": "Generic error messages at the top of the form",
+        "after": "Specific, actionable error messages next to each problematic field"
+      }
+    }
+  ],
+  "implementation_notes": "Focus on simplifying the login experience while maintaining security. Consider adding social login options.",
+  "general_observations": "This page requires optimization primarily in usability and clarity. Current design has functional elements but needs refinement in visual hierarchy and user guidance. Note: These recommendations are based on generated sample data since real analytics data was not available."
+}

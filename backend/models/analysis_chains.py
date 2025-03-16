@@ -21,7 +21,22 @@ sys.path.append(root_dir)
 # Charger les variables d'environnement
 from dotenv import load_dotenv
 env_path = os.path.join(root_dir, '.env')
+print(f"Loading environment from: {env_path}")
 load_dotenv(dotenv_path=env_path)
+
+# Essayer de lire et forcer la clé API directement depuis le fichier .env
+try:
+    with open(env_path, 'r') as f:
+        for line in f:
+            if line.startswith('OPENAI_API_KEY='):
+                api_key = line.strip().split('=', 1)[1].strip('"').strip("'")
+                if "test_key" not in api_key:
+                    # Forcer la clé API dans l'environnement
+                    os.environ["OPENAI_API_KEY"] = api_key
+                    print("OPENAI_API_KEY environment variable set from .env file")
+                break
+except Exception as e:
+    print(f"Error reading .env file: {e}")
 
 from langchain.prompts import PromptTemplate
 from langchain_openai import OpenAI
@@ -54,22 +69,48 @@ class FeedbackAnalysisChains:
             model (str): The OpenAI model to use for the chains
             temperature (float): The temperature setting for the LLM (0-1)
         """
-        # Récupérer la clé API depuis les variables d'environnement
+        # Récupérer explicitement la clé API
         api_key = os.getenv("OPENAI_API_KEY")
         
         # Afficher un message pour debug (masqué pour la sécurité)
         if api_key:
             masked_key = api_key[:8] + "..." + api_key[-4:] if len(api_key) > 12 else "***"
             print(f"Using API key: {masked_key}")
+            
+            # Vérifier si c'est la clé de test
+            if "test_key" in api_key:
+                print("WARNING: Using test_key will cause authentication errors with the OpenAI API")
+                # Essayer de lire la clé directement du fichier .env une dernière fois
+                try:
+                    with open(env_path, 'r') as f:
+                        for line in f:
+                            if line.startswith('OPENAI_API_KEY='):
+                                api_key = line.strip().split('=', 1)[1].strip('"').strip("'")
+                                if "test_key" not in api_key:
+                                    print("Found valid API key in .env file, using it instead")
+                                break
+                except Exception as e:
+                    print(f"Error reading .env file: {e}")
         else:
             print("AVERTISSEMENT: Aucune clé API OpenAI trouvée")
         
         # Pour les modèles de chat (comme GPT-3.5 et GPT-4), utiliser ChatOpenAI
         if any(chat_model in model.lower() for chat_model in ["gpt-3.5", "gpt-4"]):
+            # Créer le client directement
             self.llm = ChatOpenAI(model=model, temperature=temperature, openai_api_key=api_key)
+            
+            # S'assurer que la clé est bien définie dans le client
+            if hasattr(self.llm, 'client') and hasattr(self.llm.client, 'api_key'):
+                self.llm.client.api_key = api_key
+                print("API key directly set on ChatOpenAI client object")
         else:
             # Pour les autres modèles, utiliser OpenAI
             self.llm = OpenAI(model=model, temperature=temperature, openai_api_key=api_key)
+            
+            # S'assurer que la clé est bien définie dans le client
+            if hasattr(self.llm, 'client') and hasattr(self.llm.client, 'api_key'):
+                self.llm.client.api_key = api_key
+                print("API key directly set on OpenAI client object")
             
         self._initialize_chains()
         
