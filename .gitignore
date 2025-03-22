@@ -60,7 +60,5 @@ data/
 datasets/collection_module/.vscode/
 
 
-cles_api
-
 # Ignore recommendations output
 recommendations_output.json
