@@ -1,3 +1,4 @@
+
 #!/usr/bin/env python3
 """
 Test script to verify the complete design recommendations pipeline
