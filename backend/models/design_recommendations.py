@@ -7,7 +7,7 @@ import os
 import sys
 import json
 from pathlib import Path
-from typing import Dict, List, Any
+from typing import Dict, List, Any, Optional, Union
 from datetime import datetime, timedelta
 from dotenv import load_dotenv
 import requests
@@ -23,72 +23,71 @@ from langchain.prompts import PromptTemplate
 from langchain_openai import ChatOpenAI
 from langchain_core.output_parsers import JsonOutputParser
 from langchain_core.runnables import RunnableSequence
+from models.recommendation_validator import RecommendationValidator
 
-# Define the prompt template for design recommendations
+# Define the enhanced prompt template for design recommendations
 design_recommendations_template = PromptTemplate(
-    input_variables=["analysis_summary", "page_id"],
+    input_variables=["analysis_summary", "page_id", "component_list"],
     template="""
-You are an expert UI/UX designer with deep knowledge of user behavior analytics.
-Based on the following user feedback analysis for page '{page_id}', generate concrete design improvement recommendations.
+You are an expert UI/UX designer with deep knowledge of user behavior analytics, psychology, and conversion optimization.
+Based on the following user feedback analysis for page '{page_id}', generate concrete, specific, and actionable design improvement recommendations.
 
 ANALYSIS SUMMARY:
 {analysis_summary}
 
-Generate design recommendations that:
-1. Address the key issues identified in the analysis
-2. Maintain or enhance the positive aspects mentioned
-3. Consider current UI/UX best practices
-4. Can be implemented using existing UI components (no new component types)
-5. Provide clear justification based on user feedback data
+AVAILABLE COMPONENTS:
+{component_list}
 
-For each recommendation, provide:
-- A clear description of what should be changed
-- The specific location or component to modify
-- The expected user impact
-- The priority level (high/medium/low)
-- Data-driven justification
+Generate design recommendations that:
+1. Address the key issues identified in the analysis with HIGH SPECIFICITY
+2. Maintain or enhance the positive aspects mentioned
+3. Follow current UI/UX best practices and design standards
+4. Can be implemented using the available components listed above
+5. Provide clear, data-driven justification based on user feedback
+6. Are concrete enough to be implemented without additional interpretation
+
+For each recommendation:
+- Be extremely specific about what should change and how
+- Include exact measures where possible (e.g., "increase button size by 20%", "reduce form fields from 8 to 5")
+- Specify the exact location or element to modify
+- Explain the direct user impact with quantifiable metrics if possible
+- Assign appropriate priority based on potential impact and implementation effort
+- Include clear before/after descriptions that leave no ambiguity
 
 You MUST return a valid JSON object with this exact structure:
 {{
     "page_id": "{page_id}",
     "recommendations": [
         {{
-            "title": "First recommendation title",
-            "description": "Detailed description of what should be changed",
-            "component": "Specific UI component to modify",
-            "location": "Where on the page",
-            "expected_impact": "How this will improve user experience",
+            "title": "Clear, action-oriented recommendation title",
+            "description": "Detailed description with exact specifications of what should change",
+            "component": "Specific UI component from the available list",
+            "location": "Precise location on the page",
+            "expected_impact": "Specific, measurable impact on user experience or conversion",
             "priority": "high|medium|low",
-            "justification": "Data-driven justification from the analysis",
+            "justification": "Data-driven justification directly citing the analysis",
             "before_after": {{
-                "before": "Brief description of current state",
-                "after": "Brief description of recommended state"
-            }}
-        }},
-        {{
-            "title": "Second recommendation title",
-            "description": "Detailed description of what should be changed",
-            "component": "Specific UI component to modify",
-            "location": "Where on the page",
-            "expected_impact": "How this will improve user experience",
-            "priority": "high|medium|low",
-            "justification": "Data-driven justification from the analysis",
-            "before_after": {{
-                "before": "Brief description of current state",
-                "after": "Brief description of recommended state"
+                "before": "Specific description of current problematic state",
+                "after": "Specific description of improved state with exact changes"
             }}
         }}
     ],
-    "implementation_notes": "Any overall notes for implementation",
+    "implementation_notes": "Technical guidance for developers implementing these changes",
     "general_observations": "Overall observations about the page design"
 }}
 
-IMPORTANT: 
-1. Do NOT include comments in the JSON
-2. Do NOT use placeholders like <title> - replace them with actual content 
-3. Use double quotes for all JSON keys and string values
-4. Make sure all JSON keys match exactly the structure shown above
-5. Your entire response must be valid JSON - nothing else
+IMPORTANT GUIDELINES:
+1. Focus on QUALITY over quantity - 3-5 high-quality recommendations are better than many vague ones
+2. Be as SPECIFIC as possible - avoid generic advice like "improve the design"
+3. Prioritize improvements with the highest potential impact on user experience and conversion
+4. Consider mobile and desktop experiences, accessibility standards, and performance implications
+5. Use only component types from the available components list
+
+Your recommendations must be valid JSON with:
+- No comments in the JSON
+- No placeholders - replace with actual content
+- Double quotes for all JSON keys and string values
+- Exact structure as shown above
 """
 )
 
@@ -249,107 +248,63 @@ class PostHogClient:
         """
         Identify areas of the UI where users show signs of confusion.
         
-        Signs of confusion can include:
-        - Excessive mouse movement
-        - Multiple failed clicks
-        - Rapid back-and-forth scrolling
-        - Multiple form field edits without submission
-        
         Args:
             sessions (list): List of session recordings
             
         Returns:
-            list: Areas of confusion with confidence scores
+            list: Areas of confusion with scores
         """
         confusion_areas = []
         
         for session in sessions:
-            session_id = session.get("id")
-            if not session_id:
-                continue
-                
-            # Extract events that might indicate confusion
             events = session.get("events", [])
             
-            # Analyze for confusion patterns
-            # (This is simplified - a real implementation would be more sophisticated)
+            # Look for patterns indicating confusion
+            # 1. Repeated clicks in the same area
+            click_counts = {}
             
-            # Look for multiple clicks in the same area
-            click_clusters = self._find_click_clusters(events)
-            for area, score in click_clusters.items():
-                confusion_areas.append({
-                    "area": area,
-                    "score": min(score / 5, 1.0),  # Normalize score to 0-1
-                    "type": "multiple_clicks"
-                })
+            for i, event in enumerate(events):
+                if event.get("type") == "$click" and "properties" in event:
+                    props = event["properties"]
+                    if "element" in props:
+                        element = props["element"]
+                        
+                        if element not in click_counts:
+                            click_counts[element] = 0
+                        
+                        click_counts[element] += 1
             
-            # Look for rapid scrolling
-            scroll_patterns = self._analyze_scroll_patterns(events)
-            for area, score in scroll_patterns.items():
-                confusion_areas.append({
-                    "area": area,
-                    "score": min(score / 3, 1.0),  # Normalize score to 0-1
-                    "type": "rapid_scrolling"
-                })
-        
-        # Aggregate and merge similar areas
-        return self._aggregate_confusion_areas(confusion_areas)
-    
-    def _find_click_clusters(self, events):
-        """Find clusters of clicks that might indicate confusion"""
-        # Simplified implementation
-        clusters = {}
-        
-        for event in events:
-            if event.get("type") == "$click" and "properties" in event:
-                props = event["properties"]
-                if "element" in props:
-                    element = props["element"]
-                    clusters[element] = clusters.get(element, 0) + 1
-        
-        # Filter out elements with just a few clicks
-        return {k: v for k, v in clusters.items() if v >= 3}
-    
-    def _analyze_scroll_patterns(self, events):
-        """Analyze scroll patterns for signs of confusion"""
-        # Simplified implementation
-        scroll_areas = {}
-        
-        for i in range(len(events) - 1):
-            current = events[i]
-            next_event = events[i + 1]
+            # Elements with many clicks may indicate confusion
+            for element, count in click_counts.items():
+                if count >= 3:  # Threshold for confusion
+                    confusion_areas.append({
+                        "area": element,
+                        "score": min(count / 3, 10),  # Scale score 1-10
+                        "type": "repeated_clicks"
+                    })
             
-            if (current.get("type") == "$scroll" and next_event.get("type") == "$scroll" and
-                "properties" in current and "properties" in next_event):
-                # Look for scroll direction changes
-                current_dir = self._get_scroll_direction(current["properties"])
-                next_dir = self._get_scroll_direction(next_event["properties"])
-                
-                if current_dir and next_dir and current_dir != next_dir:
-                    # Direction changed, might indicate confusion
-                    page = current["properties"].get("path", "unknown")
-                    scroll_areas[page] = scroll_areas.get(page, 0) + 1
-        
-        return scroll_areas
-    
-    def _get_scroll_direction(self, props):
-        """Get the direction of a scroll event"""
-        if "scrollY" not in props:
-            return None
+            # 2. Rapid back and forth between pages
+            page_changes = []
             
-        scrollY = props["scrollY"]
+            for event in events:
+                if event.get("type") == "$pageview" and "properties" in event:
+                    props = event["properties"]
+                    if "pathname" in props:
+                        page_changes.append(props["pathname"])
+            
+            # Check for repeated page changes
+            if len(page_changes) >= 3:
+                for i in range(len(page_changes) - 2):
+                    if page_changes[i] == page_changes[i+2] and page_changes[i] != page_changes[i+1]:
+                        confusion_areas.append({
+                            "area": page_changes[i],
+                            "score": 8,  # High score for navigation confusion
+                            "type": "navigation_loop"
+                        })
         
-        if scrollY > 0:
-            return "down"
-        elif scrollY < 0:
-            return "up"
-        return None
-    
-    def _aggregate_confusion_areas(self, areas):
-        """Aggregate and merge similar confusion areas"""
         # Group by area
         grouped = {}
-        for area_data in areas:
+        for area_data in confusion_areas:
             area = area_data["area"]
             if area not in grouped:
                 grouped[area] = []
@@ -370,20 +325,25 @@ class PostHogClient:
         
         return result
 
+# Import the component list from the validator
+from models.recommendation_validator import SUPPORTED_COMPONENTS
+
 class DesignRecommendationChain:
     """
     A class that manages the generation of design recommendations based on feedback analysis.
     """
     
-    def __init__(self, model="gpt-4o", temperature=0):
+    def __init__(self, model="gpt-4o", temperature=0, validator=None):
         """
         Initialize the design recommendation chain with the specified LLM.
         
         Args:
             model (str): The OpenAI model to use for the chain
             temperature (float): The temperature setting for the LLM (0-1)
+            validator (RecommendationValidator, optional): Custom validator to use
         """
         self.llm = ChatOpenAI(model=model, temperature=temperature)
+        self.validator = validator or RecommendationValidator(model=model)
         self._initialize_chain()
         
     def _initialize_chain(self):
@@ -397,7 +357,8 @@ class DesignRecommendationChain:
     def generate_recommendations(
         self, 
         analysis_summary: Dict[str, Any],
-        page_id: str
+        page_id: str,
+        validate: bool = True
     ) -> Dict[str, Any]:
         """
         Generate design recommendations based on feedback analysis.
@@ -405,21 +366,27 @@ class DesignRecommendationChain:
         Args:
             analysis_summary (Dict): The summary of feedback analysis
             page_id (str): The ID of the page being analyzed
+            validate (bool): Whether to validate recommendations after generation
             
         Returns:
             Dict: Design recommendations in structured format
         """
         # Check if in test mode
         if os.getenv("TESTING", "false").lower() == "true":
-            return self._generate_mock_recommendations(page_id)
+            mock_recommendations = self._generate_mock_recommendations(page_id)
+            return mock_recommendations if not validate else self.validate_recommendations(mock_recommendations)
             
         # Convert the analysis summary to a string format suitable for the prompt
         summary_str = json.dumps(analysis_summary, indent=2)
         
+        # Format component list as string
+        component_list = "\n".join([f"- {component}" for component in SUPPORTED_COMPONENTS])
+        
         # Generate recommendations
         result = self.recommendation_chain.invoke({
             "analysis_summary": summary_str,
-            "page_id": page_id
+            "page_id": page_id,
+            "component_list": component_list
         })
         
         try:
@@ -436,7 +403,12 @@ class DesignRecommendationChain:
             # Attempt to parse the JSON
             try:
                 parsed_json = json.loads(result_content)
+                
+                # Validate recommendations if requested
+                if validate:
+                    return self.validate_recommendations(parsed_json)
                 return parsed_json
+                
             except json.JSONDecodeError:
                 # Try to extract JSON using regex as a fallback
                 import re
@@ -444,6 +416,9 @@ class DesignRecommendationChain:
                 if json_match:
                     try:
                         parsed_json = json.loads(json_match.group(1))
+                        # Validate recommendations if requested
+                        if validate:
+                            return self.validate_recommendations(parsed_json)
                         return parsed_json
                     except:
                         pass
@@ -454,6 +429,18 @@ class DesignRecommendationChain:
             # Rather than returning a simplified result, raise an exception
             # to force the use of real recommendations only
             raise ValueError(f"Failed to generate valid recommendations: {str(e)}")
+    
+    def validate_recommendations(self, recommendations: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Validate generated recommendations for feasibility.
+        
+        Args:
+            recommendations (Dict): The recommendations to validate
+            
+        Returns:
+            Dict: Validated recommendations with feasibility information
+        """
+        return self.validator.validate_all_recommendations(recommendations)
             
     def _generate_mock_recommendations(self, page_id: str) -> Dict[str, Any]:
         """Generate mock recommendations for testing purposes."""
@@ -462,39 +449,53 @@ class DesignRecommendationChain:
             "recommendations": [
                 {
                     "title": "Simplify form fields",
-                    "description": "Reduce the number of form fields to only essential information",
+                    "description": "Reduce the number of form fields to only essential information, specifically remove the 'How did you hear about us' and 'Additional comments' fields",
                     "component": "Form",
                     "location": "Main checkout area",
-                    "expected_impact": "Reduced user frustration and higher completion rate",
+                    "expected_impact": "Reduce checkout abandonment rate by 15-20% and increase form completion speed by 30%",
                     "priority": "high",
-                    "justification": "Users complained about too many form fields causing confusion",
+                    "justification": "Analysis shows 40% of users abandon checkout after seeing the full form, with heatmaps showing hesitation at non-essential fields",
                     "before_after": {
-                        "before": "10 form fields with complex validation",
-                        "after": "5 essential form fields with clear validation messages"
+                        "before": "10 form fields with complex validation including optional fields that cause confusion",
+                        "after": "5 essential form fields with clear validation messages and visual progress indication"
                     }
                 },
                 {
                     "title": "Make submit button more prominent",
-                    "description": "Increase size and contrast of the submit button",
+                    "description": "Increase the size of the submit button by 30%, change color to primary brand color (#3A86FF), and add a subtle hover animation",
                     "component": "Button",
-                    "location": "Bottom of form",
-                    "expected_impact": "Easier completion of checkout process",
+                    "location": "Bottom of form, centered with 24px margins",
+                    "expected_impact": "Increase form completion rate by 25% and reduce time to completion",
                     "priority": "medium",
-                    "justification": "Users reported difficulty finding the submit button",
+                    "justification": "Session recordings show 35% of users hesitate or scan the page looking for the submit button",
                     "before_after": {
-                        "before": "Small, low-contrast button",
-                        "after": "Large, high-contrast button with clear call to action"
+                        "before": "Small (120px × 36px), low-contrast gray button that blends with background",
+                        "after": "Larger (160px × 48px), high-contrast blue button with 'Complete Purchase' text and arrow icon"
+                    }
+                },
+                {
+                    "title": "Add progress indicator for multi-step form",
+                    "description": "Add a horizontal progress bar showing all checkout steps (Cart, Shipping, Payment, Confirmation) with current step highlighted",
+                    "component": "Navigation",
+                    "location": "Top of checkout page, below header",
+                    "expected_impact": "Reduce checkout abandonment by 20% by setting clear expectations on process length",
+                    "priority": "high",
+                    "justification": "Feedback analysis shows users complaining about uncertainty in checkout process length",
+                    "before_after": {
+                        "before": "No indication of checkout process length or current position",
+                        "after": "Clear 4-step indicator showing current position and remaining steps with estimated time"
                     }
                 }
             ],
-            "implementation_notes": "These changes should be implemented in the next sprint for maximum impact",
-            "general_observations": "The page design is generally sound but needs refinement in key areas"
+            "implementation_notes": "These changes should be implemented in the next sprint for maximum impact. The progress indicator should be implemented first as it requires less visual design work and can provide immediate clarity to users.",
+            "general_observations": "The page design has a solid foundation but lacks clear visual hierarchy and user guidance. Users are currently confused about the overall process, particularly on mobile devices where the submit button is often below the visible area."
         }
     
     def generate_recommendations_from_file(
         self,
         analysis_file: str,
-        page_id: str = None
+        page_id: str = None,
+        validate: bool = True
     ) -> Dict[str, Any]:
         """
         Generate design recommendations from an analysis results file.
@@ -503,6 +504,7 @@ class DesignRecommendationChain:
             analysis_file (str): Path to the JSON file with analysis results
             page_id (str, optional): The ID of the page being analyzed
                                      (overrides the one in the file if provided)
+            validate (bool): Whether to validate recommendations after generation
             
         Returns:
             Dict: Design recommendations in structured format
@@ -528,7 +530,60 @@ class DesignRecommendationChain:
             page_id = "unknown_page"
         
         # Generate recommendations
-        return self.generate_recommendations(summary, page_id)
+        return self.generate_recommendations(summary, page_id, validate=validate)
+    
+    def rank_recommendations_by_impact(
+        self, 
+        recommendations: Dict[str, Any]
+    ) -> Dict[str, Any]:
+        """
+        Rank recommendations by estimated impact using feasibility and priority.
+        
+        Args:
+            recommendations (Dict): Validated recommendations from validate_recommendations()
+            
+        Returns:
+            Dict: Recommendations sorted by estimated impact with added impact scores
+        """
+        # Make a copy to avoid modifying the original
+        result = recommendations.copy()
+        result_recommendations = []
+        
+        # Priority weights
+        priority_weights = {
+            "high": 3.0,
+            "medium": 2.0,
+            "low": 1.0
+        }
+        
+        # Process each recommendation
+        for rec in recommendations.get("recommendations", []):
+            # Skip if validation info is missing
+            if "validation" not in rec:
+                result_recommendations.append(rec)
+                continue
+                
+            # Calculate impact score based on feasibility and priority
+            priority = rec.get("priority", "medium")
+            priority_weight = priority_weights.get(priority, 2.0)
+            
+            feasibility_score = rec["validation"].get("feasibility_score", 50) / 100.0
+            
+            # Impact formula: priority weight × feasibility score
+            impact_score = priority_weight * feasibility_score * 10  # Scale to 0-30
+            
+            # Add impact score to recommendation
+            rec_copy = rec.copy()
+            rec_copy["impact_score"] = round(impact_score, 1)
+            result_recommendations.append(rec_copy)
+        
+        # Sort by impact score (descending)
+        result_recommendations.sort(key=lambda r: r.get("impact_score", 0), reverse=True)
+        
+        # Update recommendations list
+        result["recommendations"] = result_recommendations
+        
+        return result
 
 def analyze_feedbacks(page_id: str, start_date: datetime, end_date: datetime) -> Dict[str, Any]:
     """
