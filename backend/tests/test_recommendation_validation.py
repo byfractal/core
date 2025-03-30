@@ -10,12 +10,14 @@ import argparse
 from datetime import datetime
 from pathlib import Path
 
-# Add parent directory to path to enable imports
-root_dir = str(Path(__file__).parent.parent)
-sys.path.append(root_dir)
+# Ajout du répertoire parent pour l'importation
+current_dir = Path(__file__).parent
+parent_dir = current_dir.parent
+sys.path.append(str(parent_dir))
 
-from backend.models.design_recommendations import DesignRecommendationChain
-from backend.models.recommendation_validator import RecommendationValidator
+# Importation depuis le dossier models
+from models.design_recommendations import DesignRecommendationChain
+from models.recommendation_validator import RecommendationValidator
 
 def load_sample_analysis(file_path=None):
     """
@@ -322,7 +324,7 @@ def main():
     parser = argparse.ArgumentParser(description='Test the enhanced design recommendation system')
     parser.add_argument('--analysis', '-a', type=str, help='Path to analysis JSON file')
     parser.add_argument('--model', '-m', type=str, default='gpt-4o', help='LLM model to use')
-    parser.add_argument('--output', '-o', type=str, default='backend/recommendations_output.json', 
+    parser.add_argument('--output', '-o', type=str, default='../recommendations_output.json', 
                         help='Output file for recommendations')
     parser.add_argument('--validate', '-v', action='store_true', help='Validate recommendations')
     parser.add_argument('--skip-generation', '-s', action='store_true', help='Skip recommendation generation')
