@@ -1,0 +1,130 @@
+---
+description: 
+globs: **/backend/**/*.py,**/*figma*/**/*.py, **/*figma*/**/*.ts, **/*plugin*/**/*.py, **/*plugin*/**/*.ts, **/*architecture*/**/*.md
+alwaysApply: false
+---
+
+## **Expertise & Scope**
+You are an expert in **React, TypeScript, Node.js, Next.js, Shadcn UI, App Router, Radix UI, LangChain, SGL, LLMs**, and **Figma plugin development** within a **B2B SaaS ecosystem** focused on **product and design teams**.
+
+---
+
+## **Backend (API, Feedback Analysis, and AI)**
+**Languages:** Python (latest version)
+
+### **Frameworks & Libraries:**
+- **FastAPI** for asynchronous API endpoints
+- **Pydantic** for data validation
+- **SQLAlchemy** as ORM for database management
+- **FAISS** for vector storage in the **RAG (Retrieval-Augmented Generation)** workflow
+- **OpenAI API** for powering LLM-based feedback analysis
+- **LangChain** to orchestrate LLM chains and manage prompt interactions
+- **Requests/HTTPX** for external API calls
+
+### **Backend Layers:**
+- **API Layer**: Exposes endpoints and services via FastAPI
+- **Service Layer**: Integrates with external services (Amplitude, PostHog) and manages business logic
+- **AI Models Layer**: Handles embeddings, vectorization, and feedback analysis
+- **Data Layer**: Manages feedback data connection and storage
+
+### **Key Modules:**
+- `models/` for embeddings, vectorization, and prompts
+- `services/` for integrations with Amplitude/PostHog
+- `pipeline/` for data ingestion and analysis
+- `analyze_feedback.py` as the main entry point for analysis
+
+---
+
+## **Frontend (Figma Plugin)**
+**Languages:** TypeScript
+
+### **Frameworks & Libraries:**
+- **Figma Plugin API** (official SDK) for plugin development
+- **React (optional)** for advanced UI
+- **Chakra UI or Tailwind CSS** for styling
+
+### **Frontend Layers:**
+- **UI & Interaction**: Figma interface built in TypeScript
+- **State Management**: (React, Zustand, or Redux if needed)
+- **Backend Communication**: API calls via `fetch` or `Axios` to FastAPI
+
+### **Key Modules:**
+- `src/` for plugin code
+- `services/` for managing backend API calls
+- `manifest.json` for plugin configuration
+
+---
+
+## **Integration: HTML.to.Design & Code.to.Design**
+**Objective:** Extract UI components from client websites for reuse in Figma
+
+**Languages:** Python (backend) & TypeScript (frontend)
+
+### **Dependencies:**
+- **HTML.to.Design & Code.to.Design APIs** to transform HTML/CSS into Figma-ready components
+- **Playwright or Selenium (optional)** for web scraping if APIs are limited
+
+### **Integration Layers:**
+- **Extraction (Backend)**: Retrieves and structures UI data
+- **Transformation (LangChain/AI)**: Adapts components for Figma
+- **Injection (Frontend)**: Displays and enables UI component manipulation in Figma
+
+### **Key Modules:**
+- `services/html_to_design.py` for API interaction
+- `models/vector_store.py` for storing extracted UI components
+
+---
+
+## **Deployment & Infrastructure**
+**Technologies:** Docker (containerization), GitHub Actions (CI/CD), PostgreSQL/MongoDB (data storage), Redis (optional for caching LLM requests)
+
+### **Infrastructure Layers:**
+- **Orchestration:** Docker Compose (or Kubernetes for scalability)
+- **Deployment:** CI/CD pipelines via GitHub Actions
+- **Database:** PostgreSQL or MongoDB for data storage
+
+### **Key Files:**
+- `docker-compose.yml` for service configuration
+- `requirements.txt` for backend dependencies
+
+---
+
+## **Additional Key Principles**
+
+### **Layering & Dependencies:**
+- Strict **separation between presentation, service, and persistence layers** to enhance modularity
+- Use of **DTOs and well-defined interfaces** to ensure consistency
+
+### **Data Handling & API Rules:**
+- Validate and transform data in the **Data Access Layer (DAL)** before passing it to the service layer
+- Use **Server Actions (or similar patterns)** to centralize mutations and minimize direct data fetching in client components
+
+### **Performance Optimization:**
+- Minimize unnecessary **re-renders** and **data fetches** on the frontend
+- Leverage **dynamic imports** and **caching (e.g., Redis)** to optimize API performance
+- Profile backend services to **identify and address bottlenecks**
+
+### **Security & Best Practices:**
+- Store **secrets & API keys** in **environment variables** (e.g., `python-dotenv`)
+- **Validate all inputs** to prevent injections & ensure data integrity
+- Enforce **strict error handling** and **centralized logging** for easier debugging
+- Implement **CI/CD pipelines** and **automated tests** (unit and integration) to maintain code quality
+
+---
+
+   ## GitHub References
+   - **Figma Plugin Examples**: 
+     - [Figma/plugin-samples](mdc:https:/github.com/figma/plugin-samples) - Official plugin examples
+     - [the-dataface/figma2html](mdc:https:/github.com/the-dataface/figma2html) - Figma to HTML conversion
+
+   - **Figma to Code Solutions**:
+     - [FireJet](mdc:https:/www.firejet.io) - Production Figma to code solution
+     - [bernaferrari/FigmaToCode](mdc:https:/github.com/bernaferrari/FigmaToCode) - Open-source Figma to code
+     - [PhilipWee/FigmaToCode](mdc:https:/github.com/PhilipWee/FigmaToCode) - Enhanced fork with additional features
+     
+---
+
+## **Final Instructions**
+Do not generate any code yet. Simply **record this technical context**, including **layering, dependencies, API rules, performance optimizations, and security best practices**, to confirm the architectural vision for the **Figma plugin and backend services**.
+
+

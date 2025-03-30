@@ -1,0 +1,116 @@
+---
+description: 
+globs: **/*front*/**/*.{js,ts,jsx,tsx}, **/*ui*/**/*.{js,ts,jsx,tsx,css}, **/*plugin*/ui/**/*.*, **/*figma*/**/*.{js,ts}, **/*component*/**/*.*
+alwaysApply: false
+---
+## 🚀 Frontend Performance Best Practices
+This rule contains actionable principles for optimizing frontend performance.
+
+**Source**: [roadmap.sh Frontend Performance Best Practices](mdc:https:/roadmap.sh/best-practices/frontend-performance)
+
+### 1. **Minify HTML**
+- Remove comments and unnecessary whitespaces to reduce file size.
+
+### 2. **Use a Content Delivery Network (CDN)**
+- Serve static assets via a CDN to decrease latency and improve load times.
+
+### 3. **Optimize CSS**
+- Minify CSS by removing comments and whitespaces.
+- Concatenate CSS files into a single file to reduce HTTP requests.
+- Ensure CSS files are non-blocking.
+- Remove unused CSS to decrease payload.
+- Inline critical CSS (above-the-fold styles) for faster rendering.
+- Avoid embedded or inline CSS to maintain separation of concerns.
+
+### 4. **Optimize Fonts**
+- Use the WOFF2 font format for better compression.
+- Utilize `preconnect` to load fonts faster.
+- Keep web font sizes under 300KB.
+- Prevent flash or invisible text during font loading.
+
+### 5. **Optimize Images**
+- Compress images and keep the image count low.
+- Choose appropriate image formats (e.g., WebP for web).
+- Prefer vector images over bitmap images when possible.
+- Set width and height attributes on images to maintain aspect ratio.
+- Avoid using Base64-encoded images due to increased payload size.
+- Implement lazy loading for offscreen images.
+- Serve images that are appropriately sized for the display.
+
+### 6. **Optimize JavaScript**
+- Minify JavaScript to reduce file size.
+- Avoid multiple inline JavaScript snippets.
+- Ensure non-blocking JavaScript by using `async` or `defer` attributes.
+- Keep dependencies up to date and monitor their sizes.
+- Identify and resolve performance issues in JavaScript files.
+
+### 7. **Implement HTTPS**
+- Use HTTPS to secure your website and improve performance with HTTP/2.
+
+### 8. **Utilize Service Workers**
+- Implement service workers for caching and performing heavy tasks in the background.
+
+### 9. **Manage Page Weight**
+- Aim to keep page weight under 1500KB, ideally under 500KB.
+- Strive for page load times under 3 seconds.
+- Maintain Time To First Byte (TTFB) under 1.3 seconds.
+
+### 10. **Optimize Cookies**
+- Keep cookie sizes under 4096 bytes.
+- Limit the number of cookies to fewer than 20.
+
+### 11. **Reduce HTTP Requests**
+- Minimize the number of HTTP requests.
+- Serve files from the same protocol to avoid mixed content issues.
+- Avoid requesting unreachable files (404 errors).
+
+### 12. **Set HTTP Cache Headers Properly**
+- Configure cache headers to leverage browser caching effectively.
+
+### 13. **Enable Compression**
+- Enable GZIP or Brotli compression to reduce the size of transferred files.
+
+### 14. **Optimize Figma Plugin UI Performance**
+- Keep plugin UI components lightweight as they run in Figma's sandbox
+- Minimize DOM manipulations in the plugin UI
+- Use Figma's built-in UI components when possible for better performance
+- Implement virtualized lists for long data displays
+- Optimize plugin startup time by deferring non-critical initializations
+- Consider the limited viewport space when designing UI layouts
+
+### 15. **Frontend-Backend Communication Optimization**
+- Batch API requests to the HTML-to-Design service
+- Implement client-side caching for design components
+- Use efficient data structures for UI component representation
+- Consider implementing progressive loading for complex designs
+- Optimize the payload size when transferring design data between backend and frontend
+- Implement proper error handling and retry mechanisms for API calls
+
+---
+
+## 📌 Commit Message Suggestions
+Use these prefixes for performance-related commits:
+- "Fix(css): optimize and concatenate CSS files"
+- "Refactor(js): improve bundle size and loading strategy"
+- "Feat(cache): implement service worker for offline support"
+- "Fix(images): optimize image loading and rendering"
+- "Refactor(plugin): optimize Figma plugin rendering"
+- "Fix(ui): improve component performance in Figma sandbox"
+
+---
+
+## ✅ Recommended Tools (optional integrations)
+- **Performance Analysis**: Lighthouse, WebPageTest
+- **Compression**: GZIP, Brotli
+- **Image Optimization**: ImageMagick, Squoosh
+- **JavaScript Bundlers**: Webpack, Rollup
+- **CSS Tools**: PostCSS, PurgeCSS
+- **CDNs**: Cloudflare, Akamai
+- **Figma Plugin Tools**: Figma Plugin API, @figma/plugin-typings
+- **UI Frameworks for Plugins**: Preact, React with optimized builds
+- **Performance Monitoring**: Sentry for frontend, Browser DevTools
+
+---
+
+## 🧠 Final Reminder
+Performance is a crucial aspect of user experience. When developing Figma plugins, remember that you're operating in a sandbox environment with specific constraints. Optimize for both initial load time and interaction responsiveness, as these directly impact user adoption and satisfaction.

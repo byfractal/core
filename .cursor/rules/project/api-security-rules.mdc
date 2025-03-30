@@ -1,0 +1,79 @@
+---
+description: 
+globs: **/*api*/**/*.py, **/*service*/**/*.py, **/*backend*/**/*.py, **/*auth*/**/*.*, **/*security*/**/*.*
+alwaysApply: false
+---
+## 🔒 API Security Best Practices
+This rule contains actionable principles for securing APIs in the Figma plugin ecosystem.
+
+**Source**: [roadmap.sh API Security Best Practices](mdc:https:/roadmap.sh/best-practices/api-security)
+
+### 1. **Authentication and Authorization**
+- **Use Modern Authentication**: Implement OAuth 2.0 or JWT for secure API access
+- **Limit Login Attempts**: Implement max retry and account locking features
+- **Secure API Keys**: Store API keys for HTML-to-Design and other services securely in environment variables
+
+### 2. **Data Protection**
+- **Encrypt Sensitive Data**: Use encryption for design data at rest and in transit
+- **Secure User Feedback**: Anonymize and protect user feedback data
+- **Implement HTTPS**: Ensure all API communications use HTTPS
+
+### 3. **Input Validation**
+- **Validate All HTML Input**: Sanitize HTML before sending to HTML-to-Design API
+- **Use FastAPI's Validation**: Leverage Pydantic models for automatic request validation
+- **Prevent Injection Attacks**: Validate and sanitize all user inputs
+
+### 4. **Access Control**
+- **Implement RBAC for Plugin Access**: Control who can access design optimization features
+- **Scope API Tokens**: Limit token permissions to only what's necessary
+- **Use Principle of Least Privilege**: API endpoints should only have access to required resources
+
+### 5. **Rate Limiting and Throttling**
+- **Protect HTML-to-Design API**: Implement rate limits on design conversion endpoints
+- **Prevent Abuse**: Add throttling to prevent excessive API usage
+- **Graceful Degradation**: Provide fallbacks when rate limits are reached
+
+### 6. **Logging and Monitoring**
+- **Log Security Events**: Track authentication attempts and sensitive operations
+- **Monitor API Usage**: Watch for unusual patterns that might indicate attacks
+- **Implement Alerting**: Set up notifications for security incidents
+
+### 7. **Secure Figma Plugin Integration**
+- **Plugin Sandboxing**: Understand and respect Figma's security sandbox
+- **Safe Message Passing**: Secure the communication between plugin and backend
+- **Validate Plugin Inputs**: Don't trust data coming from the plugin without validation
+
+### 8. **Error Handling**
+- **Generic Error Messages**: Avoid exposing implementation details in errors
+- **Consistent Error Format**: Use standardized error responses across all endpoints
+- **Log Detailed Errors Internally**: Keep detailed logs without exposing them to clients
+
+### 9. **Security Testing**
+- **Regular Penetration Testing**: Test your APIs for vulnerabilities
+- **Dependency Scanning**: Check for security issues in dependencies
+- **Code Reviews**: Include security considerations in code reviews
+
+---
+
+## 📌 Commit Message Suggestions
+Use these prefixes for security-related commits:
+- "Fix(auth): implement OAuth 2.0 for authentication"
+- "Fix(encrypt): secure sensitive design data"
+- "Feat(validation): add input sanitization for HTML processing"
+- "Refactor(security): improve API access controls"
+- "Fix(logging): enhance security event monitoring"
+
+---
+
+## ✅ Recommended Tools
+- **Authentication**: PyJWT, Authlib, FastAPI security dependencies
+- **Encryption**: cryptography, PyNaCl
+- **Input Validation**: Pydantic, FastAPI's request validation
+- **API Security**: API keys management, environment variables
+- **Logging**: Structured logging with security levels
+- **Testing**: OWASP ZAP, Bandit (Python security linter)
+
+---
+
+## 🧠 Final Reminder
+Security is particularly important when handling design assets and user feedback data. Always think about the trust users place in your plugin and ensure you're protecting their intellectual property and sensitive information throughout the entire pipeline.

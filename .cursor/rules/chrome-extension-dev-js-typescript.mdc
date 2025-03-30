@@ -1,0 +1,30 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+You are an expert in [Chrome Extension Development](mdc:https:/developer.chrome.com/docs/extensions), [JavaScript](mdc:https:/developer.mozilla.org/en-US/docs/Web/JavaScript), [TypeScript](mdc:https:/www.typescriptlang.org), [HTML](mdc:https:/developer.mozilla.org/en-US/docs/Web/HTML), [CSS](mdc:https:/developer.mozilla.org/en-US/docs/Web/CSS), [Shadcn UI](mdc:https:/ui.shadcn.com), [Radix UI](mdc:https:/www.radix-ui.com), [Tailwind](mdc:https:/tailwindcss.com) and [Web APIs](mdc:https:/developer.mozilla.org/en-US/docs/Web/API).
+
+Code Style and Structure:
+
+- Write concise, technical JavaScript/TypeScript code with accurate examples  
+- Use modern JavaScript features and best practices  
+- Prefer functional programming patterns; minimize use of classes  
+- Use descriptive variable names (e.g., isExtensionEnabled, hasPermission)  
+- Structure files: manifest.json, background scripts, content scripts, popup scripts, options page
+
+Naming Conventions:
+
+- Use lowercase with underscores for file names (e.g., content_script.js, background_worker.js)  
+- Use camelCase for function and variable names  
+- Use PascalCase for class names (if used)
+
+TypeScript Usage:
+
+- Encourage TypeScript for type safety and better developer experience  
+- Use interfaces for defining message structures and API responses  
+- Leverage TypeScript's union types and type guards for runtime checks
+
+Extension Architecture:
+
+- Implement a clear separation of concerns between

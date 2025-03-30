@@ -1,0 +1,101 @@
+---
+description: 
+globs: **/*task*/**/*.md, **/*split*/**/*.md, **/*README*.md, **/*team*/**/*.md
+alwaysApply: false
+---
+## **Task Breakdown & Role Distribution**
+
+### **Step 0: Setup and Environment Configuration**
+**Objectives:** Install and configure dependencies (LangChain, LLMs, Vector Store), manage API keys, and structure the Git repository.
+
+**Assignment:**
+- **Person A:** Technical configuration, LangChain installation, Vector Store setup, repository management.
+- **Person B:** Documentation of architecture, API key setup, version validation (Python, Node.js, etc.).
+
+---
+
+### **Step 1: Data Ingestion from Amplitude**
+**Objectives:** Retrieve and structure user feedback from the Amplitude API.
+
+**Assignment:**
+- **Person A:** Implement the `fetch_data` function, handle pagination, and clean data.
+- **Person B:** Validate data structure, schema, and metadata.
+
+---
+
+### **Step 2: Indexing / Vectorization (RAG)**
+**Objectives:** Generate embeddings and store feedback in a Vector Store.
+
+**Assignment:**
+- **Person A:** Implement embedding code and create the index.
+- **Person B:** Implement metadata filtering and retriever logic.
+
+---
+
+### **Step 3: Prompt Configuration and Chain Setup**
+**Objectives:** Write prompts and implement the LangChain workflow.
+
+**Assignment:**
+- **Person A:** Develop LangChain code (PromptTemplate, LLMChain, etc.).
+- **Person B:** Optimize prompts and manage branching logic.
+
+---
+
+### **Step 4: Page and Date Range Filtering Integration**
+**Objectives:** Filter feedback based on the analyzed page and time range.
+
+**Assignment:**
+- **Person A:** Implement `analyze_feedbacks(page_id, start_date, end_date)` function.
+- **Person B:** Validate results and perform tests.
+
+---
+
+### **Step 5: Automatic Layout Generation**
+**Objectives:** Convert UX insights into layout suggestions.
+
+**Assignment:**
+- **Person A:** Develop generation logic (prompt + API calls).
+- **Person B:** Map insights to UI components and validate results.
+
+---
+
+### **Step 6: UI / Final Plugin Design**
+**Objectives:** Develop the Figma interface to analyze and display insights.
+
+**Assignment:**
+- **Person A:** Develop UI and manage state.
+- **Person B:** Integrate API calls and display results.
+
+---
+
+### **Step 7: Testing, Monitoring, and Iterations**
+**Objectives:** Validate overall functionality and improve results iteratively.
+
+**Assignment:**
+- **Person A:** Technical testing, monitoring, bug detection.
+- **Person B:** Prompt optimization and UX validation.
+
+---
+
+### **Role Summary**
+
+#### **Person A:**
+- Set up the technical infrastructure (environment, repo, Vector Store).
+- Implement API calls (Amplitude, embeddings).
+- Develop LangChain code and pipelines.
+- Automate layout generation.
+- Integrate UI if necessary.
+
+#### **Person B:**
+- Manage documentation and API access.
+- Define data schema.
+- Optimize prompts and analytics logic.
+- Ensure data consistency and result validation.
+- Write UX justifications and structure output formatting.
+
+---
+
+### **Final Instructions**
+This distribution ensures efficient collaboration while optimizing scalability and project coherence.
+ 
+

@@ -1,0 +1,86 @@
+---
+description: 
+globs: **/*backend*/**/*.py, **/*services*/**/*.py, **/*models*/**/*.py, **/plugin/**/*.py
+alwaysApply: false
+---
+## 🚀 Backend Performance Best Practices
+This rule contains actionable principles for optimizing backend performance.
+
+**Source**: [roadmap.sh Backend Performance Best Practices](mdc:https:/roadmap.sh/best-practices/backend-performance)
+
+### 1. **Minimize Database Calls**
+- Avoid N+1 query problems (use joins, batching, or data loaders).
+- Prefer indexed fields for filtering/sorting.
+- Cache frequent queries with Redis or in-memory layers.
+
+**Project-specific examples:**
+- Batch feedback analysis queries to analyze multiple user inputs in a single operation
+- Use vectorization for efficient processing of design recommendations 
+- Cache frequently accessed design templates and components
+
+### 2. **Use Asynchronous Operations**
+- Offload blocking tasks (emails, image processing, etc.) using queues (e.g., Celery, BullMQ, Sidekiq).
+- Use `async`/`await` with FastAPI for non-blocking API endpoints and improved concurrency.
+- Leverage FastAPI's dependency injection for efficient resource management.
+
+### 3. **Avoid Unnecessary Computation**
+- Debounce frequent API calls (e.g., search autosuggest).
+- Cache expensive computations.
+- Reuse computed results when possible.
+
+### 4. **Efficient Payload Management**
+- Paginate results (especially for large lists).
+- Avoid over-fetching: return only needed fields.
+- Use compression for large responses (GZIP, Brotli).
+
+### 5. **Optimize APIs for Latency**
+- Use appropriate status codes and error handling to reduce overhead.
+- Use persistent connections (keep-alive, HTTP/2).
+- Group requests or provide batch endpoints when applicable.
+- Take advantage of FastAPI's automatic request validation and documentation.
+
+### 6. **Leverage CDN & Edge**
+- Use CDN caching for static files or public endpoints.
+- Offload repeatable GET requests to edge when possible.
+
+### 7. **Instrument and Monitor Everything**
+- Track latency, CPU, memory, I/O, and request time.
+- Use tools like Prometheus, Grafana, DataDog, Sentry.
+- Log slow queries and API bottlenecks.
+
+### 8. **Profile and Benchmark Routinely**
+- Profile API endpoints under load.
+- Use performance snapshots to compare PR impact.
+- Optimize only when bottlenecks are proven.
+
+### 9. **Optimize HTML-to-Design API Integration**
+- Implement connection pooling for API calls to HTML-to-Design service
+- Cache HTML-to-Design conversion results when the same HTML is processed multiple times
+- Use streaming responses for large design conversions
+- Implement retry mechanisms with exponential backoff for API failures
+- Batch small conversion requests when possible to reduce API call overhead
+- Consider local preprocessing to minimize payload size before sending to the API
+
+---
+
+## 📌 Commit Message Suggestions
+Use these prefixes for performance-related commits:
+- "Fix(db): optimize DB queries"
+- "Refactor(api): reduce payload size"
+- "Feat(cache): add caching layer"
+- "Refactor(async): convert to async logic"
+
+---
+
+## ✅ Recommended Tools (optional integrations)
+- **Caching**: Redis, Memcached
+- **Queues**: RabbitMQ, Celery, BullMQ
+- **Monitoring**: Prometheus, Grafana, NewRelic
+- **Profiling**: Py-Spy, pprof, flame graphs
+- **FastAPI Tools**: Starlette middleware, FastAPI limiter
+
+---
+
+## 🧠 Final Reminder
+Performance is a feature. Treat it as part of your acceptance criteria, not an afterthought. Focus on clarity, measure before optimizing, and avoid premature micro-optimizations.
+

@@ -1,0 +1,111 @@
+---
+description: 
+globs:  **/docs/mvp.md,**/*mvp*/**/*.md, **/*README*.md, **/*milestone*/**/*.md, **/*figma*plan*/**/*
+alwaysApply: false
+---
+## 🧩 MVP Development Plan – Figma Plugin UI/UX Optimization (10-week roadmap)
+
+### 🔷 Step 1: BuilderIO Integration (High Priority)
+**Goal:** Adapt BuilderIO/figma-html for interface extraction.
+- **Person A**
+  - Fork BuilderIO/figma-html repository
+  - Adapt Chrome extension for authenticated UI capture
+  - Add metadata extraction (IDs, hierarchy)
+- **Person B**
+  - Adapt Figma plugin to receive UI data
+  - Build HTML → Figma conversion logic
+  - Set up backend communication with extension
+
+---
+
+### 🔷 Step 2: Recommendation Engine Finalization (Medium Priority)
+**Goal:** Enhance the structured generation of UI/UX recommendations.
+- **Person A**
+  - Finalize `DesignRecommendationChain`
+  - Improve LLM prompts for UI/UX accuracy
+  - Add feasibility check system
+- **Person B**
+  - Complete `code_to_design.py` transformation module
+  - Create standardized JSON output for UI changes
+  - Add automated tests for recommendation quality
+
+---
+
+### 🔷 Step 3: Figma Plugin UI Development (High Priority)
+**Goal:** Build complete front-end interface in React + TypeScript.
+- **Person A**
+  - Define plugin architecture
+  - Setup API connections with backend
+  - Implement authentication/session logic
+- **Person B**
+  - Design and implement main views
+  - Add UI preview components
+  - Develop before/after layout comparison
+
+---
+
+### 🔷 Step 4: Figma Component Manipulation (High Priority)
+**Goal:** Apply layout changes directly in Figma.
+- **Person A**
+  - Build functions to apply layout changes via Figma API
+  - Implement hierarchy reordering
+  - Add undo/redo functionality
+- **Person B**
+  - Modify visual styles and properties
+  - Build UI for change management and validation
+  - Add animations to preview layout changes
+
+---
+
+### 🔷 Step 5: Continuous Learning System (Medium Priority)
+**Goal:** Create self-improving feedback loop.
+- **Person A**
+  - Build feedback collection logic
+  - Track accepted/rejected recommendations
+  - Build UX optimization knowledge base
+- **Person B**
+  - Create performance dashboard
+  - Store recurring UI/UX patterns
+  - Define success metrics
+
+---
+
+### 🔷 Step 6: Testing & Performance Optimization (Medium Priority)
+**Goal:** QA pipeline and polish product.
+- **Person A**
+  - Setup test env with authenticated UIs
+  - Add E2E automated tests
+  - Optimize backend and recommendation engine
+- **Person B**
+  - Conduct UX testing
+  - Fix usability issues
+  - Improve plugin/extension performance
+
+---
+
+### 🔷 Step 7: Launch Preparation (Low Priority – Short Term)
+**Goal:** Finalize product for Figma launch.
+- **Person A**
+  - Prepare backend for deployment (security, infra)
+  - Document API usage
+  - Create deployment & monitoring scripts
+- **Person B**
+  - Finalize Figma plugin for submission
+  - Write user documentation/tutorials
+  - Build launch assets (marketing + "Build in Public")
+
+---
+
+## 📅 Planning Timeline
+- **Weeks 1–3**: Step 1–2 (BuilderIO + Recommendation Engine)
+- **Weeks 4–6**: Step 3–4 (Plugin UI + Component Actions)
+- **Weeks 7–8**: Step 5 (Learning System)
+- **Weeks 9–10**: Step 6–7 (Testing + Launch)
+
+## 🔄 Coordination Routines
+- Weekly sync: **2 meetings/week**
+- End-of-step demos
+- Use **Git branches per feature**
+- Ongoing **architecture + decision documentation**
+
+✅ This file ensures Cursor tracks all product-facing goals, sprint logic, and team responsibilities for effective co-development across plugin and backend.

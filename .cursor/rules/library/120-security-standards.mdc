@@ -1,0 +1,106 @@
+---
+description: 
+globs: **/*.ts", "**/*.tsx", "**/*.py", "**/api/**/*
+alwaysApply: false
+---
+# Security Standards for byFractal Core
+
+This rule serves as a bridge to the comprehensive OWASP ASVS security rules and ensures they are automatically considered during development.
+
+## 🔒 OWASP ASVS Integration
+
+### Level 1 (Essential) Security Rules
+Apply these rules for all features:
+
+1. **Input Validation** [@link "../owasp-asvs/level-1/input-validation.mdc"]
+   - Required for all user inputs
+   - Critical for HTML/CSS processing
+   - Must be implemented in both frontend and backend
+
+2. **Authentication** [@link "../owasp-asvs/level-1/authentication.mdc"]
+   - Required for all API endpoints
+   - Token management
+   - Session handling
+
+3. **Access Control** [@link "../owasp-asvs/level-1/access-control.mdc"]
+   - User permissions
+   - Resource access
+   - API restrictions
+
+4. **Cryptography** [@link "../owasp-asvs/level-1/cryptography.mdc"]
+   - Data encryption
+   - Secure storage
+   - Key management
+
+### Level 2 (Advanced) Security Rules
+Consider these for sensitive operations:
+
+1. **Advanced Input Validation** [@link "../owasp-asvs/level-2/input-validation.mdc"]
+   - Complex data processing
+   - File uploads
+   - Rich text handling
+
+2. **Advanced Authentication** [@link "../owasp-asvs/level-2/authentication.mdc"]
+   - Multi-factor authentication
+   - Enhanced session security
+   - Advanced token management
+
+## 🎯 Application in MCP Architecture
+
+### Protocol Layer
+```typescript
+// Required security implementations in protocols
+class APIProtocol {
+  async request() {
+    // MUST implement:
+    // - Input validation (L1)
+    // - Authentication headers (L1)
+    // - Error handling (L1)
+  }
+}
+```
+
+### Store Layer
+```typescript
+// Required security implementations in stores
+class Store {
+  // MUST implement:
+  // - Access control (L1)
+  // - State encryption (L1)
+  // - Permission validation (L1)
+}
+```
+
+### Model Layer
+```typescript
+// Required security implementations in models
+interface SecureModel {
+  // MUST include:
+  // - Data validation rules (L1)
+  // - Access control metadata (L1)
+  // - Audit fields (L2)
+}
+```
+
+## 📝 Security Checklist
+
+Before committing code, ensure:
+
+- [ ] Input validation is implemented according to OWASP L1
+- [ ] Authentication is properly handled
+- [ ] Access control is enforced
+- [ ] Sensitive data is encrypted
+- [ ] Error messages are security-conscious
+- [ ] Security headers are properly set
+- [ ] Logging excludes sensitive data
+
+## 🔍 Auto-Attachment
+
+This rule is automatically attached to:
+- All TypeScript/JavaScript files
+- All Python files
+- All API-related files
+
+## 📚 Related Rules
+- [Naming Conventions](mdc:100-naming-conventions.mdc)
+- [PostgreSQL Security](mdc:106-postgres.mdc) 
