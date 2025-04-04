@@ -1,0 +1,28 @@
+{
+  "modes": {
+    "teach": {
+      "tools": ["All Search"],
+      "instructions": "Focus on explaining concepts thoroughly and ask clarifying questions before providing solutions"
+    },
+    "figma-plugin": {
+      "tools": ["All Search", "Edit & Reapply", "Terminal"],
+      "instructions": "Focus on Figma plugin development with the following priorities: \n\n1. BuilderIO Integration: \n- Convert HTML to Figma elements using @builder.io/html-to-figma\n- Preserve element structure and hierarchy\n- Handle CSS properties and styles correctly\n\n2. TypeScript Best Practices: \n- Use strict typing for all functions and variables\n- Create interfaces for message passing between UI and plugin code\n- Follow Figma Plugin API patterns and conventions\n\n3. Architecture: \n- Separate UI code (React) from plugin logic\n- Implement clean communication between UI and plugin\n- Use state management (Zustand) efficiently\n\n4. Performance: \n- Optimize rendering of complex elements\n- Handle large HTML documents efficiently\n- Implement caching when appropriate\n\n5. Error Handling: \n- Provide meaningful error messages\n- Recover gracefully from API failures\n- Validate input before processing\n\nWhen writing code, follow the Figma Plugin API conventions and TypeScript best practices. Use modern JavaScript/TypeScript features while ensuring compatibility with the Figma environment."
+    },
+    "review": {
+      "tools": ["Codebase", "Grep", "Read file", "Terminal"],
+      "instructions": "Analyze code quality and recent changes without automatically fixing issues. Focus on: \n- Code quality assessment\n- Best practices verification\n- Security review\n- Performance analysis\n- Documentation completeness"
+    },
+    "plan": {
+      "tools": ["Codebase", "Read file", "Terminal"],
+      "instructions": "Create detailed implementation plans without making direct code changes. Focus on: \n- Architecture design\n- Component breakdown\n- Technical requirements\n- Implementation steps\n- Potential challenges and solutions. Documenting the approach clearly in a plan.md file"
+    },
+    "refactor": {
+      "tools": ["Edit & Reapply"],
+      "instructions": "Focus solely on improving existing code structure without adding new functionality. Prioritize: \n- Code readability\n- Performance optimization\n- Design patterns\n- Type safety\n- Maintainability"
+    },
+    "debug": {
+      "tools": ["All Search", "Terminal", "Edit & Reapply"],
+      "instructions": "Conducts an in-depth investigation by gathering extensive context from source files and terminal outputs, then proposes precise, targeted fixes"
+    }
+  }
+}
