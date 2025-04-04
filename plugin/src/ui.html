@@ -7,6 +7,10 @@
           Helvetica, Arial, sans-serif;
         margin: 0;
         padding: 0;
+        height: 100vh;
+      }
+      #app {
+        height: 100%;
       }
       .container {
         padding: 20px;
@@ -55,47 +59,247 @@
         font-size: 14px;
       }
     </style>
+    <script src="https://unpkg.com/react@17/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@17/umd/react-dom.production.min.js"></script>
+    <link
+      href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css"
+      rel="stylesheet"
+    />
   </head>
   <body>
-    <div class="container">
-      <h2>HTML to Figma Converter</h2>
-      <p>
-        Import HTML interfaces from websites directly into Figma. The extension
-        will capture the interface and preserve its structure.
-      </p>
-
-      <div class="button-container">
-        <button class="primary" id="import-button">
-          Import from Extension
-        </button>
-        <button class="secondary" id="cancel-button">Cancel</button>
-      </div>
-
-      <div class="status" id="status">Ready to import interfaces</div>
-    </div>
-
+    <div id="app"></div>
     <script>
-      // Boutons
-      document.getElementById("import-button").onclick = () => {
-        parent.postMessage({ pluginMessage: { type: "import-html" } }, "*");
-        document.getElementById("status").textContent =
-          "Waiting for data from extension...";
-      };
+      // Rendu de l'application React
+      const App = () => {
+        const [recommendations, setRecommendations] = React.useState(null);
+        const [isLoading, setIsLoading] = React.useState(false);
+        const [isApplying, setIsApplying] = React.useState(false);
+        const [applyResults, setApplyResults] = React.useState(null);
 
-      document.getElementById("cancel-button").onclick = () => {
-        parent.postMessage({ pluginMessage: { type: "cancel" } }, "*");
-      };
+        React.useEffect(() => {
+          // Écouteur de messages venant du plugin
+          window.onmessage = (event) => {
+            const message = event.data.pluginMessage;
 
-      // Écoute des messages du plugin
-      window.onmessage = (event) => {
-        if (event.data.pluginMessage) {
-          const message = event.data.pluginMessage;
+            if (!message) return;
 
-          if (message.type === "status-update") {
-            document.getElementById("status").textContent = message.text;
-          }
+            switch (message.type) {
+              case "plugin-loaded":
+                // Plugin chargé, on peut initialiser l'UI
+                break;
+
+              case "recommendations-loaded":
+                setRecommendations(message.recommendations);
+                setIsLoading(false);
+                break;
+
+              case "apply-started":
+                setIsApplying(true);
+                setApplyResults(null);
+                break;
+
+              case "apply-completed":
+                setIsApplying(false);
+                setApplyResults(message.results);
+                break;
+
+              case "apply-error":
+                setIsApplying(false);
+                alert("Error: " + message.error);
+                break;
+
+              default:
+                break;
+            }
+          };
+        }, []);
+
+        const handleFetchRecommendations = () => {
+          setIsLoading(true);
+          parent.postMessage(
+            { pluginMessage: { type: "fetch-recommendations" } },
+            "*"
+          );
+        };
+
+        const handleApplyRecommendations = (collectionId) => {
+          parent.postMessage(
+            {
+              pluginMessage: {
+                type: "apply-recommendations",
+                collectionId,
+              },
+            },
+            "*"
+          );
+        };
+
+        const handleCancel = () => {
+          parent.postMessage({ pluginMessage: { type: "cancel" } }, "*");
+        };
+
+        if (!recommendations && !isLoading) {
+          return (
+            <div className="h-full flex flex-col items-center justify-center p-6">
+              <h2 className="text-xl font-semibold mb-4">
+                UI Design Recommendations
+              </h2>
+              <p className="text-gray-600 text-center mb-6">
+                Get AI-powered recommendations to improve your design based on
+                user feedback and best practices.
+              </p>
+              <button
+                className="py-2 px-4 bg-blue-600 text-white rounded-md font-medium"
+                onClick={handleFetchRecommendations}
+              >
+                Get Recommendations
+              </button>
+            </div>
+          );
         }
+
+        if (isLoading) {
+          return (
+            <div className="h-full flex flex-col items-center justify-center p-6">
+              <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500 mb-4"></div>
+              <p className="text-gray-600">
+                Analyzing design and generating recommendations...
+              </p>
+            </div>
+          );
+        }
+
+        return (
+          <div className="h-full">
+            <RecommendationPanel
+              recommendations={recommendations}
+              onApply={handleApplyRecommendations}
+              isApplying={isApplying}
+              applyResults={applyResults}
+            />
+          </div>
+        );
       };
+
+      // Composant pour afficher les recommandations
+      const RecommendationPanel = ({
+        recommendations,
+        onApply,
+        isApplying,
+        applyResults,
+      }) => {
+        if (!recommendations) {
+          return (
+            <div className="p-4 text-center">
+              <p className="text-gray-500">No recommendations available yet</p>
+            </div>
+          );
+        }
+
+        const { title, description, changes, metrics } = recommendations;
+
+        return (
+          <div className="flex flex-col h-full">
+            <div className="border-b border-gray-200 p-4">
+              <h2 className="text-lg font-semibold">{title}</h2>
+              <p className="text-sm text-gray-600 mt-1">{description}</p>
+            </div>
+
+            <div className="p-4 border-b border-gray-200 flex gap-4">
+              <div className="bg-gray-100 rounded-lg p-3 flex-1">
+                <span className="block text-xs text-gray-500">
+                  Impact Score
+                </span>
+                <span className="block text-lg font-medium">
+                  {metrics?.expectedImprovementScore || 0}/100
+                </span>
+              </div>
+
+              <div className="bg-gray-100 rounded-lg p-3 flex-1">
+                <span className="block text-xs text-gray-500">Changes</span>
+                <span className="block text-lg font-medium">
+                  {changes.length}
+                </span>
+              </div>
+
+              <div className="bg-gray-100 rounded-lg p-3 flex-1">
+                <span className="block text-xs text-gray-500">Priority</span>
+                <span className="block text-lg font-medium">
+                  {metrics?.priority || "LOW"}
+                </span>
+              </div>
+            </div>
+
+            <div className="flex-1 overflow-y-auto p-4">
+              <h3 className="font-medium mb-2">Impact Areas</h3>
+              <div className="flex flex-wrap gap-2 mb-4">
+                {metrics?.impactAreas.map((area) => (
+                  <span
+                    key={area}
+                    className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full"
+                  >
+                    {area}
+                  </span>
+                ))}
+              </div>
+
+              <h3 className="font-medium mb-2 mt-4">Proposed Changes</h3>
+              <div className="space-y-3">
+                {changes.map((change) => (
+                  <div
+                    key={change.id}
+                    className="border border-gray-200 rounded-md p-3"
+                  >
+                    <div className="flex justify-between items-start">
+                      <span className="inline-block px-2 py-1 text-xs rounded-md bg-gray-200">
+                        {change.action}
+                      </span>
+                      <span className="text-xs text-gray-500">
+                        {change.targetId
+                          ? `#${change.targetId.slice(0, 8)}`
+                          : "New Element"}
+                      </span>
+                    </div>
+
+                    <p className="text-sm mt-2">
+                      {change.metadata?.reasonForChange}
+                    </p>
+
+                    <div className="mt-2 text-xs text-gray-600">
+                      Expected: {change.metadata?.expectedImprovement}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="border-t border-gray-200 p-4">
+              {applyResults && (
+                <div className="mb-3 text-sm">
+                  Applied {applyResults.success} of {applyResults.total} changes
+                  {applyResults.failed > 0 && (
+                    <span className="text-red-500">
+                      {" "}
+                      ({applyResults.failed} failed)
+                    </span>
+                  )}
+                </div>
+              )}
+
+              <button
+                className="w-full py-2 px-4 bg-blue-600 text-white rounded-md font-medium disabled:bg-blue-300"
+                onClick={() => onApply(recommendations.id)}
+                disabled={isApplying}
+              >
+                {isApplying ? "Applying..." : "Apply Recommendations"}
+              </button>
+            </div>
+          </div>
+        );
+      };
+
+      // Rendu de l'application
+      ReactDOM.render(React.createElement(App), document.getElementById("app"));
     </script>
   </body>
 </html>
