@@ -1,0 +1,13 @@
+{
+  "name": "HTML to Figma Converter",
+  "id": "html-to-figma-converter",
+  "api": "1.0.0",
+  "main": "code.js",
+  "ui": "ui.html",
+  "editorType": ["figma"],
+  "permissions": ["currentuser"],
+  "networkAccess": {
+    "allowedDomains": ["*"]
+  },
+  "menu": [{ "name": "Import HTML Interface", "command": "import-html" }]
+}
