@@ -23,7 +23,7 @@ from langchain.prompts import PromptTemplate
 from langchain_openai import ChatOpenAI
 from langchain_core.output_parsers import JsonOutputParser
 from langchain_core.runnables import RunnableSequence
-from models.recommendation_validator import RecommendationValidator
+from .recommendation_validator import RecommendationValidator
 
 # Define the enhanced prompt template for design recommendations
 design_recommendations_template = PromptTemplate(
@@ -326,7 +326,7 @@ class PostHogClient:
         return result
 
 # Import the component list from the validator
-from models.recommendation_validator import SUPPORTED_COMPONENTS
+from .recommendation_validator import SUPPORTED_COMPONENTS
 
 class DesignRecommendationChain:
     """
