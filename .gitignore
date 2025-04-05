@@ -62,3 +62,4 @@ datasets/collection_module/.vscode/
 
 # Ignore recommendations output
 recommendations_output.json
+recommendations_output_ranked.json
