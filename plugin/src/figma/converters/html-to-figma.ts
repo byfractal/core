@@ -1,3 +1,4 @@
+import { htmlToFigma } from "@builder.io/html-to-figma";
 import { FigmaNode, HtmlData } from "../../types/interfaces";
 
 /**
@@ -11,9 +12,16 @@ export class HtmlToFigmaConverter {
    * @returns The generated Figma nodes
    */
   public static convert(htmlData: HtmlData): FigmaNode[] {
-    // Transform HTML data to Figma nodes
-    const figmaNodes = this.transformHtmlToFigma(htmlData);
-    return figmaNodes;
+    try {
+      // Utilisez la bibliothèque BuilderIO
+      const result = htmlToFigma(htmlData.html);
+
+      // Convertir le résultat au format attendu par votre application
+      return this.adaptBuilderIOResult(result);
+    } catch (error) {
+      console.error("Error converting HTML to Figma:", error);
+      return [];
+    }
   }
 
   /**
@@ -122,5 +130,28 @@ export class HtmlToFigmaConverter {
       },
       borderRadius: cssStyle.borderRadius,
     };
+  }
+
+  // Fonction pour adapter le résultat BuilderIO à votre format
+  private static adaptBuilderIOResult(builderResult: any): FigmaNode[] {
+    // Implémentation d'adaptation ici
+    // ...
+
+    // Pour l'instant, retournez un cadre vide
+    return [
+      {
+        id: "root",
+        name: "Converted from HTML",
+        type: "FRAME",
+        style: {},
+        metadata: {
+          sourceId: "",
+          className: "",
+          tagName: "div",
+          attributes: {},
+        },
+        children: [],
+      },
+    ];
   }
 }
