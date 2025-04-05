@@ -44,6 +44,7 @@ tmp/
 *~
 .DS_Store
 Thumbs.db
+.cursor/
 
 # Fichiers spécifiques au projet
 /test_*.py
