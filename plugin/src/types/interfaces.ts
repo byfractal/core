@@ -1,12 +1,12 @@
 /**
- * Interface pour les données HTML extraites
+ * Interface for extracted HTML data
  */
 export interface HtmlData {
   elements: HtmlElement[];
 }
 
 /**
- * Interface pour un élément HTML
+ * Interface for an HTML element
  */
 export interface HtmlElement {
   id: string;
@@ -18,7 +18,7 @@ export interface HtmlElement {
 }
 
 /**
- * Interface pour un nœud Figma
+ * Interface for a Figma node
  */
 export interface FigmaNode {
   id: string;
@@ -35,7 +35,7 @@ export interface FigmaNode {
 }
 
 /**
- * Interface pour la communication entre l'extension et le plugin
+ * Interface for communication between the extension and the plugin
  */
 export interface ExtensionMessage {
   type: string;
@@ -43,7 +43,7 @@ export interface ExtensionMessage {
 }
 
 /**
- * Interface pour les données d'interface extraites
+ * Interface for extracted interface data
  */
 export interface ExtractedInterface {
   html: HtmlData;

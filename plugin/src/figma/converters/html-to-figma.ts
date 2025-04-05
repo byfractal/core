@@ -1,35 +1,35 @@
 import { FigmaNode, HtmlData } from "../../types/interfaces";
 
 /**
- * Convertit les données HTML en éléments Figma
- * Préserve la structure hiérarchique des éléments
+ * Converts HTML data to Figma elements
+ * Preserves the hierarchical structure of elements
  */
 export class HtmlToFigmaConverter {
   /**
-   * Convertit les données HTML en éléments Figma
-   * @param htmlData Les données HTML extraites
-   * @returns Les nœuds Figma générés
+   * Converts HTML data to Figma elements
+   * @param htmlData The extracted HTML data
+   * @returns The generated Figma nodes
    */
   public static convert(htmlData: HtmlData): FigmaNode[] {
-    // Transformation des données HTML en nœuds Figma
+    // Transform HTML data to Figma nodes
     const figmaNodes = this.transformHtmlToFigma(htmlData);
     return figmaNodes;
   }
 
   /**
-   * Transforme récursivement les éléments HTML en nœuds Figma
-   * @param htmlData Les données HTML
-   * @returns Les nœuds Figma
+   * Transform HTML data to Figma nodes
+   * @param htmlData The HTML data
+   * @returns The Figma nodes
    */
   private static transformHtmlToFigma(htmlData: HtmlData): FigmaNode[] {
     const nodes: FigmaNode[] = [];
 
-    // Parcours de chaque élément HTML
+    // Loop through each HTML element
     htmlData.elements.forEach((element) => {
-      // Création du nœud Figma correspondant
+      // Create the corresponding Figma node
       const figmaNode = this.createFigmaNode(element);
 
-      // Traitement des enfants si présents
+      // Process children if present
       if (element.children && element.children.length > 0) {
         figmaNode.children = this.transformHtmlToFigma({
           elements: element.children,
@@ -43,19 +43,19 @@ export class HtmlToFigmaConverter {
   }
 
   /**
-   * Crée un nœud Figma à partir d'un élément HTML
-   * @param element L'élément HTML
-   * @returns Le nœud Figma correspondant
+   * Create a Figma node from an HTML element
+   * @param element The HTML element
+   * @returns The corresponding Figma node
    */
   private static createFigmaNode(element: any): FigmaNode {
-    // Conversion des propriétés HTML en propriétés Figma
+    // Convert HTML properties to Figma properties
     const node: FigmaNode = {
       id: element.id || "",
       name: element.tagName || "Frame",
       type: this.mapHtmlTypeToFigma(element.tagName),
-      // Conversion des styles CSS en styles Figma
+      // Convert CSS styles to Figma styles
       style: this.convertCssToFigmaStyle(element.style),
-      // Conservation des métadonnées pour la traçabilité
+      // Preserve metadata for traceability
       metadata: {
         sourceId: element.id,
         className: element.className,
@@ -69,12 +69,12 @@ export class HtmlToFigmaConverter {
   }
 
   /**
-   * Mappe les types HTML vers les types Figma appropriés
-   * @param htmlType Le type HTML
-   * @returns Le type Figma correspondant
+   * Map HTML types to appropriate Figma types
+   * @param htmlType The HTML type
+   * @returns The corresponding Figma type
    */
   private static mapHtmlTypeToFigma(htmlType: string): string {
-    // Mapping des types HTML vers Figma
+    // Mapping of HTML types to Figma
     const typeMap: { [key: string]: string } = {
       div: "FRAME",
       span: "TEXT",
@@ -95,12 +95,12 @@ export class HtmlToFigmaConverter {
   }
 
   /**
-   * Convertit les styles CSS en styles Figma
-   * @param cssStyle Les styles CSS
-   * @returns Les styles Figma
+   * Convert CSS styles to Figma styles
+   * @param cssStyle The CSS styles
+   * @returns The Figma styles
    */
   private static convertCssToFigmaStyle(cssStyle: any): any {
-    // Conversion des propriétés CSS en propriétés Figma
+    // Convert CSS properties to Figma properties
     return {
       width: cssStyle.width,
       height: cssStyle.height,
