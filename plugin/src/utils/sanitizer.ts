@@ -2,6 +2,7 @@
  * HTML and CSS sanitization utilities to prevent XSS attacks and other security vulnerabilities
  * when converting HTML content to Figma nodes.
  */
+import { HtmlElementInterface, CssStyleInterface } from "../types/interfaces";
 
 /**
  * Sanitizes HTML content to prevent XSS attacks
@@ -36,7 +37,7 @@ export function sanitizeHtml(htmlContent: string): string {
  */
 export function sanitizeCssStyle(
   cssStyle: Record<string, any>
-): Record<string, any> {
+): CssStyleInterface {
   const sanitizedStyle: Record<string, any> = {};
   const dangerousProperties = [
     "expression",
@@ -44,34 +45,29 @@ export function sanitizeCssStyle(
     "javascript:",
     "behavior",
     "-moz-binding",
-    "url(", // Filter URL expressions which could lead to loading external resources
-    "position:fixed",
-    "position:absolute",
+    "url(",
   ];
 
+  // Filtrer les propriétés dangereuses
   for (const [property, value] of Object.entries(cssStyle)) {
-    // Skip dangerous CSS properties
     let isDangerous = false;
 
-    // Check if the property itself is dangerous
     if (dangerousProperties.some((dp) => property.includes(dp))) {
       isDangerous = true;
     }
 
-    // Check if the value contains dangerous content
     if (typeof value === "string") {
       if (dangerousProperties.some((dp) => value.includes(dp))) {
         isDangerous = true;
       }
     }
 
-    // Only add safe properties
     if (!isDangerous) {
       sanitizedStyle[property] = value;
     }
   }
 
-  return sanitizedStyle;
+  return sanitizedStyle as CssStyleInterface;
 }
 
 /**
@@ -84,25 +80,21 @@ export function sanitizeAttributes(
 ): Record<string, string> {
   const sanitizedAttributes: Record<string, string> = {};
   const dangerousAttributes = [
-    "on", // Catches onclick, onload, onerror, etc.
-    "xmlns", // Can be used for XXE attacks
+    "on",
+    "xmlns",
     "formaction",
     "xlink:href",
-    "data-", // Be cautious with data attributes
-    "src", // Needs special handling
-    "href", // Needs special handling
+    "data-",
+    "src",
+    "href",
   ];
 
   for (const [name, value] of Object.entries(attributes)) {
-    // Skip event handlers and other dangerous attributes
     let isDangerous = false;
 
-    // Check if the attribute name contains dangerous patterns
     for (const dangerousAttr of dangerousAttributes) {
       if (name.toLowerCase().startsWith(dangerousAttr)) {
-        // Special handling for src and href
         if ((name === "src" || name === "href") && isSafeUrl(value)) {
-          // Allow safe URLs
           isDangerous = false;
           break;
         } else {
@@ -112,7 +104,6 @@ export function sanitizeAttributes(
       }
     }
 
-    // Only add safe attributes
     if (!isDangerous) {
       sanitizedAttributes[name] = value;
     }
@@ -129,17 +120,14 @@ export function sanitizeAttributes(
 function isSafeUrl(url: string): boolean {
   const lowerUrl = url.toLowerCase().trim();
 
-  // Block javascript: and vbscript: protocols
   if (lowerUrl.startsWith("javascript:") || lowerUrl.startsWith("vbscript:")) {
     return false;
   }
 
-  // Only allow image data URLs
   if (lowerUrl.startsWith("data:")) {
     return lowerUrl.startsWith("data:image/");
   }
 
-  // Allow http, https, and relative URLs
   return (
     lowerUrl.startsWith("http:") ||
     lowerUrl.startsWith("https:") ||
