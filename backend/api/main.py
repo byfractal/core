@@ -16,7 +16,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from backend.api.feedback import feedback_router
 from backend.api.design import design_router
-from backend.api.routes.analysis_routes import router as analysis_router
+from backend.api.analysis import analysis_router
 
 # Create the main application
 app = FastAPI(
@@ -37,7 +37,7 @@ app.add_middleware(
 # Include routers
 app.mount("/feedback", feedback_router)
 app.mount("/design", design_router)
-app.include_router(analysis_router)
+app.mount("/analysis", analysis_router)
 
 @app.get("/")
 async def root():
