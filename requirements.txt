@@ -12,3 +12,21 @@ langchain-openai
 langchain-core
 openai
 tiktoken
+
+# FastAPI dependencies
+fastapi>=0.103.1
+uvicorn>=0.23.2
+pydantic>=2.4.2
+pydantic-settings>=2.0.3
+python-multipart>=0.0.6
+email-validator>=2.0.0
+
+# Database and storage
+supabase>=2.0.0
+psycopg2-binary>=2.9.7
+
+# Utility libraries
+httpx>=0.24.1
+python-jose>=3.3.0
+passlib>=1.7.4
+uuid>=1.30
