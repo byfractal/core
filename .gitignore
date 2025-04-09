@@ -63,3 +63,8 @@ datasets/collection_module/.vscode/
 # Ignore recommendations output
 recommendations_output.json
 recommendations_output_ranked.json
+
+# Security documentation (contains sensitive information)
+docs/security/
+backend/SECURITY_IMPLEMENTATION.md
+encryption_keys.json
