@@ -1,6 +1,5 @@
 import React from 'react';
 import { createRoot } from 'react-dom/client';
-import LoginPage from './components/login/LoginPage';
 import './styles.css';
 
 // Attendre que le DOM soit complètement chargé
@@ -12,12 +11,15 @@ document.addEventListener('DOMContentLoaded', () => {
     return;
   }
 
-  // Initialiser React
+  // Note: Nous utilisons maintenant directement ProjectsPage.html via iframe
+  // donc ce fichier React n'est pas activement utilisé pour le moment
+  
+  // Initialiser React (pour future utilisation)
   const root = createRoot(app);
   root.render(
     <React.StrictMode>
       <div className="flex items-center justify-center min-h-screen bg-white">
-        <LoginPage />
+        <div>Interface HCentric</div>
       </div>
     </React.StrictMode>
   );

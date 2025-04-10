@@ -50,6 +50,10 @@ module.exports = (env, argv) => {
           {
             from: './manifest.json',
             to: './',
+          },
+          {
+            from: './src/ui/ProjectsPage.html',
+            to: './ui/',
           }
         ],
       }),
