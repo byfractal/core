@@ -2,10 +2,10 @@
 Security module for the application.
 
 This module provides security-related functionality, including:
-- Authentication and authorization (JWT, OAuth2, MFA)
+- Authentication and authorization (JWT, OAuth2, MFA, Auth0)
 - Encryption (AES-256, key rotation)
 - Input validation and sanitization
-- Security middlewares (rate limiting, input validation, JWT validation)
+- Security middlewares (rate limiting, input validation, JWT validation, Auth0)
 """
 
 from backend.security.auth import (
@@ -37,132 +37,90 @@ from backend.security.auth import (
     get_current_admin_user,
 )
 
+from backend.security.auth0 import (
+    # Auth0 authentication functions
+    validate_jwt,
+    get_current_user as get_auth0_user,
+    
+    # Auth0 models
+    Auth0User,
+    Auth0JWTError,
+    
+    # Auth0 decorators
+    requires_auth,
+    requires_scopes,
+)
+
 from backend.security.encryption import (
-    # High-level encryption
-    Encryptor,
-    encrypt_string,
-    decrypt_string,
-    
-    # Low-level encryption
-    AES256Cipher,
+    # Encryption utilities
     EncryptionKeyManager,
-    
-    # Cryptographic primitives
-    secure_hash,
-    hmac_sign,
-    hmac_verify,
+    encrypt_data,
+    decrypt_data,
+    hash_data,
+    verify_hash,
+    generate_secure_key,
+    generate_secure_token,
 )
 
 from backend.security.validation import (
-    # Validation functions
-    is_valid_email,
-    is_strong_password,
-    is_valid_url,
-    is_valid_uuid,
-    is_valid_date,
-    is_within_length,
-    is_numeric,
-    is_alpha,
-    is_alphanumeric,
-    is_valid_phone,
-    
-    # Sanitization functions
+    # Validation utilities
+    validate_email,
+    validate_password,
+    sanitize_input,
     sanitize_html,
-    normalize_string,
-    strip_non_printable_chars,
-    sanitize_filename,
-    sanitize_sql_identifier,
-    
-    # Generator functions
-    generate_secure_random_string,
-    generate_secure_password,
-    
-    # Utility functions
-    validate_and_normalize,
+    validate_url,
+    validate_uuid,
+    validate_date,
+    validate_phone,
+    validate_ip_address,
 )
 
-from backend.security.middlewares.jwt import (
+from backend.security.middlewares import (
+    # JWT middleware
     JWTMiddleware,
     add_jwt_middleware,
-)
-
-from backend.security.middlewares.rate_limiter import (
+    
+    # Auth0 middleware
+    Auth0Middleware,
+    add_auth0_middleware,
+    
+    # Rate limiting middleware
     RateLimitMiddleware,
-    RateLimitStrategy,
-    FixedWindowStrategy,
-    SlidingWindowStrategy,
-    RateLimitConfig,
     add_rate_limit_middleware,
-)
-
-from backend.security.middlewares.input_validation import (
+    RateLimitStrategy,
+    
+    # Input validation middleware
     InputValidationMiddleware,
-    InputValidationRule,
     add_input_validation_middleware,
+    InputValidationRule,
+    
+    # Middleware configuration function
+    configure_security_middlewares,
 )
 
 __all__ = [
-    # Auth module
-    "verify_password",
-    "get_password_hash",
-    "create_access_token",
-    "create_refresh_token",
-    "create_tokens",
-    "blacklist_token",
-    "refresh_access_token",
-    "generate_mfa_secret",
-    "get_totp_code",
-    "verify_totp_code",
-    "get_provisional_qr_code",
-    "User",
-    "Token",
-    "TokenData",
-    "Role",
-    "TokenType",
-    "get_current_user",
-    "get_current_active_user",
+    # Auth module exports
+    "verify_password", "get_password_hash", "create_access_token", "create_refresh_token",
+    "create_tokens", "blacklist_token", "refresh_access_token", "generate_mfa_secret",
+    "get_totp_code", "verify_totp_code", "get_provisional_qr_code", "User", "Token", 
+    "TokenData", "Role", "TokenType", "get_current_user", "get_current_active_user", 
     "get_current_admin_user",
     
-    # Encryption module
-    "Encryptor",
-    "encrypt_string",
-    "decrypt_string",
-    "AES256Cipher",
-    "EncryptionKeyManager",
-    "secure_hash",
-    "hmac_sign",
-    "hmac_verify",
+    # Auth0 module exports
+    "validate_jwt", "get_auth0_user", "Auth0User", "Auth0JWTError", "requires_auth", 
+    "requires_scopes",
     
-    # Validation module
-    "is_valid_email",
-    "is_strong_password",
-    "is_valid_url",
-    "is_valid_uuid",
-    "is_valid_date",
-    "is_within_length",
-    "is_numeric",
-    "is_alpha",
-    "is_alphanumeric",
-    "is_valid_phone",
-    "sanitize_html",
-    "normalize_string",
-    "strip_non_printable_chars",
-    "sanitize_filename",
-    "sanitize_sql_identifier",
-    "generate_secure_random_string",
-    "generate_secure_password",
-    "validate_and_normalize",
+    # Encryption module exports
+    "EncryptionKeyManager", "encrypt_data", "decrypt_data", "hash_data", "verify_hash",
+    "generate_secure_key", "generate_secure_token",
     
-    # Middleware modules
-    "JWTMiddleware",
-    "add_jwt_middleware",
-    "RateLimitMiddleware",
-    "RateLimitStrategy",
-    "FixedWindowStrategy",
-    "SlidingWindowStrategy",
-    "RateLimitConfig",
-    "add_rate_limit_middleware",
-    "InputValidationMiddleware",
-    "InputValidationRule",
-    "add_input_validation_middleware",
+    # Validation module exports
+    "validate_email", "validate_password", "sanitize_input", "sanitize_html", "validate_url",
+    "validate_uuid", "validate_date", "validate_phone", "validate_ip_address",
+    
+    # Middleware exports
+    "JWTMiddleware", "add_jwt_middleware", "Auth0Middleware", "add_auth0_middleware",
+    "RateLimitMiddleware", "add_rate_limit_middleware", "RateLimitStrategy",
+    "InputValidationMiddleware", "add_input_validation_middleware", "InputValidationRule",
+    "configure_security_middlewares",
 ]

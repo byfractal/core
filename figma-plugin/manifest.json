@@ -1,0 +1,13 @@
+{
+  "name": "HCentric UI/UX Optimizer",
+  "id": "hcentric-ui-ux-optimizer",
+  "api": "1.0.0",
+  "main": "dist/code.js",
+  "ui": "dist/ui.html",
+  "editorType": ["figma"],
+  "permissions": [],
+  "networkAccess": {
+    "allowedDomains": ["*"],
+    "reasoning": "The plugin needs to connect to authentication services and analytics APIs to process user data and optimize UI/UX designs."
+  }
+} 
