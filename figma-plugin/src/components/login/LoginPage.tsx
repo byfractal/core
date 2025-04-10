@@ -1,201 +1,157 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect } from 'react';
 
-declare global {
-  interface Window {
-    sendToPlugin: (msg: any) => void;
-  }
+// Define plugin message types for better type safety
+interface PluginMessage {
+  type: string;
+  [key: string]: any;
 }
 
-export function LoginPage() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [passwordVisible, setPasswordVisible] = useState(false);
+const LoginPage: React.FC = () => {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [isPasswordVisible, setIsPasswordVisible] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [errorMessage, setErrorMessage] = useState("");
+  const [errorMessage, setErrorMessage] = useState('');
 
-  // Communication avec le plugin Figma
   useEffect(() => {
-    // Envoyer un signal que le composant est monté
-    if (window.sendToPlugin) {
-      window.sendToPlugin({ type: 'UI_READY' });
-    }
-
-    // Écouter les réponses du plugin
+    // Listen for messages from the plugin
     const handleMessage = (event: MessageEvent) => {
-      if (event.data.pluginMessage && event.data.pluginMessage.type === 'LOGIN_RESPONSE') {
-        setIsLoading(false);
-        if (event.data.pluginMessage.success) {
-          // Login réussi - vous pourriez rediriger ici
-          console.log("Login successful!");
-        } else {
-          // Login échoué
-          setErrorMessage(event.data.pluginMessage.message || "Authentication failed");
+      if (event.data.pluginMessage) {
+        const msg = event.data.pluginMessage;
+        console.log("Message from plugin:", msg);
+        
+        if (msg.type === 'LOGIN_RESPONSE') {
+          setIsLoading(false);
+          if (msg.success) {
+            console.log('Login successful!');
+          } else {
+            setErrorMessage(msg.message || 'Authentication failed');
+          }
         }
       }
     };
 
-    // Ajouter l'écouteur d'événements
     window.addEventListener('message', handleMessage);
-
-    // Nettoyer l'écouteur à la destruction du composant
-    return () => {
-      window.removeEventListener('message', handleMessage);
-    };
+    return () => window.removeEventListener('message', handleMessage);
   }, []);
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    setErrorMessage("");
-
-    if (window.sendToPlugin) {
-      window.sendToPlugin({
+    setErrorMessage('');
+    
+    // Send message to plugin
+    parent.postMessage({
+      pluginMessage: {
         type: 'login',
         email,
         password
-      });
-    } else {
-      console.error("sendToPlugin is not available");
-      setIsLoading(false);
-      setErrorMessage("Plugin communication error");
-    }
+      }
+    }, '*');
   };
 
-  const togglePassword = () => setPasswordVisible(!passwordVisible);
+  const togglePasswordVisibility = () => {
+    setIsPasswordVisible(!isPasswordVisible);
+  };
 
   return (
-    <div className="flex flex-col w-[350px] p-6 space-y-6 bg-white rounded-lg">
-      {/* Titre */}
-      <h1 className="text-3xl font-semibold text-[#0F172A] -tracking-[0.75%]">
-        Login
-      </h1>
+    <div className="flex flex-col w-full h-full bg-white">
+      <div className="p-6 flex-1">
+        <div className="w-full max-w-[350px] mx-auto space-y-6">
+          <div className="space-y-2">
+            <h1 className="text-3xl font-semibold text-[#0F172A] tracking-tight">Login</h1>
+            <p className="text-sm text-[#64748B]">Enter your email and password to login to your account</p>
+          </div>
 
-      {/* Sous-titre / Description */}
-      <p className="text-sm text-[#64748B]">
-        Enter your email and password to login to your account
-      </p>
+          {errorMessage && (
+            <div className="bg-red-50 text-red-500 p-2 rounded-md text-sm border border-red-200">
+              {errorMessage}
+            </div>
+          )}
 
-      {errorMessage && (
-        <div className="text-red-500 text-sm font-medium bg-red-50 p-2 rounded border border-red-200">
-          {errorMessage}
-        </div>
-      )}
-
-      <form onSubmit={handleLogin} className="flex flex-col space-y-4">
-        {/* Input Email */}
-        <div className="flex flex-col space-y-2">
-          <label className="text-sm font-medium text-[#0F172A]">
-            Email
-          </label>
-          <input
-            type="email"
-            placeholder="johndoe@mail.com"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="h-10 px-3 py-2 border border-[#CBD5E1] rounded-md shadow-[0px_1px_5px_0px_rgba(0,0,0,0.07)] text-sm outline-none focus:ring-2 focus:ring-blue-500"
-            required
-            disabled={isLoading}
-          />
-        </div>
-
-        {/* Input Password */}
-        <div className="flex flex-col space-y-1">
-          <div className="flex flex-col space-y-2">
-            <label className="text-sm font-medium text-[#0F172A]">
-              Password
-            </label>
-            <div className="relative">
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="space-y-2">
+              <label htmlFor="email" className="block text-sm font-medium text-[#0F172A]">
+                Email
+              </label>
               <input
-                type={passwordVisible ? "text" : "password"}
-                placeholder="******"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full h-10 px-3 py-2 border border-[#CBD5E1] rounded-md shadow-[0px_1px_5px_0px_rgba(0,0,0,0.07)] text-sm outline-none focus:ring-2 focus:ring-blue-500 pr-10"
+                type="email"
+                id="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="johndoe@mail.com"
+                className="w-full h-10 px-3 py-2 border border-[#CBD5E1] rounded-md text-sm shadow-[0px_1px_2px_rgba(0,0,0,0.05)] focus:outline-none focus:ring-1 focus:ring-[#0F172A] focus:border-[#0F172A]"
                 required
-                disabled={isLoading}
               />
+            </div>
+
+            <div className="space-y-1">
+              <div className="space-y-2">
+                <label htmlFor="password" className="block text-sm font-medium text-[#0F172A]">
+                  Password
+                </label>
+                <div className="relative">
+                  <input
+                    type={isPasswordVisible ? 'text' : 'password'}
+                    id="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="******"
+                    className="w-full h-10 px-3 py-2 border border-[#CBD5E1] rounded-md text-sm shadow-[0px_1px_2px_rgba(0,0,0,0.05)] focus:outline-none focus:ring-1 focus:ring-[#0F172A] focus:border-[#0F172A]"
+                    required
+                  />
+                  <button
+                    type="button"
+                    onClick={togglePasswordVisibility}
+                    className="absolute right-3 top-2.5 text-[#64748B]"
+                  >
+                    {isPasswordVisible ? (
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                        <path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"></path>
+                        <path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"></path>
+                        <path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"></path>
+                        <line x1="2" x2="22" y1="2" y2="22"></line>
+                      </svg>
+                    ) : (
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                        <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"></path>
+                        <circle cx="12" cy="12" r="3"></circle>
+                      </svg>
+                    )}
+                  </button>
+                </div>
+              </div>
+              <div className="text-right">
+                <a href="#" className="text-xs text-[#64748B] hover:text-[#334155]">
+                  Forgot your password?
+                </a>
+              </div>
+            </div>
+
+            <div className="space-y-3 pt-2">
               <button
-                type="button"
-                onClick={togglePassword}
-                className="absolute right-3 top-2.5 text-[#848484]"
+                type="submit"
+                className="w-full h-9 bg-[#0F172A] text-white rounded-md text-sm font-medium shadow-sm hover:bg-[#1E293B] focus:outline-none focus:ring-2 focus:ring-[#0F172A] focus:ring-offset-2 disabled:opacity-70 transition-colors"
                 disabled={isLoading}
               >
-                {passwordVisible ? (
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="20"
-                    height="20"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="1.5"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"></path>
-                    <path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"></path>
-                    <path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"></path>
-                    <line x1="2" x2="22" y1="2" y2="22"></line>
-                  </svg>
-                ) : (
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="20"
-                    height="20"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="1.5"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"></path>
-                    <circle cx="12" cy="12" r="3"></circle>
-                  </svg>
-                )}
+                {isLoading ? 'Logging in...' : 'Login'}
+              </button>
+              <button
+                type="button"
+                className="w-full h-9 bg-white text-[#0F172A] border border-[#CBD5E1] rounded-md text-sm font-medium shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-[#0F172A] focus:ring-offset-2 transition-colors"
+              >
+                Login with Google
               </button>
             </div>
-          </div>
-          <div className="flex justify-end">
-            <a
-              href="#"
-              className="text-xs font-medium text-[#848484] hover:text-[#0F172A]"
-            >
-              Forgot your password?
-            </a>
+          </form>
+
+          <div className="text-center text-sm font-medium text-[#0F172A]">
+            Don't have an account ? <a href="#" className="underline">Sign up</a>
           </div>
         </div>
-
-        {/* Boutons */}
-        <div className="flex flex-col space-y-4 pt-2">
-          {/* Login Button */}
-          <button
-            type="submit"
-            className="w-full h-9 bg-[#0F172A] text-white font-medium text-sm rounded-md shadow-[0px_1px_5px_0px_rgba(0,0,0,0.07)] hover:bg-[#1e293b] transition-colors disabled:opacity-70 disabled:cursor-not-allowed"
-            disabled={isLoading}
-          >
-            {isLoading ? "Logging in..." : "Login"}
-          </button>
-
-          {/* Google Login Button */}
-          <button
-            type="button"
-            className="w-full h-9 bg-white text-[#0F172A] font-medium text-sm border border-[#CBD5E1] rounded-md shadow-[0px_1px_5px_0px_rgba(0,0,0,0.07)] hover:bg-gray-50 transition-colors disabled:opacity-70 disabled:cursor-not-allowed"
-            disabled={isLoading}
-            onClick={() => console.log("Google login")}
-          >
-            Login with Google
-          </button>
-        </div>
-      </form>
-
-      {/* Sign Up Text */}
-      <div className="flex items-center justify-center space-x-1 text-sm font-medium">
-        <span className="text-[#0F172A]">Don't have an account ?</span>
-        <a href="#" className="text-[#0F172A] underline">
-          Sign up
-        </a>
       </div>
     </div>
   );
-} 
+};
+
+export default LoginPage;

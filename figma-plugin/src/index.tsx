@@ -1,21 +1,28 @@
 import React from 'react';
-import ReactDOM from 'react-dom/client';
-import { LoginPage } from './components/login';
+import { createRoot } from 'react-dom/client';
+import LoginPage from './components/login/LoginPage';
 import './styles.css';
 
-// Simple wrapper pour le contenu
-function App() {
-  return (
-    <div className="flex items-center justify-center min-h-screen bg-white">
-      <LoginPage />
-    </div>
-  );
-}
+// Attendre que le DOM soit complètement chargé
+document.addEventListener('DOMContentLoaded', () => {
+  // Récupérer l'élément app et vérifier qu'il existe
+  const app = document.getElementById('app');
+  if (!app) {
+    console.error("L'élément #app n'a pas été trouvé");
+    return;
+  }
 
-// Montage direct de l'application
-const root = document.getElementById('root');
-if (root) {
-  ReactDOM.createRoot(root).render(
-    <App />
+  // Initialiser React
+  const root = createRoot(app);
+  root.render(
+    <React.StrictMode>
+      <div className="flex items-center justify-center min-h-screen bg-white">
+        <LoginPage />
+      </div>
+    </React.StrictMode>
   );
-} 
+
+  // Notifier le plugin que l'UI est prête via postMessage
+  console.log("UI Ready - Sending message to plugin");
+  parent.postMessage({ pluginMessage: { type: 'UI_READY' } }, '*');
+}); 

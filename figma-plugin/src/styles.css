@@ -6,19 +6,22 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
 /* Styles globaux */
-body {
-  font-family: 'Inter', sans-serif;
+body, html {
   margin: 0;
   padding: 0;
-  background-color: white;
+  height: 100%;
+  overflow: hidden;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
 }
 
-#root {
+#app {
+  height: 100%;
   width: 100%;
-  height: 100vh;
   display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
+  background-color: white;
 }
 
 /* Styles spécifiques pour le plugin Figma */
@@ -123,4 +126,29 @@ body {
 /* Animation styles */
 .shimmer {
   @apply relative overflow-hidden bg-gradient-to-r from-transparent via-white to-transparent animate-shine bg-[size:300%_100%] bg-no-repeat;
+}
+
+/* Custom utility classes */
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}
+
+/* Plugin specific styles */
+.figma-plugin-wrapper {
+  max-width: 400px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+/* Custom component styles */
+.password-toggle-icon {
+  cursor: pointer;
+  color: #64748b;
+  transition: color 0.2s ease;
+}
+
+.password-toggle-icon:hover {
+  color: #334155;
 } 

@@ -10,4 +10,4 @@
     "allowedDomains": ["*"],
     "reasoning": "The plugin needs to connect to authentication services and analytics APIs to process user data and optimize UI/UX designs."
   }
-} 
+}

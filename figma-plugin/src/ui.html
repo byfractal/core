@@ -1,120 +1,166 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>HCentric UI/UX Optimizer</title>
   <style>
-    body, html {
-      margin: 0;
-      padding: 0;
-      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-      height: 100%;
+    /* Reset et styles de base */
+    *, *::before, *::after {
       box-sizing: border-box;
     }
     
-    .container {
-      max-width: 350px;
-      margin: 0 auto;
-      padding: 24px;
-      display: flex;
-      flex-direction: column;
-      gap: 24px;
+    body, html {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      -webkit-font-smoothing: antialiased;
+      overflow: hidden;
     }
     
+    body {
+      display: flex;
+      flex-direction: column;
+      background-color: white;
+      justify-content: center;
+      min-height: 100%;
+    }
+    
+    .container {
+      padding: 24px;
+      max-width: 350px;
+      margin: 0 auto;
+      width: 100%;
+    }
+    
+    /* Typographie */
     h1 {
       font-size: 30px;
       font-weight: 600;
       color: #0F172A;
-      margin: 0;
+      margin: 0 0 8px 0;
+      line-height: 1.2;
     }
     
     p {
       font-size: 14px;
       color: #64748B;
-      margin: 0;
+      margin: 0 0 24px 0;
+      line-height: 1.5;
     }
     
+    /* Formulaire */
     .form-group {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
+      margin-bottom: 16px;
     }
     
     label {
+      display: block;
       font-size: 14px;
       font-weight: 500;
       color: #0F172A;
+      margin-bottom: 8px;
     }
     
     input {
+      width: 100%;
       height: 40px;
       padding: 0 12px;
+      font-size: 14px;
       border: 1px solid #CBD5E1;
       border-radius: 6px;
-      font-size: 14px;
-      box-shadow: 0px 1px 5px 0px rgba(0,0,0,0.07);
+      background-color: #fff;
+      outline: none;
+      transition: all 0.2s;
+      box-shadow: 0px 1px 2px rgba(0, 0, 0, 0.05);
     }
     
+    input:focus {
+      border-color: #0F172A;
+      box-shadow: 0 0 0 1px #0F172A;
+    }
+    
+    /* Password field */
     .password-group {
       position: relative;
     }
     
-    .toggle-btn {
+    .toggle-password {
       position: absolute;
       right: 12px;
-      top: 10px;
+      top: 50%;
+      transform: translateY(-50%);
       background: none;
       border: none;
+      padding: 0;
       cursor: pointer;
-      color: #848484;
+      color: #64748B;
     }
     
     .forgot-link {
+      display: block;
       text-align: right;
       font-size: 12px;
       margin-top: 4px;
     }
     
     .forgot-link a {
-      color: #848484;
-      font-weight: 500;
+      color: #64748B;
       text-decoration: none;
+      transition: color 0.2s;
     }
     
+    .forgot-link a:hover {
+      color: #334155;
+    }
+    
+    /* Buttons */
     .button-group {
       display: flex;
       flex-direction: column;
-      gap: 16px;
-      margin-top: 8px;
+      gap: 12px;
+      margin-top: 24px;
     }
     
     button {
-      height: 36px;
-      border-radius: 6px;
+      height: 44px;
+      padding: 0 16px;
       font-size: 14px;
       font-weight: 500;
+      border-radius: 6px;
       cursor: pointer;
-      box-shadow: 0px 1px 5px 0px rgba(0,0,0,0.07);
+      transition: all 0.2s;
+      box-shadow: 0px 1px 2px rgba(0, 0, 0, 0.05);
     }
     
     .btn-primary {
-      background: #0F172A;
+      background-color: #0F172A;
       color: white;
       border: none;
     }
     
+    .btn-primary:hover {
+      background-color: #1E293B;
+    }
+    
     .btn-outline {
-      background: white;
+      background-color: white;
       color: #0F172A;
       border: 1px solid #CBD5E1;
     }
     
+    .btn-outline:hover {
+      background-color: #F8FAFC;
+    }
+    
+    /* Sign up link */
     .signup-text {
       text-align: center;
       font-size: 14px;
       font-weight: 500;
       color: #0F172A;
+      margin-top: 32px;
     }
     
     .signup-text a {
@@ -122,24 +168,29 @@
       text-decoration: underline;
     }
     
-    .error {
-      background: #FEF2F2;
+    /* Error message */
+    .error-message {
+      background-color: #FEF2F2;
       color: #EF4444;
-      padding: 8px;
+      padding: 8px 12px;
       border-radius: 6px;
       font-size: 14px;
       border: 1px solid #FCA5A5;
+      margin-bottom: 16px;
       display: none;
+    }
+    
+    .error-message.visible {
+      display: block;
     }
   </style>
 </head>
 <body>
   <div class="container">
     <h1>Login</h1>
-    
     <p>Enter your email and password to login to your account</p>
     
-    <div id="error-message" class="error"></div>
+    <div id="error-message" class="error-message"></div>
     
     <form id="login-form">
       <div class="form-group">
@@ -147,11 +198,11 @@
         <input type="email" id="email" placeholder="johndoe@mail.com" required>
       </div>
       
-      <div class="form-group" style="margin-top: 16px;">
+      <div class="form-group">
         <label for="password">Password</label>
         <div class="password-group">
           <input type="password" id="password" placeholder="******" required>
-          <button type="button" class="toggle-btn" id="toggle-password">
+          <button type="button" class="toggle-password" id="toggle-password">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
               <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"></path>
               <circle cx="12" cy="12" r="3"></circle>
@@ -165,24 +216,23 @@
       
       <div class="button-group">
         <button type="submit" class="btn-primary" id="login-button">Login</button>
-        <button type="button" class="btn-outline">Login with Google</button>
+        <button type="button" class="btn-outline" id="google-login">Login with Google</button>
       </div>
     </form>
     
     <div class="signup-text">
-      <span>Don't have an account ? </span>
-      <a href="#">Sign up</a>
+      Don't have an account ? <a href="#">Sign up</a>
     </div>
   </div>
-  
+
   <script>
-    // Communication avec le plugin Figma
+    // Elements
     const loginForm = document.getElementById('login-form');
     const emailInput = document.getElementById('email');
     const passwordInput = document.getElementById('password');
-    const loginButton = document.getElementById('login-button');
     const togglePassword = document.getElementById('toggle-password');
     const errorMessage = document.getElementById('error-message');
+    const loginButton = document.getElementById('login-button');
     
     // Toggle password visibility
     togglePassword.addEventListener('click', () => {
@@ -211,21 +261,17 @@
     loginForm.addEventListener('submit', (e) => {
       e.preventDefault();
       
-      // Get values
-      const email = emailInput.value;
-      const password = passwordInput.value;
-      
-      // Update UI for loading state
+      // Disable button and show loading state
       loginButton.disabled = true;
       loginButton.textContent = 'Logging in...';
-      errorMessage.style.display = 'none';
+      errorMessage.classList.remove('visible');
       
       // Send message to plugin code
       parent.postMessage({ 
         pluginMessage: {
           type: 'login',
-          email: email,
-          password: password
+          email: emailInput.value,
+          password: passwordInput.value
         }
       }, '*');
     });
@@ -243,11 +289,11 @@
           
           if (msg.success) {
             console.log('Login successful!');
-            // Could redirect here
+            // Could redirect here or show success message
           } else {
             // Show error
             errorMessage.textContent = msg.message || 'Authentication failed';
-            errorMessage.style.display = 'block';
+            errorMessage.classList.add('visible');
           }
         }
       }

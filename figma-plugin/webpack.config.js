@@ -1,7 +1,5 @@
 const path = require('path');
-const HtmlWebpackPlugin = require('html-webpack-plugin');
 const CopyPlugin = require('copy-webpack-plugin');
-const fs = require('fs');
 
 module.exports = (env, argv) => {
   const isProduction = argv.mode === 'production';
@@ -10,7 +8,7 @@ module.exports = (env, argv) => {
     mode: isProduction ? 'production' : 'development',
     devtool: isProduction ? false : 'inline-source-map',
     entry: {
-      code: './src/code.ts',
+      code: './src/code.ts'
     },
     module: {
       rules: [
@@ -33,7 +31,7 @@ module.exports = (env, argv) => {
       ],
     },
     resolve: {
-      extensions: ['.tsx', '.ts', '.js'],
+      extensions: ['.tsx', '.ts', '.js', '.jsx'],
       alias: {
         '@': path.resolve(__dirname, 'src'),
       },
@@ -49,6 +47,10 @@ module.exports = (env, argv) => {
             from: './src/ui.html',
             to: './ui.html',
           },
+          {
+            from: './manifest.json',
+            to: './',
+          }
         ],
       }),
     ],
