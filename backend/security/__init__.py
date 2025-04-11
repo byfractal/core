@@ -1,13 +1,33 @@
 """
 Security module for the application.
 
-This module provides security-related functionality, including:
-- Authentication and authorization (JWT, OAuth2, MFA, Auth0)
-- Encryption (AES-256, key rotation)
-- Input validation and sanitization
-- Security middlewares (rate limiting, input validation, JWT validation, Auth0)
+Note: Authentication has been migrated to Clerk.
+Validation and encryption utilities have been moved to the utils package.
+This module maintains imports for backwards compatibility.
 """
 
+# Import validation and encryption utilities from utils for backward compatibility
+from backend.utils.validation import (
+    is_valid_email as validate_email,
+    is_strong_password as validate_password,
+    sanitize_html,
+    is_valid_url as validate_url,
+    is_valid_uuid as validate_uuid,
+    is_valid_date as validate_date,
+    is_valid_phone as validate_phone,
+    # Add any other validation functions you need
+)
+
+from backend.utils.encryption import (
+    Encryptor,
+    encrypt_string as encrypt_data,
+    decrypt_string as decrypt_data,
+    secure_hash as hash_data,
+    hmac_verify as verify_hash,
+    # Add any other encryption functions you need
+)
+
+# Keep the auth module imports
 from backend.security.auth import (
     # Authentication and authorization functions
     verify_password,
@@ -37,52 +57,13 @@ from backend.security.auth import (
     get_current_admin_user,
 )
 
-from backend.security.auth0 import (
-    # Auth0 authentication functions
-    validate_jwt,
-    get_current_user as get_auth0_user,
-    
-    # Auth0 models
-    Auth0User,
-    Auth0JWTError,
-    
-    # Auth0 decorators
-    requires_auth,
-    requires_scopes,
-)
-
-from backend.security.encryption import (
-    # Encryption utilities
-    EncryptionKeyManager,
-    encrypt_data,
-    decrypt_data,
-    hash_data,
-    verify_hash,
-    generate_secure_key,
-    generate_secure_token,
-)
-
-from backend.security.validation import (
-    # Validation utilities
-    validate_email,
-    validate_password,
-    sanitize_input,
-    sanitize_html,
-    validate_url,
-    validate_uuid,
-    validate_date,
-    validate_phone,
-    validate_ip_address,
-)
+# Remove Auth0 imports since they're deprecated
+# Add Clerk imports here when implemented
 
 from backend.security.middlewares import (
     # JWT middleware
     JWTMiddleware,
     add_jwt_middleware,
-    
-    # Auth0 middleware
-    Auth0Middleware,
-    add_auth0_middleware,
     
     # Rate limiting middleware
     RateLimitMiddleware,
@@ -106,20 +87,15 @@ __all__ = [
     "TokenData", "Role", "TokenType", "get_current_user", "get_current_active_user", 
     "get_current_admin_user",
     
-    # Auth0 module exports
-    "validate_jwt", "get_auth0_user", "Auth0User", "Auth0JWTError", "requires_auth", 
-    "requires_scopes",
+    # Encryption module exports (renamed from utils)
+    "Encryptor", "encrypt_data", "decrypt_data", "hash_data", "verify_hash",
     
-    # Encryption module exports
-    "EncryptionKeyManager", "encrypt_data", "decrypt_data", "hash_data", "verify_hash",
-    "generate_secure_key", "generate_secure_token",
-    
-    # Validation module exports
-    "validate_email", "validate_password", "sanitize_input", "sanitize_html", "validate_url",
-    "validate_uuid", "validate_date", "validate_phone", "validate_ip_address",
+    # Validation module exports (renamed from utils)
+    "validate_email", "validate_password", "sanitize_html", "validate_url",
+    "validate_uuid", "validate_date", "validate_phone",
     
     # Middleware exports
-    "JWTMiddleware", "add_jwt_middleware", "Auth0Middleware", "add_auth0_middleware",
+    "JWTMiddleware", "add_jwt_middleware", 
     "RateLimitMiddleware", "add_rate_limit_middleware", "RateLimitStrategy",
     "InputValidationMiddleware", "add_input_validation_middleware", "InputValidationRule",
     "configure_security_middlewares",

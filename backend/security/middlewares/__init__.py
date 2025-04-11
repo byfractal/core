@@ -3,9 +3,10 @@ Security middlewares for FastAPI applications.
 
 This module provides security-related middleware for FastAPI applications, including:
 - JWT authentication middleware
-- Auth0 authentication middleware
 - Rate limiting middleware
 - Input validation middleware
+
+Note: Auth0 middleware has been deprecated as the project is migrating to Clerk.
 """
 
 from backend.security.middlewares.jwt import (
@@ -13,10 +14,8 @@ from backend.security.middlewares.jwt import (
     add_jwt_middleware,
 )
 
-from backend.security.middlewares.auth0 import (
-    Auth0Middleware,
-    add_auth0_middleware,
-)
+# Auth0 middleware removed as part of migration to Clerk
+# Future Clerk middleware will be added here
 
 from backend.security.middlewares.rate_limiter import (
     RateLimitMiddleware,
@@ -35,7 +34,6 @@ from backend.security.middlewares.input_validation import (
 
 def configure_security_middlewares(
     app,
-    use_auth0=False,
     jwt_secret_key=None,
     redis_url=None,
     global_rate_limit=None,
@@ -50,7 +48,6 @@ def configure_security_middlewares(
     
     Args:
         app: The FastAPI application
-        use_auth0: Whether to use Auth0 authentication instead of JWT
         jwt_secret_key: Secret key for JWT validation
         redis_url: URL for Redis connection (for rate limiting)
         global_rate_limit: Global rate limit for all endpoints
@@ -62,6 +59,9 @@ def configure_security_middlewares(
         
     Returns:
         The FastAPI application with middlewares added
+        
+    Note:
+        Auth0 support has been removed. Integration with Clerk is planned.
     """
     # Add input validation middleware
     if input_validation_rules:
@@ -77,14 +77,8 @@ def configure_security_middlewares(
             custom_limits=custom_rate_limits
         )
     
-    # Add authentication middleware (either JWT or Auth0)
-    if use_auth0:
-        app = add_auth0_middleware(
-            app,
-            public_paths=public_paths,
-            public_path_prefixes=public_path_prefixes
-        )
-    elif jwt_secret_key:
+    # Add authentication middleware (JWT)
+    if jwt_secret_key:
         app = add_jwt_middleware(
             app, 
             secret_key=jwt_secret_key,
@@ -95,6 +89,8 @@ def configure_security_middlewares(
     return app
 
 __all__ = [
+    "JWTMiddleware",
+    "add_jwt_middleware",
     "RateLimitMiddleware",
     "RateLimitStrategy",
     "FixedWindowStrategy",

@@ -1,8 +1,8 @@
 /// <reference types="@figma/plugin-typings" />
 
-// Plugin window dimensions - ajusté selon la maquette
-const WIDTH = 400;
-const HEIGHT = 600; // Hauteur réduite pour mieux correspondre à la maquette
+
+const WIDTH = 450;
+const HEIGHT = 650; // 
 
 // Show UI with specified dimensions
 figma.showUI(__html__, { 

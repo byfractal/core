@@ -44,7 +44,7 @@ module.exports = (env, argv) => {
       new CopyPlugin({
         patterns: [
           {
-            from: './src/ui.html',
+            from: './src/ui/ProjectsPage.html',
             to: './ui.html',
           },
           {
