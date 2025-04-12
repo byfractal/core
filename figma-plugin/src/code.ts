@@ -1,15 +1,76 @@
 /// <reference types="@figma/plugin-typings" />
 
-
+// UI Configuration
 const WIDTH = 450;
-const HEIGHT = 650; // 
+const HEIGHT = 650; 
 
-// Show UI with specified dimensions
-figma.showUI(__html__, { 
-  width: WIDTH, 
-  height: HEIGHT,
-  themeColors: true // Use Figma theme colors
-});
+// HTML pages
+const HTML_PAGES = {
+  PROJECTS: __html__,  // Default UI
+  IMPORT: `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Import Project</title>
+  <style>
+    body, html {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      width: 100%;
+      overflow: hidden;
+    }
+    iframe {
+      border: none;
+      width: 100%;
+      height: 100%;
+    }
+  </style>
+</head>
+<body>
+  <iframe src="./src/ui/ImportPage.html"></iframe>
+</body>
+</html>
+  `
+};
+
+// Current page tracker
+let currentPage: 'PROJECTS' | 'IMPORT' = 'PROJECTS';
+
+// Handle command from menu selection
+figma.command && handleCommand(figma.command);
+
+function handleCommand(command: string) {
+  switch (command) {
+    case 'projects':
+      currentPage = 'PROJECTS';
+      break;
+    case 'import':
+      currentPage = 'IMPORT';
+      break;
+    default:
+      // Default to projects page
+      currentPage = 'PROJECTS';
+  }
+  
+  // Show the appropriate UI
+  figma.showUI(HTML_PAGES[currentPage], { 
+    width: WIDTH, 
+    height: HEIGHT,
+    themeColors: true
+  });
+}
+
+// If no command is specified, show default UI
+if (!figma.command) {
+  // Show UI with specified dimensions
+  figma.showUI(HTML_PAGES[currentPage], { 
+    width: WIDTH, 
+    height: HEIGHT,
+    themeColors: true // Use Figma theme colors
+  });
+}
 
 console.log("Plugin UI launched");
 
@@ -68,11 +129,65 @@ figma.ui.onmessage = (msg) => {
         
       case 'ADD_PROJECT':
         console.log("Add new project requested");
-        // Handle new project creation
-        // This would typically open a form or dialog to create a project
-        figma.ui.postMessage({
-          type: 'SHOW_CREATE_PROJECT'
+        
+        // Change approach: directly set HTML_PAGES['IMPORT'] instead of sending a message
+        currentPage = 'IMPORT';
+        figma.showUI(HTML_PAGES[currentPage], { 
+          width: WIDTH, 
+          height: HEIGHT,
+          themeColors: true
         });
+        break;
+        
+      case 'NAVIGATE_TO_PROJECTS':
+        console.log("Navigating back to projects page");
+        // Update current page
+        currentPage = 'PROJECTS';
+        figma.showUI(HTML_PAGES[currentPage], { 
+          width: WIDTH, 
+          height: HEIGHT,
+          themeColors: true
+        });
+        break;
+        
+      case 'IMPORT_DATA':
+        console.log("Importing data with API key:", msg.apiKey, "and date range:", msg.dateRange);
+        // Simulate import process
+        setTimeout(() => {
+          // Send import started message
+          figma.ui.postMessage({
+            type: 'IMPORT_STARTED',
+            importId: 'import_' + Date.now()
+          });
+          
+          // Simulate import completion after 2 seconds
+          setTimeout(() => {
+            figma.ui.postMessage({
+              type: 'IMPORT_COMPLETE',
+              importId: 'import_' + Date.now()
+            });
+          }, 2000);
+        }, 1000);
+        break;
+        
+      case 'IMPORT_COMPLETE':
+        console.log("Import completed with ID:", msg.importId);
+        // Here you would navigate to a results or dashboard page
+        figma.notify("Import completed successfully!");
+        // For now, navigate back to projects page
+        // Update current page
+        currentPage = 'PROJECTS';
+        figma.showUI(HTML_PAGES[currentPage], { 
+          width: WIDTH, 
+          height: HEIGHT,
+          themeColors: true
+        });
+        break;
+        
+      case 'INSTALL_EXTENSION':
+        console.log("Opening browser extension installation page");
+        // In a real plugin, you would direct users to the Chrome Web Store
+        figma.notify("Would redirect to extension installation page");
         break;
         
       case 'ping':

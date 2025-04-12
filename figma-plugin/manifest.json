@@ -3,11 +3,21 @@
   "id": "hcentric-ui-ux-optimizer",
   "api": "1.0.0",
   "main": "dist/code.js",
-  "ui": "dist/ui.html",
+  "ui": "dist/ui/ImportPage.html",
   "editorType": ["figma"],
   "permissions": [],
   "networkAccess": {
     "allowedDomains": ["*"],
     "reasoning": "The plugin needs to connect to authentication services and analytics APIs to process user data and optimize UI/UX designs."
-  }
+  },
+  "menu": [
+    {
+      "name": "Projects Page",
+      "command": "projects"
+    },
+    {
+      "name": "Import Page",
+      "command": "import"
+    }
+  ]
 }

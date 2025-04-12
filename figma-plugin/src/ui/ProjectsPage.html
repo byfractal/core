@@ -245,8 +245,9 @@
             // Ici on pourrait naviguer vers une page de détails du projet
             break;
           case 'SHOW_CREATE_PROJECT':
-            console.log('Afficher le formulaire de création de projet');
-            // Ici on pourrait afficher un formulaire de création de projet
+            console.log('Navigating to project creation form');
+            // Redirect to the import page with absolute path
+            window.location.href = '/ui/ImportPage.html';
             break;
           // Ajouter d'autres cas selon les besoins
         }

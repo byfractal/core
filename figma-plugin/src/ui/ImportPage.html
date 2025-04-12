@@ -1,0 +1,895 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HCentric UI/UX Optimizer - Import Project</title>
+  <style>
+    /* Reset et styles de base */
+    *, *::before, *::after {
+      box-sizing: border-box;
+    }
+    
+    body, html {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      -webkit-font-smoothing: antialiased;
+      overflow: hidden;
+    }
+    
+    body {
+      display: flex;
+      flex-direction: column;
+      background-color: white;
+    }
+    
+    .container {
+      padding: 32px 50px 0 50px;
+      width: 100%;
+      height: 100%;
+    }
+    
+    /* Typographie */
+    h1 {
+      font-size: 30px;
+      font-weight: 600;
+      color: #0F172A;
+      margin: 0 0 16px 0;
+      line-height: 1.2;
+    }
+    
+    p {
+      font-size: 14px;
+      color: #64748B;
+      margin: 0 0 24px 0;
+      line-height: 1.5;
+      font-weight: 400;
+    }
+    
+    /* Back button */
+    .back-button {
+      display: inline-flex;
+      align-items: center;
+      color: #6B7280;
+      margin-bottom: 20px;
+      margin-left: -18px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+    
+    .back-button svg {
+      margin-right: 8px;
+    }
+    
+    /* Form elements */
+    .form-group {
+      margin-bottom: 20px;
+    }
+    
+    .form-label {
+      display: block;
+      font-size: 14px;
+      font-weight: 500;
+      color: #0F172A;
+      margin-bottom: 8px;
+    }
+    
+    .input-wrapper {
+      position: relative;
+    }
+    
+    .input-icon {
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #6B7280;
+    }
+    
+    .toggle-visibility {
+      position: absolute;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      cursor: pointer;
+      color: #64748B;
+    }
+    
+    .form-input {
+      width: 100%;
+      height: 40px;
+      padding: 8px 12px 8px 40px;
+      border: 1px solid #CBD5E1;
+      border-radius: 6px;
+      font-size: 14px;
+      color: #0F172A;
+      transition: border-color 0.2s;
+      box-shadow: 0 1px 5px rgba(0, 0, 0, 0.07);
+    }
+    
+    .form-input:focus {
+      outline: none;
+      border-color: #2563EB;
+      box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1);
+    }
+    
+    .form-input::placeholder {
+      color: #848484;
+      font-size: 14x;
+    }
+    
+    .date-range {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .date-input {
+      flex: 1;
+      position: relative;
+    }
+    
+    .date-display {
+      width: 100%;
+      height: 40px;
+      padding: 8px 12px 8px 40px;
+      border: 1px solid #CBD5E1;
+      border-radius: 8px;
+      font-size: 16px;
+      color: #0F172A;
+      background-color: white;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      box-shadow: 0 1px 5px rgba(0, 0, 0, 0.07);
+      transition: border-color 0.2s;
+    }
+    
+    .date-display:hover {
+      border-color: #94A3B8;
+    }
+    
+    .date-display input {
+      opacity: 0;
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      cursor: pointer;
+    }
+    
+    .date-display-text {
+      color: #64748B;
+      font-size: 16px;
+    }
+    
+    .date-display-text.has-value {
+      color: #0F172A;
+    }
+    
+    .calendar-icon {
+      position: absolute;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+    }
+    
+    /* Button styles */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      height: 36px;
+      padding: 0 16px;
+      font-size: 14px;
+      font-weight: 500;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    .btn-primary {
+      background-color: #0F172A;
+      color: white;
+      width: 100%;
+      box-shadow: 0 1px 5px rgba(0, 0, 0, 0.07);
+    }
+    
+    .btn-primary:hover {
+      background-color: #1E293B;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.12);
+    }
+    
+    .btn-secondary {
+      background-color: white;
+      color: #0F172A;
+      border: 1px solid #E2E8F0;
+      width: 100%;
+    }
+    
+    .btn-secondary:hover {
+      background-color: #F8FAFC;
+    }
+    
+    /* Divider */
+    .divider {
+      display: flex;
+      align-items: center;
+      margin: 24px 0;
+      color: #CBD5E1;
+      font-size: 14px;
+    }
+    
+    .divider::before,
+    .divider::after {
+      content: "";
+      flex: 1;
+      height: 1px;
+      background-color: #E2E8F0;
+    }
+    
+    .divider::before {
+      margin-right: 8px;
+    }
+    
+    .divider::after {
+      margin-left: 8px;
+    }
+    
+    /* Extension section */
+    .extension-section {
+      background-color: #FFFFFF;
+      border-radius: 6px;
+      border: 1px solid #CBD5E1;
+      padding: 18px;
+      padding-left: 32px;
+      margin-bottom: 24px;
+    }
+    
+    .extension-title {
+      font-size: 16px;
+      font-weight: 500;
+      color: #0F172A;
+      margin: 0 0 8px 0;
+    }
+    
+    .extension-description {
+      font-size: 12px;
+      color: #0F172A;
+      margin: 0 0 16px 0;
+    }
+    
+    /* Add new styles for the calendar modal */
+    .calendar-modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.05);
+      z-index: 100;
+      display: none;
+    }
+    
+    .calendar-modal.visible {
+      display: block;
+    }
+    
+    .calendar-container {
+      position: absolute;
+      top: 340px;
+      left: 50px;
+      width: 300px;
+      background-color: white;
+      border-radius: 6px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.15);
+      overflow: hidden;
+      border: 1px solid #E2E8F0;
+    }
+    
+    .calendar-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 14px;
+      font-weight: 500;
+      font-size: 14px;
+    }
+    
+    .calendar-nav {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      padding: 4px;
+      width: 24px;
+      height: 24px;
+      border-radius: 4px;
+    }
+    
+    .calendar-nav:hover {
+      background-color: #F8FAFC;
+    }
+    
+    .calendar-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      padding: 0 10px 10px;
+      gap: 2px;
+    }
+    
+    .calendar-day-header {
+      height: 30px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      color: #64748B;
+      font-weight: 500;
+    }
+    
+    .calendar-day {
+      height: 32px;
+      width: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      border-radius: 4px;
+      cursor: pointer;
+      position: relative;
+      margin: 1px;
+    }
+    
+    .calendar-day:hover {
+      background-color: #F1F5F9;
+    }
+    
+    .calendar-day.other-month {
+      color: #CBD5E1;
+    }
+    
+    .calendar-day.selected {
+      background-color: #0F172A;
+      color: white;
+    }
+    
+    .calendar-day.range-start,
+    .calendar-day.range-end {
+      background-color: #0F172A;
+      color: white;
+      z-index: 2;
+    }
+    
+    .calendar-day.in-range {
+      background-color: rgba(15, 23, 42, 0.1);
+      color: #0F172A;
+      border-radius: 0;
+    }
+    
+    .calendar-day.hover-range {
+      background-color: rgba(15, 23, 42, 0.05);
+      border-radius: 0;
+    }
+    
+    .calendar-day.range-start {
+      border-top-right-radius: 0;
+      border-bottom-right-radius: 0;
+    }
+    
+    .calendar-day.range-end {
+      border-top-left-radius: 0;
+      border-bottom-left-radius: 0;
+    }
+    
+    .calendar-day:not(.other-month):hover {
+      background-color: #F1F5F9;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Back button -->
+    <div class="back-button" id="back-button">
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M15.8332 10.0001H4.1665M4.1665 10.0001L9.99984 15.8334M4.1665 10.0001L9.99984 4.16675" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      Back to Projects
+    </div>
+    
+    <!-- Page Header -->
+    <h1>Import Project</h1>
+    <p>Connect your data with API key and set a date range to analyze your product metrics.</p>
+    
+    <!-- Import Form -->
+    <form id="import-form">
+      <div class="form-group">
+        <label for="api-key" class="form-label">API Key</label>
+        <div class="input-wrapper">
+          <div class="input-icon">
+            <svg width="15" height="14" viewBox="0 0 15 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M13.3478 1L12.0433 2.26149M12.0433 2.26149L14 4.15374L11.7172 6.36135L9.76057 4.46911M12.0433 2.26149L9.76057 4.46911M7.07994 7.06148C7.41671 7.38282 7.68442 7.76542 7.86766 8.18723C8.05091 8.60904 8.14606 9.06175 8.14764 9.51927C8.14923 9.97679 8.05722 10.4301 7.8769 10.8531C7.69658 11.2761 7.43153 11.6604 7.09699 11.9839C6.76246 12.3074 6.36506 12.5638 5.92767 12.7381C5.49027 12.9125 5.02153 13.0015 4.54844 13C4.07534 12.9984 3.60722 12.9064 3.17105 12.7292C2.73488 12.552 2.33926 12.2931 2.00697 11.9674C1.35353 11.3132 0.991962 10.4368 1.00014 9.52726C1.00831 8.61767 1.38557 7.74757 2.05067 7.10437C2.71577 6.46117 3.61549 6.09633 4.55604 6.08842C5.4966 6.08052 6.40339 6.42955 7.07994 7.06148ZM7.07994 7.06148L9.76057 4.46911" stroke="#717279" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>              
+          </div>
+          <input type="password" id="api-key" class="form-input" placeholder="Enter your API key : Amplitude, Mixpanel..." />
+          <div class="toggle-visibility" id="toggle-api-visibility">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M1.33325 7.99992C1.33325 7.99992 3.33325 3.33325 7.99992 3.33325C12.6666 3.33325 14.6666 7.99992 14.6666 7.99992C14.6666 7.99992 12.6666 12.6666 7.99992 12.6666C3.33325 12.6666 1.33325 7.99992 1.33325 7.99992Z" stroke="#848484" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M7.99992 9.99992C9.10449 9.99992 9.99992 9.10449 9.99992 7.99992C9.99992 6.89535 9.10449 5.99992 7.99992 5.99992C6.89535 5.99992 5.99992 6.89535 5.99992 7.99992C5.99992 9.10449 6.89535 9.99992 7.99992 9.99992Z" stroke="#848484" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+        </div>
+      </div>
+      
+      <div class="form-group">
+        <label for="date-range" class="form-label">Pick a date</label>
+        <div class="input-wrapper">
+          <div class="input-icon">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M5.33333 1.33337V3.33337M10.6667 1.33337V3.33337M2.33333 6.00004H13.6667M3.33333 2.66671H12.6667C13.4031 2.66671 14 3.2636 14 4.00004V13.3334C14 14.0698 13.4031 14.6667 12.6667 14.6667H3.33333C2.59695 14.6667 2 14.0698 2 13.3334V4.00004C2 3.2636 2.59695 2.66671 3.33333 2.66671Z" stroke="#64748B" stroke-width="1.33333" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <div class="date-display">
+            <span class="date-display-text" id="date-range-text">Pick a date</span>
+            <input type="hidden" id="date-from" />
+            <input type="hidden" id="date-to" />
+          </div>
+        </div>
+      </div>
+      
+      <button type="submit" class="btn btn-primary" id="import-button">Import</button>
+    </form>
+    
+    <!-- Or divider -->
+    <div class="divider">or</div>
+    
+    <!-- Browser Extension Section -->
+    <div class="extension-section">
+      <h2 class="extension-title">
+        <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg" style="margin-right: 8px; vertical-align: middle;">
+          <circle cx="9" cy="9" r="8.298" stroke="#0F172A" stroke-width="1.404"/>
+          <circle cx="9.00023" cy="9.00011" r="2.75954" stroke="#0F172A" stroke-width="1.404"/>
+          <path d="M2.24475 4.71021L6.95866 10.864" stroke="#0F172A" stroke-width="1.404"/>
+          <path d="M8.94702 6.23096L17.0772 6.23096" stroke="#0F172A" stroke-width="1.404"/>
+          <path d="M7.5976 17.2903L11.4674 10.2607" stroke="#0F172A" stroke-width="1.404"/>
+        </svg>
+        Import via browser extension
+      </h2>
+      <p class="extension-description">Capture any webpage using our Chrome Extension, even if authentication is required.</p>
+      <button class="btn btn-primary" id="extension-button">Install our browser extension</button>
+    </div>
+  </div>
+  
+  <!-- Calendar Modal -->
+  <div class="calendar-modal" id="calendar-modal">
+    <div class="calendar-container">
+      <div class="calendar-header">
+        <div class="calendar-nav" id="prev-month">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M10 4L6 8L10 12" stroke="#64748B" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <div id="current-month">March 2025</div>
+        <div class="calendar-nav" id="next-month">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M6 4L10 8L6 12" stroke="#64748B" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+      </div>
+      <div class="calendar-grid" id="calendar-grid">
+        <!-- Day headers will be inserted here -->
+        <div class="calendar-day-header">Su</div>
+        <div class="calendar-day-header">Mo</div>
+        <div class="calendar-day-header">Tu</div>
+        <div class="calendar-day-header">We</div>
+        <div class="calendar-day-header">Th</div>
+        <div class="calendar-day-header">Fr</div>
+        <div class="calendar-day-header">Sa</div>
+        
+        <!-- Calendar days will be inserted here by JavaScript -->
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Function to send message to plugin
+    function sendMessageToPlugin(message) {
+      parent.postMessage({ pluginMessage: message }, '*');
+    }
+    
+    // Back button logic
+    document.getElementById('back-button').addEventListener('click', function() {
+      sendMessageToPlugin({
+        type: 'NAVIGATE_TO_PROJECTS'
+      });
+    });
+    
+    // Import form submission
+    document.getElementById('import-form').addEventListener('submit', function(e) {
+      e.preventDefault();
+      
+      const apiKey = document.getElementById('api-key').value;
+      const dateFrom = document.getElementById('date-from').value;
+      const dateTo = document.getElementById('date-to').value;
+      
+      if (!apiKey) {
+        alert('Please enter a valid API key');
+        return;
+      }
+      
+      if (!dateFrom || !dateTo) {
+        alert('Please select a date range');
+        return;
+      }
+      
+      sendMessageToPlugin({
+        type: 'IMPORT_DATA',
+        apiKey: apiKey,
+        dateRange: {
+          from: dateFrom,
+          to: dateTo
+        }
+      });
+      
+      // Show loading state
+      document.getElementById('import-button').textContent = 'Importing...';
+      document.getElementById('import-button').disabled = true;
+    });
+    
+    // Extension button click
+    document.getElementById('extension-button').addEventListener('click', function() {
+      sendMessageToPlugin({
+        type: 'INSTALL_EXTENSION'
+      });
+    });
+    
+    // Handle messages from plugin
+    window.addEventListener('message', function(event) {
+      if (event.data.pluginMessage) {
+        const message = event.data.pluginMessage;
+        console.log('Message received from plugin:', message);
+        
+        switch (message.type) {
+          case 'IMPORT_STARTED':
+            console.log('Import started with ID:', message.importId);
+            break;
+            
+          case 'IMPORT_ERROR':
+            alert('Error importing data: ' + message.error);
+            document.getElementById('import-button').textContent = 'Import';
+            document.getElementById('import-button').disabled = false;
+            break;
+            
+          case 'IMPORT_COMPLETE':
+            console.log('Import completed successfully');
+            // Navigate to next page
+            sendMessageToPlugin({
+              type: 'IMPORT_COMPLETE',
+              importId: message.importId
+            });
+            break;
+        }
+      }
+    });
+    
+    // Set default date range (last 30 days) and update display
+    window.addEventListener('DOMContentLoaded', function() {
+      console.log('ImportPage loaded successfully');
+      
+      const today = new Date();
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(today.getDate() - 30);
+      
+      const dateToInput = document.getElementById('date-to');
+      const dateFromInput = document.getElementById('date-from');
+      
+      dateToInput.value = today.toISOString().split('T')[0];
+      dateFromInput.value = thirtyDaysAgo.toISOString().split('T')[0];
+      
+      // Update combined date range display
+      updateDateRangeDisplay();
+      
+      // Add click handler for the date display
+      document.querySelector('.date-display').addEventListener('click', function() {
+        showCalendar();
+      });
+    });
+    
+    // Function to format and display the selected date range
+    function updateDateRangeDisplay() {
+      const dateFromInput = document.getElementById('date-from');
+      const dateToInput = document.getElementById('date-to');
+      const displayElement = document.getElementById('date-range-text');
+      
+      if (dateFromInput.value && dateToInput.value) {
+        const fromDate = new Date(dateFromInput.value);
+        const toDate = new Date(dateToInput.value);
+        displayElement.textContent = formatDate(fromDate) + ' - ' + formatDate(toDate);
+        displayElement.classList.add('has-value');
+      } else {
+        displayElement.textContent = 'Pick a date';
+        displayElement.classList.remove('has-value');
+      }
+    }
+    
+    // Function to format date as "Mar 12, 2025"
+    function formatDate(date) {
+      const options = { month: 'short', day: 'numeric', year: 'numeric' };
+      return date.toLocaleDateString('en-US', options);
+    }
+    
+    // Toggle API key visibility
+    document.getElementById('toggle-api-visibility').addEventListener('click', function() {
+      const apiKeyInput = document.getElementById('api-key');
+      if (apiKeyInput.type === 'password') {
+        apiKeyInput.type = 'text';
+        this.innerHTML = `
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M1.33325 7.99992C1.33325 7.99992 3.33325 3.33325 7.99992 3.33325C12.6666 3.33325 14.6666 7.99992 14.6666 7.99992C14.6666 7.99992 12.6666 12.6666 7.99992 12.6666C3.33325 12.6666 1.33325 7.99992 1.33325 7.99992Z" stroke="#848484" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M7.99992 9.99992C9.10449 9.99992 9.99992 9.10449 9.99992 7.99992C9.99992 6.89535 9.10449 5.99992 7.99992 5.99992C6.89535 5.99992 5.99992 6.89535 5.99992 7.99992C5.99992 9.10449 6.89535 9.99992 7.99992 9.99992Z" stroke="#848484" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        `;
+      } else {
+        apiKeyInput.type = 'password';
+        this.innerHTML = `
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M6.58651 6.58651C6.39001 6.76961 6.2324 6.99041 6.12309 7.23574C6.01378 7.48107 5.955 7.74591 5.95026 8.01445C5.94552 8.28299 5.99492 8.54973 6.09551 8.79877C6.1961 9.0478 6.34582 9.27403 6.53574 9.46394C6.72565 9.65386 6.95188 9.80358 7.20091 9.90417C7.44995 10.0048 7.71669 10.0542 7.98523 10.0494C8.25377 10.0447 8.51861 9.9859 8.76394 9.87659C9.00927 9.76728 9.23008 9.60967 9.41317 9.41317M7.15324 3.38659C7.43411 3.35159 7.71686 3.33378 7.99991 3.33325C12.6666 3.33325 14.6666 7.99992 14.6666 7.99992C14.3685 8.638 13.9947 9.23787 13.5532 9.78659M4.40659 4.40666C3.08075 5.30974 2.01983 6.55016 1.33325 7.99999C1.33325 7.99999 3.33325 12.6667 7.99992 12.6667C9.27719 12.6701 10.5271 12.2967 11.5933 11.5933M1.33325 1.33325L14.6666 14.6666" stroke="#848484" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        `;
+      }
+    });
+    
+    // Calendar functionality
+    let currentMonth = new Date();
+    let startDate = null;
+    let endDate = null;
+    let hoveredDate = null;
+    let dateSelectionPhase = 0; // 0: nothing selected, 1: start date selected
+    
+    function showCalendar() {
+      // Initialize dates from current values
+      const dateFromInput = document.getElementById('date-from');
+      const dateToInput = document.getElementById('date-to');
+      
+      if (dateFromInput.value) {
+        startDate = new Date(dateFromInput.value);
+        currentMonth = new Date(startDate);
+      } else {
+        startDate = null;
+      }
+      
+      if (dateToInput.value) {
+        endDate = new Date(dateToInput.value);
+      } else {
+        endDate = null;
+      }
+      
+      if (startDate && endDate) {
+        dateSelectionPhase = 2; // Both dates selected
+      } else if (startDate) {
+        dateSelectionPhase = 1; // Just start date selected
+      } else {
+        dateSelectionPhase = 0; // Nothing selected
+      }
+      
+      // Render the calendar for the current month
+      renderCalendar();
+      
+      // Position the calendar correctly under the date input
+      const dateDisplay = document.querySelector('.date-display');
+      const dateRect = dateDisplay.getBoundingClientRect();
+      const calendarContainer = document.querySelector('.calendar-container');
+      
+      calendarContainer.style.top = (dateRect.bottom + window.scrollY + 5) + 'px';
+      calendarContainer.style.left = (dateRect.left + window.scrollX) + 'px';
+      
+      // Show the modal
+      document.getElementById('calendar-modal').classList.add('visible');
+    }
+    
+    function hideCalendar() {
+      document.getElementById('calendar-modal').classList.remove('visible');
+    }
+    
+    function renderCalendar() {
+      // Update the month/year display
+      const monthYearStr = currentMonth.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+      document.getElementById('current-month').textContent = monthYearStr;
+      
+      // Clear existing days (except headers)
+      const calendarGrid = document.getElementById('calendar-grid');
+      const dayHeaders = calendarGrid.querySelectorAll('.calendar-day-header');
+      calendarGrid.innerHTML = '';
+      
+      // Re-add the day headers
+      dayHeaders.forEach(header => {
+        calendarGrid.appendChild(header);
+      });
+      
+      // Calculate the first day of the month and the offset
+      const firstDayOfMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 1);
+      const lastDayOfMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 0);
+      
+      // Get the day of the week (0-6, Sunday to Saturday)
+      let startOffset = firstDayOfMonth.getDay();
+      
+      // Calculate the last day of the previous month
+      const lastDayPrevMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 0).getDate();
+      
+      // Add days from the previous month
+      for (let i = 0; i < startOffset; i++) {
+        const dayOfPrevMonth = lastDayPrevMonth - startOffset + i + 1;
+        const dayDiv = document.createElement('div');
+        dayDiv.className = 'calendar-day other-month';
+        dayDiv.textContent = dayOfPrevMonth;
+        calendarGrid.appendChild(dayDiv);
+      }
+      
+      // Add days of the current month
+      for (let day = 1; day <= lastDayOfMonth.getDate(); day++) {
+        const dayDiv = document.createElement('div');
+        dayDiv.className = 'calendar-day';
+        dayDiv.textContent = day;
+        
+        // Store the date as a data attribute
+        const dateStr = `${currentMonth.getFullYear()}-${String(currentMonth.getMonth() + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+        dayDiv.dataset.date = dateStr;
+        
+        // Check if this day is selected
+        if (startDate && endDate) {
+          const currentDate = new Date(dateStr);
+          
+          if (isSameDay(currentDate, startDate)) {
+            dayDiv.classList.add('range-start');
+          } else if (isSameDay(currentDate, endDate)) {
+            dayDiv.classList.add('range-end');
+          } else if (currentDate > startDate && currentDate < endDate) {
+            dayDiv.classList.add('in-range');
+          }
+        } else if (startDate && isSameDay(new Date(dateStr), startDate)) {
+          dayDiv.classList.add('selected');
+        }
+        
+        // Check if this is today
+        const today = new Date();
+        if (isSameDay(new Date(dateStr), today)) {
+          dayDiv.style.fontWeight = '600';
+        }
+        
+        // Add click handler
+        dayDiv.addEventListener('click', function() {
+          const clickedDate = new Date(dateStr);
+          
+          if (dateSelectionPhase === 0 || dateSelectionPhase === 2) {
+            // Start a new selection
+            startDate = clickedDate;
+            endDate = null;
+            dateSelectionPhase = 1;
+          } else if (dateSelectionPhase === 1) {
+            // Complete the selection
+            if (clickedDate < startDate) {
+              endDate = startDate;
+              startDate = clickedDate;
+            } else {
+              endDate = clickedDate;
+            }
+            dateSelectionPhase = 2;
+            
+            // Auto-apply the date range when selection is complete
+            applyDateRange();
+          }
+          
+          // Re-render the calendar
+          renderCalendar();
+        });
+        
+        // Add mouseover handler
+        dayDiv.addEventListener('mouseover', function() {
+          if (dateSelectionPhase === 1) {
+            hoveredDate = new Date(dateStr);
+            updateHoverEffect();
+          }
+        });
+        
+        calendarGrid.appendChild(dayDiv);
+      }
+      
+      // Calculate how many days needed from next month
+      const daysFromNextMonth = 42 - (startOffset + lastDayOfMonth.getDate());
+      
+      // Add days from the next month
+      for (let day = 1; day <= daysFromNextMonth; day++) {
+        const dayDiv = document.createElement('div');
+        dayDiv.className = 'calendar-day other-month';
+        dayDiv.textContent = day;
+        calendarGrid.appendChild(dayDiv);
+      }
+    }
+    
+    function updateHoverEffect() {
+      if (dateSelectionPhase !== 1 || !hoveredDate || !startDate) return;
+      
+      // Remove existing hover effects
+      document.querySelectorAll('.calendar-day.hover-range').forEach(day => {
+        day.classList.remove('hover-range');
+      });
+      
+      // Add hover effect to days between startDate and hoveredDate
+      document.querySelectorAll('.calendar-day:not(.other-month)').forEach(dayElem => {
+        const dayDate = new Date(dayElem.dataset.date);
+        
+        if (hoveredDate > startDate) {
+          if (dayDate > startDate && dayDate <= hoveredDate) {
+            dayElem.classList.add('hover-range');
+          }
+        } else if (hoveredDate < startDate) {
+          if (dayDate < startDate && dayDate >= hoveredDate) {
+            dayElem.classList.add('hover-range');
+          }
+        }
+      });
+    }
+    
+    // Helper function to check if two dates represent the same day
+    function isSameDay(date1, date2) {
+      return date1.getDate() === date2.getDate() && 
+             date1.getMonth() === date2.getMonth() && 
+             date1.getFullYear() === date2.getFullYear();
+    }
+    
+    // Navigate to previous month
+    document.getElementById('prev-month').addEventListener('click', function() {
+      currentMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1, 1);
+      renderCalendar();
+    });
+    
+    // Navigate to next month
+    document.getElementById('next-month').addEventListener('click', function() {
+      currentMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 1);
+      renderCalendar();
+    });
+    
+    // Apply button - save the selected dates and close the calendar
+    function applyDateRange() {
+      if (startDate && endDate) {
+        // Format and set the dates
+        const dateFromInput = document.getElementById('date-from');
+        const dateToInput = document.getElementById('date-to');
+        
+        dateFromInput.value = startDate.toISOString().split('T')[0];
+        dateToInput.value = endDate.toISOString().split('T')[0];
+        
+        // Update the display
+        updateDateRangeDisplay();
+        
+        // Close the calendar
+        hideCalendar();
+      } else if (startDate) {
+        // If only start date is selected, use it as both start and end
+        const dateFromInput = document.getElementById('date-from');
+        const dateToInput = document.getElementById('date-to');
+        
+        dateFromInput.value = startDate.toISOString().split('T')[0];
+        dateToInput.value = startDate.toISOString().split('T')[0];
+        
+        // Update the display
+        updateDateRangeDisplay();
+        
+        // Close the calendar
+        hideCalendar();
+      }
+    }
+    
+    // Close the calendar when clicking outside
+    document.getElementById('calendar-modal').addEventListener('click', function(e) {
+      if (e.target === this) {
+        hideCalendar();
+      }
+    });
+  </script>
+</body>
+</html> 
