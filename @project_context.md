@@ -1,99 +1,123 @@
-Très bonne remarque — tu es à une **étape cruciale** du projet : le passage d’un design validé à une **implémentation technique claire et scalable**.
-
-Voici la version _parfaite_ du prompt pour **`ImportPage`**, dans le même ton et le même soin que celui d’hier 👇
+Parfait, j’ai bien reçu tout le code et le contexte. Voici une réponse rigoureuse et structurée à ta demande, dans l’esprit “intellectual sparring partner” que tu veux :
 
 ---
 
-## ✨ Ok c’est parti pour l’`ImportPage` !
+## 🔍 Analyse critique de ta situation
+
+### 🤔 Assumption en jeu
+Tu envisages :
+1. **De prioriser le design avec données mockées**
+2. **D’attendre d’avoir des vraies données issues d’Amplitude/Mixpanel**
+3. **Tu te demandes si l'architecture de la modale (et son intégration) est correcte**
 
 ---
 
-### 🧱 Étapes préliminaires :
+## 🎯 Mon avis raisonné
 
-1. `git add .` puis `git commit` → snapshot des modifs précédentes (`ProjectsPage`)
-2. `git checkout -b frontend-importpage` → création d’une **nouvelle branche dédiée**
-3. Tu implémentes **uniquement l’écran `ImportPage`** (on ne fait pas les connexions ou logique JS pour le moment)
+### 1. ❗Assumption à remettre en question
+> “Il vaut mieux brancher les vraies données plus tard.”
 
----
+✅ En partie vrai (approche classique design-first), mais attention :
 
-### 📌 Contexte du projet :
-Nous construisons une **interface HTML/CSS native** pour un plugin Figma :
-- ✅ Fiable, rapide, sans React
-- ✅ 100% compatible avec Figma sandbox
-- ✅ Composants modifiables facilement à la main (issus de `shadcn/ui` remixés)
-- ✅ Rendu fidèle au Figma (pixel perfect = exigence MVP)
+- Sans tester avec des données réelles **très tôt**, tu risques :
+  - d'avoir une **UX mal calibrée** (scroll inattendu, trop de texte, latence mal gérée…)
+  - de sous-estimer les **cas limites** (pas de données, 1000+ éléments, erreurs auth, etc.)
+  - de devoir **refactorer l’UI après coup**, ce qui coûte cher.
 
----
-
-### 🎯 Mission de cette tâche :
-
-Implémenter l’écran **`ImportPage`** dans `/ui/ImportPage.html` ou structure équivalente. Cet écran permet d’importer des données d’usage produit via API (Amplitude, Mixpanel…) ou via une extension navigateur.
+**🧠 Recommandation** :  
+✔️ Mock d’abord, mais **branche très vite une source réelle** pour valider l’interface avec du vrai volume + vrai edge case.  
+→ Tu peux capturer des JSON d’Amplitude avec 2-3 requêtes, et les utiliser comme fixtures locales.
 
 ---
 
-### 🔍 🎨 Références Figma :
+### 2. 🤖 Sur l’implémentation de la modale
 
-- 🔗 Lien MCP avec accès complet aux descriptions composants :  
-  `@mcp`  
+**Ce que vous avez bien fait :**
+- Composant modal bien séparé visuellement
+- UI fidèle à la maquette (choix de page, badge, bouton clair)
+- Logique de clics et interactions propre
+
+**Mais :**
+- ❌ Aucun code JS ou CSS de modale n’est encore branché
+- ❌ Elle n’est pas **intégrée dynamiquement** (affichée via un clic, montée/démontée proprement)
+- ❌ Le style de la modale (taille, ombre, bord) peut différer légèrement de Figma
+- ❌ Pas encore de gestion dynamique des pages ou badges (mockés ? statiques ?)
+
+---
+
+## 🛠 Conseils Concrets pour Claude (Cursor)
+
+🎯 **Objectif immédiat** : intégrer proprement la modale `SelectPageModal` dans l’architecture actuelle.
+
+### ✅ Prompt que tu peux lui donner :
+
+---
+
+**Ok c’est parti !**
+
+🎯 Tu vas maintenant intégrer le composant `SelectPageModal` dans la page `ImportPage`.
+
+---
+
+## 🧱 Étapes :
+
+1. `git add . && git commit` → snapshot avant nouvelle fonctionnalité  
+2. `git checkout -b feature/select-page-modal`  
+3. Implémente **uniquement** la logique d’affichage de la modale :
+
+- Au clic sur le bouton “Import” → affiche la modale
+- Ajoute un **overlay léger** en fond
+- La modale doit apparaître **en position centrée** avec `position: fixed` et `z-index` élevé
+- Permet de la fermer (ex: bouton `X` ou clic en dehors)
+
+---
+
+## 🧠 Données mockées :
+
+- Tu peux commencer avec 5 éléments comme dans le Figma :
+  - Issue Page (avec badge `High Friction`)
+  - Project Overview
+  - Settings
+  - Desktop
+  - Documents
+
+- Crée un fichier JS `mock_pages.js` pour gérer ces données comme une liste :
+```js
+const pages = [
+  { name: "Issue Page", tag: "High Friction" },
+  { name: "Project Overview" },
+  { name: "Settings" },
+  { name: "Desktop" },
+  { name: "Documents" }
+];
+```
+
+---
+
+## 📄 Référence Figma :
+
+- MCP JSON : `@mcp.json`
+- Lien Figma :  
   `@https://www.figma.com/design/Cyv2WbRChVdBlXfxySgrvC/Prototype-pipeline--Plugin--1-?node-id=316-770&t=2qjmVhKoTF8Zzc8n-4`
 
-- 🔧 Mode Dev / inspect :  
-  `https://www.figma.com/design/Cyv2WbRChVdBlXfxySgrvC/Prototype-pipeline--Plugin--1-?node-id=316-770&m=dev&t=2qjmVhKoTF8Zzc8n-1`
-
-- 📄 **Description officielle** dans Figma (accessible via MCP) :  
-  > **"Allows users to import behavioral data from platforms like Amplitude or Mixpanel via API key. Includes a date range selector and an alternative import method using the browser extension. Designed for fast setup before analysis."**
+- 📄 Description composant :  
+> "Allows users to import behavioral data from platforms like Amplitude or Mixpanel via API key. Includes a date range selector and an alternative import method using the browser extension. Designed for fast setup before analysis."
 
 ---
 
-### 🧠 Détail des composants attendus :
+## ✅ Output attendu :
 
-1. **Header** : titre `Import Project` + sous-titre explicatif
-2. **Champ API Key** :
-   - Input avec icône clé à gauche
-   - Texte placeholder : `Enter your API key : Amplitude, Mixpanel...`
-3. **Sélecteur de date** :
-   - Icône calendrier
-   - Placeholder : `Pick a date`
-4. **Bouton principal** `Import`
-5. **Séparateur** visuel `or` (ligne + texte centré)
-6. **Bloc extension navigateur** :
-   - Icône Chrome
-   - Titre `Import via the browser extension`
-   - Texte lorem temporaire (on le changera plus tard)
-   - Bouton secondaire : `Install our browser extension`
+- HTML + CSS de la modale visible au clic
+- Overlay clickable pour fermer
+- Affichage dynamique à partir de `mock_pages.js`
+- Zéro React, que du HTML/CSS + Vanilla JS
 
 ---
 
-### 🛠️ Stack à utiliser (strict) :
-
-| Élément | Stack |
-|--------|-------|
-| UI     | HTML + CSS natif |
-| Style  | Tailwind CSS si dispo, sinon classes manuelles |
-| JS     | Aucun JS à ce stade (sauf minimum requis postMessage plus tard) |
-| Composants | Basés sur shadcn/ui mais **reproduits à la main** (pas React) |
+📌 Une fois que c’est fait, montre-moi le rendu (même partiel), et on branchera ensuite le flux avec les données réelles via API ou local JSON.
 
 ---
 
-### ✅ Critères de validation :
+Si tu veux, je peux te générer le JS de base ou le HTML de la modale aussi.
 
-- Respect visuel **pixel-perfect**
-- Bonne hiérarchie HTML (`section`, `label`, `input`, etc.)
-- Aucun composant React ou injection dynamique
-- Responsive : s’adapte bien dans la UI Figma
-- Pas encore connecté aux autres écrans (on verra les connexions plus tard)
-
----
-
-### 💡 Faut-il connecter les pages entre elles maintenant ?
-
-> ❌ **Non** — pas pour l’instant.
-
-L’objectif est de valider chaque **écran isolé**, sans logique de navigation.  
-On implémentera la navigation (avec `postMessage`, ou `state` centralisé dans `main.js`) **une fois tous les écrans fidèlement réalisés**.
-
----
-
-Si tu veux, je peux générer une structure `ui/` propre pour organiser chaque page en composants HTML séparés (`/ui/components/...`) et préparer les connexions pour plus tard.
-
-Bonne chance, tu maîtrises la partie ! 🔥
+Souhaitez-tu que je fasse ça ?

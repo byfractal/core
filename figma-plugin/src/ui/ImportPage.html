@@ -410,13 +410,15 @@
     }
     
     .select-page-modal {
-      width: 460px;
+      width: 330px;
       max-width: 95%;
       background-color: white;
-      border-radius: 12px;
+      border: 1px solid #CBD5E1;
+      border-radius: 6px;
       box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-      padding: 28px;
+      padding: 24px 32px;
       animation: modalFadeIn 0.2s ease-out;
+      box-shadow: 0 1px 5px rgba(0, 0, 0, 0.07);
     }
     
     @keyframes modalFadeIn {
@@ -431,10 +433,11 @@
     }
     
     .select-page-modal h2 {
-      font-size: 22px;
-      font-weight: 600;
+      font-size: 16px;
+      font-weight: 500;
       color: #0F172A;
       margin: 0 0 20px 0;
+      text-align: center;
     }
     
     .filter-container {
@@ -451,11 +454,12 @@
       width: 100%;
       height: 40px;
       padding: 8px 12px 8px 40px;
-      border: 1px solid #E2E8F0;
+      border: 1px solid #CBD5E1;
       border-radius: 6px;
       font-size: 14px;
       color: #0F172A;
-      background-color: #F8FAFC;
+      background-color: #FFFFFF;
+      box-shadow: 0 1px 5px rgba(0, 0, 0, 0.07);
     }
     
     .filter-input-icon {
@@ -472,13 +476,14 @@
       height: 40px;
       padding: 0 16px;
       background-color: white;
-      border: 1px solid #E2E8F0;
+      border: 1px solid #CBD5E1;
       border-radius: 6px;
       margin-left: 8px;
       font-size: 14px;
       font-weight: 500;
       color: #0F172A;
       cursor: pointer;
+      box-shadow: 0 1px 5px rgba(0, 0, 0, 0.07);
     }
     
     .filter-dropdown svg {
@@ -500,8 +505,29 @@
     .page-item {
       display: flex;
       align-items: center;
-      padding: 12px 0;
-      border-bottom: 1px solid #F1F5F9;
+      padding: 8px 0;
+      border-bottom: none;
+      justify-content: flex-start;
+      width: 100%;
+    }
+    
+     /* Style not selected by default (greyed out) */
+    .page-item .page-label {
+      color: rgba(15, 23, 42, 0.6); /* #0F172A with 60% opacity */
+    }
+    
+    .page-item .page-radio-mark {
+      border-color: rgba(15, 23, 42, 0.4); /* #0F172A with 40% opacity */
+    }
+    
+    /* Styles when selected (or when hovered) */
+    .page-item:hover .page-label,
+    .page-item:has(input:checked) .page-label {
+      color: #0F172A;
+    }
+    
+    .page-item:hover .page-radio-mark {
+      border-color: rgba(15, 23, 42, 0.7);
     }
     
     .page-radio {
@@ -556,13 +582,13 @@
     }
     
     .page-tag {
-      margin-left: 8px;
-      padding: 2px 8px;
+      margin-left: auto;
+      padding: 3px 8px;
       background-color: #FEF2F2;
-      color: #EF4444;
+      color: #B50000;
       font-size: 12px;
       font-weight: 500;
-      border-radius: 4px;
+      border-radius: 6px;
     }
     
     .modal-footer {
@@ -575,7 +601,7 @@
       color: white;
       border: none;
       border-radius: 6px;
-      height: 44px;
+      height: 36px;
       padding: 0 24px;
       font-size: 15px;
       font-weight: 500;
@@ -670,9 +696,9 @@
       <div class="filter-container">
         <div class="filter-input-wrapper">
           <div class="filter-input-icon">
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M14.6666 14.6667L11.2916 11.2917M11.2916 11.2917C11.8333 10.75 12.263 10.1032 12.5562 9.39151C12.8494 8.67985 13.0001 7.91555 13.0001 7.14173C13.0001 6.36791 12.8494 5.60361 12.5562 4.89195C12.263 4.18029 11.8333 3.53344 11.2916 2.99173C10.7499 2.45002 10.103 2.02033 9.39136 1.72711C8.6797 1.43389 7.9154 1.28326 7.14158 1.28326C6.36776 1.28326 5.60346 1.43389 4.8918 1.72711C4.18014 2.02033 3.53329 2.45002 2.99158 2.99173C1.89862 4.08469 1.28298 5.58004 1.28298 7.14173C1.28298 8.70341 1.89862 10.1988 2.99158 11.2917C4.08454 12.3847 5.57989 13.0003 7.14158 13.0003C8.70326 13.0003 10.1986 12.3847 11.2916 11.2917Z" stroke="#64748B" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
+            <svg width="13" height="14" viewBox="0 0 13 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M10.8334 4.29175H5.95841M7.58341 9.70841H2.70841M7.58341 9.70841C7.58341 10.6059 8.31095 11.3334 9.20841 11.3334C10.1059 11.3334 10.8334 10.6059 10.8334 9.70841C10.8334 8.81095 10.1059 8.08341 9.20841 8.08341C8.31095 8.08341 7.58341 8.81095 7.58341 9.70841ZM5.41675 4.29175C5.41675 5.18921 4.68921 5.91675 3.79175 5.91675C2.89429 5.91675 2.16675 5.18921 2.16675 4.29175C2.16675 3.39429 2.89429 2.66675 3.79175 2.66675C4.68921 2.66675 5.41675 3.39429 5.41675 4.29175Z" stroke="#717279" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>              
           </div>
           <input type="text" class="filter-input" placeholder="Choose a filter">
         </div>
@@ -776,6 +802,13 @@
     const importButton = document.getElementById('import-button');
     const modalOverlay = document.getElementById('modal-overlay');
     const analyzeButton = document.querySelector('.analyze-button');
+    
+    // Mettre à jour les styles quand une option est sélectionnée
+    document.querySelectorAll('.page-radio input').forEach(radio => {
+      radio.addEventListener('change', function() {
+        // Les styles sont gérés par CSS avec :has(input:checked)
+      });
+    });
     
     // Show modal when clicking Import button
     importButton.addEventListener('click', function(e) {
