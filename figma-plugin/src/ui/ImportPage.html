@@ -389,6 +389,204 @@
     .calendar-day:not(.other-month):hover {
       background-color: #F1F5F9;
     }
+    
+    /* Select Page Modal Styles */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(15, 23, 42, 0.4);
+      backdrop-filter: blur(4px);
+      z-index: 200;
+      display: none;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .modal-overlay.visible {
+      display: flex;
+    }
+    
+    .select-page-modal {
+      width: 460px;
+      max-width: 95%;
+      background-color: white;
+      border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+      padding: 28px;
+      animation: modalFadeIn 0.2s ease-out;
+    }
+    
+    @keyframes modalFadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    
+    .select-page-modal h2 {
+      font-size: 22px;
+      font-weight: 600;
+      color: #0F172A;
+      margin: 0 0 20px 0;
+    }
+    
+    .filter-container {
+      display: flex;
+      margin-bottom: 20px;
+    }
+    
+    .filter-input-wrapper {
+      position: relative;
+      flex: 1;
+    }
+    
+    .filter-input {
+      width: 100%;
+      height: 40px;
+      padding: 8px 12px 8px 40px;
+      border: 1px solid #E2E8F0;
+      border-radius: 6px;
+      font-size: 14px;
+      color: #0F172A;
+      background-color: #F8FAFC;
+    }
+    
+    .filter-input-icon {
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #64748B;
+    }
+    
+    .filter-dropdown {
+      display: flex;
+      align-items: center;
+      height: 40px;
+      padding: 0 16px;
+      background-color: white;
+      border: 1px solid #E2E8F0;
+      border-radius: 6px;
+      margin-left: 8px;
+      font-size: 14px;
+      font-weight: 500;
+      color: #0F172A;
+      cursor: pointer;
+    }
+    
+    .filter-dropdown svg {
+      margin-left: 8px;
+    }
+    
+    .page-selection-text {
+      font-size: 14px;
+      color: #64748B;
+      margin-bottom: 20px;
+    }
+    
+    .pages-list {
+      max-height: 280px;
+      overflow-y: auto;
+      margin-bottom: 24px;
+    }
+    
+    .page-item {
+      display: flex;
+      align-items: center;
+      padding: 12px 0;
+      border-bottom: 1px solid #F1F5F9;
+    }
+    
+    .page-radio {
+      position: relative;
+      display: inline-block;
+      height: 20px;
+      width: 20px;
+    }
+    
+    .page-radio input {
+      opacity: 0;
+      position: absolute;
+      height: 0;
+      width: 0;
+    }
+    
+    .page-radio-mark {
+      position: absolute;
+      top: 0;
+      left: 0;
+      height: 20px;
+      width: 20px;
+      background-color: #fff;
+      border: 2px solid #CBD5E1;
+      border-radius: 50%;
+    }
+    
+    .page-radio input:checked ~ .page-radio-mark {
+      border-color: #0F172A;
+    }
+    
+    .page-radio-mark:after {
+      content: "";
+      position: absolute;
+      display: none;
+      top: 4px;
+      left: 4px;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #0F172A;
+    }
+    
+    .page-radio input:checked ~ .page-radio-mark:after {
+      display: block;
+    }
+    
+    .page-label {
+      margin-left: 12px;
+      font-size: 14px;
+      color: #0F172A;
+    }
+    
+    .page-tag {
+      margin-left: 8px;
+      padding: 2px 8px;
+      background-color: #FEF2F2;
+      color: #EF4444;
+      font-size: 12px;
+      font-weight: 500;
+      border-radius: 4px;
+    }
+    
+    .modal-footer {
+      display: flex;
+      justify-content: center;
+    }
+    
+    .analyze-button {
+      background-color: #0F172A;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      height: 44px;
+      padding: 0 24px;
+      font-size: 15px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background-color 0.2s;
+      width: 100%;
+    }
+    
+    .analyze-button:hover {
+      background-color: #1E293B;
+    }
   </style>
 </head>
 <body>
@@ -464,6 +662,79 @@
     </div>
   </div>
   
+  <!-- Modal Overlay -->
+  <div class="modal-overlay" id="modal-overlay">
+    <div class="select-page-modal">
+      <h2>Let's Refine Your Product</h2>
+      
+      <div class="filter-container">
+        <div class="filter-input-wrapper">
+          <div class="filter-input-icon">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M14.6666 14.6667L11.2916 11.2917M11.2916 11.2917C11.8333 10.75 12.263 10.1032 12.5562 9.39151C12.8494 8.67985 13.0001 7.91555 13.0001 7.14173C13.0001 6.36791 12.8494 5.60361 12.5562 4.89195C12.263 4.18029 11.8333 3.53344 11.2916 2.99173C10.7499 2.45002 10.103 2.02033 9.39136 1.72711C8.6797 1.43389 7.9154 1.28326 7.14158 1.28326C6.36776 1.28326 5.60346 1.43389 4.8918 1.72711C4.18014 2.02033 3.53329 2.45002 2.99158 2.99173C1.89862 4.08469 1.28298 5.58004 1.28298 7.14173C1.28298 8.70341 1.89862 10.1988 2.99158 11.2917C4.08454 12.3847 5.57989 13.0003 7.14158 13.0003C8.70326 13.0003 10.1986 12.3847 11.2916 11.2917Z" stroke="#64748B" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <input type="text" class="filter-input" placeholder="Choose a filter">
+        </div>
+        <button class="filter-dropdown">
+          Filters
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M4 6L8 10L12 6" stroke="#0F172A" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+      </div>
+      
+      <p class="page-selection-text">Select the pages you want to improve</p>
+      
+      <div class="pages-list">
+        <div class="page-item">
+          <label class="page-radio">
+            <input type="radio" name="page" value="issue-page" checked>
+            <span class="page-radio-mark"></span>
+          </label>
+          <span class="page-label">Issue Page</span>
+          <span class="page-tag">High Friction</span>
+        </div>
+        
+        <div class="page-item">
+          <label class="page-radio">
+            <input type="radio" name="page" value="project-overview">
+            <span class="page-radio-mark"></span>
+          </label>
+          <span class="page-label">Project Overview</span>
+        </div>
+        
+        <div class="page-item">
+          <label class="page-radio">
+            <input type="radio" name="page" value="settings">
+            <span class="page-radio-mark"></span>
+          </label>
+          <span class="page-label">Settings</span>
+        </div>
+        
+        <div class="page-item">
+          <label class="page-radio">
+            <input type="radio" name="page" value="desktop">
+            <span class="page-radio-mark"></span>
+          </label>
+          <span class="page-label">Desktop</span>
+        </div>
+        
+        <div class="page-item">
+          <label class="page-radio">
+            <input type="radio" name="page" value="documents">
+            <span class="page-radio-mark"></span>
+          </label>
+          <span class="page-label">Documents</span>
+        </div>
+      </div>
+      
+      <div class="modal-footer">
+        <button class="analyze-button">Analyze & Refine</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Calendar Modal -->
   <div class="calendar-modal" id="calendar-modal">
     <div class="calendar-container">
@@ -501,15 +772,13 @@
       parent.postMessage({ pluginMessage: message }, '*');
     }
     
-    // Back button logic
-    document.getElementById('back-button').addEventListener('click', function() {
-      sendMessageToPlugin({
-        type: 'NAVIGATE_TO_PROJECTS'
-      });
-    });
+    // Select Page Modal functionality
+    const importButton = document.getElementById('import-button');
+    const modalOverlay = document.getElementById('modal-overlay');
+    const analyzeButton = document.querySelector('.analyze-button');
     
-    // Import form submission
-    document.getElementById('import-form').addEventListener('submit', function(e) {
+    // Show modal when clicking Import button
+    importButton.addEventListener('click', function(e) {
       e.preventDefault();
       
       const apiKey = document.getElementById('api-key').value;
@@ -526,18 +795,51 @@
         return;
       }
       
+      // Show the modal
+      modalOverlay.classList.add('visible');
+    });
+    
+    // Close modal when clicking outside
+    modalOverlay.addEventListener('click', function(e) {
+      if (e.target === modalOverlay) {
+        modalOverlay.classList.remove('visible');
+      }
+    });
+    
+    // Handle analyze button click
+    analyzeButton.addEventListener('click', function() {
+      // Get selected page
+      const selectedPage = document.querySelector('input[name="page"]:checked').value;
+      
+      // Close the modal
+      modalOverlay.classList.remove('visible');
+      
+      // Get API key and date range
+      const apiKey = document.getElementById('api-key').value;
+      const dateFrom = document.getElementById('date-from').value;
+      const dateTo = document.getElementById('date-to').value;
+      
+      // Send import data to plugin
       sendMessageToPlugin({
         type: 'IMPORT_DATA',
         apiKey: apiKey,
         dateRange: {
           from: dateFrom,
           to: dateTo
-        }
+        },
+        selectedPage: selectedPage
       });
       
       // Show loading state
-      document.getElementById('import-button').textContent = 'Importing...';
-      document.getElementById('import-button').disabled = true;
+      importButton.textContent = 'Importing...';
+      importButton.disabled = true;
+    });
+    
+    // Back button logic
+    document.getElementById('back-button').addEventListener('click', function() {
+      sendMessageToPlugin({
+        type: 'NAVIGATE_TO_PROJECTS'
+      });
     });
     
     // Extension button click

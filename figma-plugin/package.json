@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "npm run sync && webpack --mode=development --watch",
     "build": "webpack --mode=production",
-    "postbuild": "mkdir -p dist/ui && cp src/ui/ProjectsPage.html dist/ui/ && cp dist/manifest.json manifest.json",
+    "postbuild": "mkdir -p dist/ui && cp src/ui/ProjectsPage.html dist/ui/ && cp src/ui/ImportPage.html dist/ui/ && cp dist/manifest.json manifest.json",
     "sync": "./sync-manifest.sh",
     "lint": "eslint --ext .ts,.tsx src/",
     "format": "prettier --write \"src/**/*.{ts,tsx}\""
