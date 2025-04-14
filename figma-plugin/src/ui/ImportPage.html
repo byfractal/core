@@ -675,6 +675,95 @@
     .analyze-button:hover {
       background-color: #1E293B;
     }
+    
+    /* Processing Success Modal Styles */
+    .processing-success-modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(15, 23, 42, 0.4);
+      backdrop-filter: blur(4px);
+      z-index: 300;
+      display: none;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .processing-success-modal.visible {
+      display: flex;
+      animation: fadeIn 0.3s ease-out;
+    }
+    
+    .processing-success-container {
+      background-color: #FFFFFF;
+      border: 1px solid #CBD5E1;
+      border-radius: 6px;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+      max-width: 420px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+      position: relative;
+      overflow: hidden;
+      animation: slideUp 0.3s ease-out;
+    }
+    
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+      }
+      to {
+        opacity: 1;
+      }
+    }
+    
+    @keyframes slideUp {
+      from {
+        transform: translateY(20px);
+        opacity: 0;
+      }
+      to {
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
+    
+    .processing-success-content {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+      position: relative;
+    }
+    
+    .processing-success-message {
+      font-size: 16px;
+      font-weight: 500;
+      color: #0F172A;
+      line-height: 1.75em;
+      text-align: center;
+      margin: 0;
+    }
+    
+    .progress-container {
+      width: 100%;
+      height: 8px;
+      background-color: #E2E8F0;
+      border-radius: 40px;
+      overflow: hidden;
+      margin-top: 8px;
+    }
+    
+    .progress-bar {
+      height: 100%;
+      width: 100%;
+      background-color: #0F172A;
+      border-radius: 40px;
+    }
   </style>
 </head>
 <body>
@@ -866,6 +955,18 @@
     </div>
   </div>
 
+  <!-- Processing Success Modal -->
+  <div class="processing-success-modal" id="processing-success-modal">
+    <div class="processing-success-container">
+      <div class="processing-success-content">
+        <p class="processing-success-message">Data processing completed successfully</p>
+        <div class="progress-container">
+          <div class="progress-bar"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <script>
     // Function to send message to plugin
     function sendMessageToPlugin(message) {
@@ -876,6 +977,19 @@
     const importButton = document.getElementById('import-button');
     const modalOverlay = document.getElementById('modal-overlay');
     const analyzeButton = document.querySelector('.analyze-button');
+    
+    // Processing Success Modal functionality
+    const processingSuccessModal = document.getElementById('processing-success-modal');
+    
+    // Function to show processing success modal with confetti
+    function showProcessingSuccess() {
+      processingSuccessModal.classList.add('visible');
+    }
+    
+    // Function to hide processing success modal
+    function hideProcessingSuccess() {
+      processingSuccessModal.classList.remove('visible');
+    }
     
     // Filter dropdown functionality
     const filterDropdownButton = document.getElementById('filter-dropdown-button');
@@ -1042,11 +1156,17 @@
             
           case 'IMPORT_COMPLETE':
             console.log('Import completed successfully');
-            // Navigate to next page
-            sendMessageToPlugin({
-              type: 'IMPORT_COMPLETE',
-              importId: message.importId
-            });
+            // Show success modal with confetti
+            showProcessingSuccess();
+            
+            // After 3 seconds, navigate to next page
+            setTimeout(() => {
+              hideProcessingSuccess();
+              sendMessageToPlugin({
+                type: 'IMPORT_COMPLETE',
+                importId: message.importId
+              });
+            }, 3000);
             break;
         }
       }
