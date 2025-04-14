@@ -764,6 +764,105 @@
       background-color: #0F172A;
       border-radius: 40px;
     }
+    
+    /* Improvements Ready Modal Styles */
+    .improvements-ready-modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(15, 23, 42, 0.4);
+      backdrop-filter: blur(4px);
+      z-index: 400;
+      display: none;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .improvements-ready-modal.visible {
+      display: flex;
+      animation: fadeIn 0.3s ease-out;
+    }
+    
+    .improvements-ready-container {
+      background-color: white;
+      border: 1px solid #CBD5E1;
+      border-radius: 6px;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      width: 100%;
+      width: 326px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+      animation: slideUp 0.3s ease-out;
+    }
+    
+    .improvements-ready-title {
+      font-size: 24px;
+      font-weight: 600;
+      color: #0F172A;
+      margin: 0;
+      letter-spacing: -0.75%;
+      line-height: 1.5em;
+    }
+    
+    .improvements-ready-content {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+      width: 100%;
+    }
+    
+    .improvements-ready-description {
+      font-size: 16px;
+      font-weight: 500;
+      color: #64748B;
+      margin: 0;
+      line-height: 1.75em;
+      text-align: center;
+    }
+    
+    .improvements-ready-actions {
+      display: flex;
+      gap: 12px;
+      width: 100%;
+    }
+    
+    .improvements-ready-button {
+      flex: 1;
+      height: 36px;
+      border-radius: 6px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+    }
+    
+    .fix-all-button {
+      background-color: #0F172A;
+      color: white;
+      border: none;
+    }
+    
+    .fix-all-button:hover {
+      background-color: #1E293B;
+    }
+    
+    .preview-all-button {
+      background-color: white;
+      color: #0F172A;
+      border: 1px solid #CBD5E1;
+    }
+    
+    .preview-all-button:hover {
+      background-color: #F8FAFC;
+    }
   </style>
 </head>
 <body>
@@ -966,6 +1065,20 @@
       </div>
     </div>
   </div>
+  
+  <!-- Improvements Ready Modal -->
+  <div class="improvements-ready-modal" id="improvements-ready-modal">
+    <div class="improvements-ready-container">
+      <h2 class="improvements-ready-title">Linear app</h2>
+      <div class="improvements-ready-content">
+        <p class="improvements-ready-description">5 improvements ready to be applied</p>
+        <div class="improvements-ready-actions">
+          <button class="improvements-ready-button fix-all-button" id="fix-all-button">Fix All Issues</button>
+          <button class="improvements-ready-button preview-all-button" id="preview-all-button">Preview All</button>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <script>
     // Function to send message to plugin
@@ -981,7 +1094,7 @@
     // Processing Success Modal functionality
     const processingSuccessModal = document.getElementById('processing-success-modal');
     
-    // Function to show processing success modal with confetti
+    // Function to show processing success modal
     function showProcessingSuccess() {
       processingSuccessModal.classList.add('visible');
     }
@@ -990,6 +1103,54 @@
     function hideProcessingSuccess() {
       processingSuccessModal.classList.remove('visible');
     }
+    
+    // Improvements Ready Modal functionality
+    const improvementsReadyModal = document.getElementById('improvements-ready-modal');
+    const fixAllButton = document.getElementById('fix-all-button');
+    const previewAllButton = document.getElementById('preview-all-button');
+    
+    // Function to show improvements ready modal
+    function showImprovementsReady(projectName, improvementsCount) {
+      // Update the modal content with dynamic data
+      document.querySelector('.improvements-ready-title').textContent = projectName || 'Linear app';
+      document.querySelector('.improvements-ready-description').textContent = 
+        `${improvementsCount || 5} improvements ready to be applied`;
+      
+      // Show the modal
+      improvementsReadyModal.classList.add('visible');
+    }
+    
+    // Function to hide improvements ready modal
+    function hideImprovementsReady() {
+      improvementsReadyModal.classList.remove('visible');
+    }
+    
+    // Fix All Issues button click handler
+    fixAllButton.addEventListener('click', function() {
+      sendMessageToPlugin({
+        type: 'FIX_ALL_ISSUES'
+      });
+      
+      // Hide the modal
+      hideImprovementsReady();
+    });
+    
+    // Preview All button click handler
+    previewAllButton.addEventListener('click', function() {
+      sendMessageToPlugin({
+        type: 'PREVIEW_ALL_IMPROVEMENTS'
+      });
+      
+      // Hide the modal
+      hideImprovementsReady();
+    });
+    
+    // Close improvements ready modal when clicking outside
+    improvementsReadyModal.addEventListener('click', function(e) {
+      if (e.target === improvementsReadyModal) {
+        hideImprovementsReady();
+      }
+    });
     
     // Filter dropdown functionality
     const filterDropdownButton = document.getElementById('filter-dropdown-button');
@@ -1159,13 +1320,20 @@
             // Show success modal with confetti
             showProcessingSuccess();
             
-            // After 3 seconds, navigate to next page
+            // After 3 seconds, show improvements ready modal
             setTimeout(() => {
               hideProcessingSuccess();
-              sendMessageToPlugin({
-                type: 'IMPORT_COMPLETE',
-                importId: message.importId
-              });
+              
+              // Show improvements ready modal with project data
+              const projectData = message.projectData || { 
+                name: 'Linear app', 
+                improvementsCount: 5 
+              };
+              
+              showImprovementsReady(
+                projectData.name,
+                projectData.improvementsCount
+              );
             }, 3000);
             break;
         }
