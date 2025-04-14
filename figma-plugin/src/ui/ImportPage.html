@@ -470,6 +470,11 @@
       color: #64748B;
     }
     
+    .filter-dropdown-container {
+      position: relative;
+      display: inline-block;
+    }
+    
     .filter-dropdown {
       display: flex;
       align-items: center;
@@ -488,6 +493,63 @@
     
     .filter-dropdown svg {
       margin-left: 8px;
+      transition: transform 0.2s ease;
+    }
+    
+    .filter-dropdown.open svg {
+      transform: rotate(180deg);
+    }
+    
+    .filter-dropdown-menu {
+      position: absolute;
+      top: calc(100% + 8px);
+      right: 0;
+      width: 170px;
+      background-color: white;
+      border: 1px solid #CBD5E1;
+      border-radius: 6px;
+      box-shadow: 0px 2px 4px -1px rgba(0, 0, 0, 0.06), 0px 4px 6px -1px rgba(0, 0, 0, 0.1);
+      padding: 4px;
+      z-index: 999;
+      display: none;
+    }
+    
+    .filter-dropdown-menu.visible {
+      display: block;
+      animation: menuFadeIn 0.15s ease-out;
+    }
+    
+    @keyframes menuFadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(-4px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    
+    .filter-option {
+      padding: 6px 8px;
+      font-size: 12px;
+      font-weight: 500;
+      color: #0F172A;
+      cursor: pointer;
+      border-radius: 4px;
+      display: block;
+      width: 100%;
+      text-align: left;
+      border: none;
+      background: none;
+    }
+    
+    .filter-option:hover {
+      background-color: #F4F4F5;
+    }
+    
+    .filter-option.selected {
+      background-color: #F4F4F5;
     }
     
     .page-selection-text {
@@ -698,16 +760,28 @@
           <div class="filter-input-icon">
             <svg width="13" height="14" viewBox="0 0 13 14" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path d="M10.8334 4.29175H5.95841M7.58341 9.70841H2.70841M7.58341 9.70841C7.58341 10.6059 8.31095 11.3334 9.20841 11.3334C10.1059 11.3334 10.8334 10.6059 10.8334 9.70841C10.8334 8.81095 10.1059 8.08341 9.20841 8.08341C8.31095 8.08341 7.58341 8.81095 7.58341 9.70841ZM5.41675 4.29175C5.41675 5.18921 4.68921 5.91675 3.79175 5.91675C2.89429 5.91675 2.16675 5.18921 2.16675 4.29175C2.16675 3.39429 2.89429 2.66675 3.79175 2.66675C4.68921 2.66675 5.41675 3.39429 5.41675 4.29175Z" stroke="#717279" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-              </svg>              
+            </svg>              
           </div>
-          <input type="text" class="filter-input" placeholder="Choose a filter">
+          <input type="text" class="filter-input" placeholder="Choose a filter" id="filter-input">
         </div>
-        <button class="filter-dropdown">
-          Filters
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M4 6L8 10L12 6" stroke="#0F172A" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-        </button>
+        
+        <!-- Wrap both the button and menu in a container for positioning -->
+        <div class="filter-dropdown-container">
+          <button class="filter-dropdown" id="filter-dropdown-button">
+            Filters
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" id="filter-arrow">
+              <path d="M4 6L8 10L12 6" stroke="#0F172A" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+          
+          <div class="filter-dropdown-menu" id="filter-dropdown-menu">
+            <button class="filter-option" data-filter="click-through-rate">Click-through rate < 10%.</button>
+            <button class="filter-option" data-filter="bounce-rate">Bounce rate > 60%</button>
+            <button class="filter-option" data-filter="time-on-page">Time on page < 5s</button>
+            <button class="filter-option" data-filter="negative-feedback">Contains negative feedback</button>
+            <button class="filter-option" data-filter="conversion-rate">Low conversion from this page</button>
+          </div>
+        </div>
       </div>
       
       <p class="page-selection-text">Select the pages you want to improve</p>
@@ -803,6 +877,72 @@
     const modalOverlay = document.getElementById('modal-overlay');
     const analyzeButton = document.querySelector('.analyze-button');
     
+    // Filter dropdown functionality
+    const filterDropdownButton = document.getElementById('filter-dropdown-button');
+    const filterDropdownMenu = document.getElementById('filter-dropdown-menu');
+    const filterOptions = document.querySelectorAll('.filter-option');
+    const filterInput = document.getElementById('filter-input');
+    const filterArrow = document.getElementById('filter-arrow');
+    
+    // Current selected filter
+    let selectedFilter = null;
+    
+    // Toggle filter dropdown
+    if (filterDropdownButton) {
+      filterDropdownButton.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        console.log('Filter dropdown clicked');
+        
+        // Toggle visibility
+        filterDropdownMenu.style.display = filterDropdownMenu.style.display === 'block' ? 'none' : 'block';
+        
+        // Toggle arrow rotation
+        if (filterDropdownMenu.style.display === 'block') {
+          filterDropdownButton.classList.add('open');
+        } else {
+          filterDropdownButton.classList.remove('open');
+        }
+      });
+    }
+    
+    // Handle filter option selection
+    if (filterOptions) {
+      filterOptions.forEach(option => {
+        option.addEventListener('click', function(e) {
+          e.preventDefault();
+          e.stopPropagation();
+          console.log('Filter option clicked:', this.textContent);
+          
+          // Remove selected class from all options
+          filterOptions.forEach(opt => opt.classList.remove('selected'));
+          
+          // Add selected class to clicked option
+          this.classList.add('selected');
+          
+          // Update filter input with selected filter
+          filterInput.value = this.textContent;
+          
+          // Store selected filter
+          selectedFilter = this.dataset.filter;
+          
+          // Close dropdown
+          filterDropdownMenu.style.display = 'none';
+          filterDropdownButton.classList.remove('open');
+        });
+      });
+    }
+    
+    // Close dropdown when clicking outside
+    document.addEventListener('click', function(e) {
+      if (filterDropdownMenu && filterDropdownButton && 
+          !filterDropdownButton.contains(e.target) && 
+          !filterDropdownMenu.contains(e.target)) {
+        filterDropdownMenu.style.display = 'none';
+        filterDropdownButton.classList.remove('open');
+      }
+    });
+    
     // Mettre à jour les styles quand une option est sélectionnée
     document.querySelectorAll('.page-radio input').forEach(radio => {
       radio.addEventListener('change', function() {
@@ -860,7 +1000,8 @@
           from: dateFrom,
           to: dateTo
         },
-        selectedPage: selectedPage
+        selectedPage: selectedPage,
+        selectedFilter: selectedFilter // Include selected filter in the data
       });
       
       // Show loading state
