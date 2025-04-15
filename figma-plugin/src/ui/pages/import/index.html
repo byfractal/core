@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HCentric UI/UX Optimizer - Import Project</title>
+  <link rel="stylesheet" href="../../shared/styles/common.css">
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <div class="container">
+    <div class="back-button" id="back-to-projects">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M19 12H5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M12 19L5 12L12 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      Back to Projects
+    </div>
+    
+    <h1>Import Project</h1>
+    <p>Connect to your HCentric account and import project data.</p>
+    
+    <form id="import-form">
+      <div class="form-group">
+        <label class="form-label">API Key</label>
+        <div class="input-wrapper">
+          <div class="input-icon">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M11 5.5L11.8284 4.67157C12.5786 3.92157 13.75 4.4467 13.75 5.5V5.5C13.75 6.5533 12.5786 7.07843 11.8284 6.32843L11 5.5ZM11 5.5L4.5 12M7.59987 11.9999L3.99997 12M3.99997 12L3.99997 8.40002" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <input type="password" id="api-key" class="form-input" placeholder="Enter your API key" autocomplete="off" />
+          <div class="toggle-visibility" id="toggle-api-key-visibility">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M2 8C2 8 4.00003 3.5 8 3.5C11.9999 3.5 14 8 14 8C14 8 11.9999 12.5 8 12.5C4.00003 12.5 2 8 2 8Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M8 9.5C8.82843 9.5 9.5 8.82843 9.5 8C9.5 7.17157 8.82843 6.5 8 6.5C7.17157 6.5 6.5 7.17157 6.5 8C6.5 8.82843 7.17157 9.5 8 9.5Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+        </div>
+      </div>
+      
+      <div class="form-group">
+        <label class="form-label">Date Range</label>
+        <div class="date-range">
+          <div class="date-input">
+            <div class="date-display">
+              <div class="input-icon">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M5.33325 1.33334V3.33334M10.6666 1.33334V3.33334M2.66659 6.00001H13.3333M4.66659 2.33334H11.3333C12.4378 2.33334 13.3333 3.22877 13.3333 4.33334V11C13.3333 12.1046 12.4378 13 11.3333 13H4.66659C3.56202 13 2.66659 12.1046 2.66659 11V4.33334C2.66659 3.22877 3.56202 2.33334 4.66659 2.33334Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </div>
+              <span class="date-display-text" id="start-date-display">Start date</span>
+              <input type="date" id="start-date" required />
+            </div>
+          </div>
+          <div class="date-separator">to</div>
+          <div class="date-input">
+            <div class="date-display">
+              <div class="input-icon">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M5.33325 1.33334V3.33334M10.6666 1.33334V3.33334M2.66659 6.00001H13.3333M4.66659 2.33334H11.3333C12.4378 2.33334 13.3333 3.22877 13.3333 4.33334V11C13.3333 12.1046 12.4378 13 11.3333 13H4.66659C3.56202 13 2.66659 12.1046 2.66659 11V4.33334C2.66659 3.22877 3.56202 2.33334 4.66659 2.33334Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </div>
+              <span class="date-display-text" id="end-date-display">End date</span>
+              <input type="date" id="end-date" required />
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <button type="submit" class="btn btn-primary">Import Data</button>
+    </form>
+    
+    <div class="browser-extension-section">
+      <h2>Browser Extension</h2>
+      <p>Install our browser extension to gather product analytics and user journey data.</p>
+      <button id="install-extension-btn" class="btn btn-secondary">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M8.00016 3.33334V12.6667M8.00016 12.6667L12.6668 8.00001M8.00016 12.6667L3.3335 8.00001" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        Install Extension
+      </button>
+    </div>
+  </div>
+
+  <!-- Modal container for all modals -->
+  <div id="modal-container" class="modal-container hidden">
+    <!-- Modal content will be inserted dynamically here -->
+  </div>
+
+  <script type="module" src="./main.js"></script>
+</body>
+</html>
