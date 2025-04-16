@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HCentric UI/UX Optimizer - Project Overview</title>
+  <style>
+    /* Reset et styles de base */
+    *, *::before, *::after {
+      box-sizing: border-box;
+    }
+    
+    body, html {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      -webkit-font-smoothing: antialiased;
+      overflow: hidden;
+    }
+    
+    body {
+      display: flex;
+      flex-direction: column;
+      background-color: white;
+    }
+    
+    .container {
+      padding: 20px;
+      width: 100%;
+      height: 100%;
+    }
+    
+    /* Typographie */
+    h1 {
+      font-size: 30px;
+      font-weight: 600;
+      color: #0F172A;
+      margin: 0 0 16px 0;
+      line-height: 1.2;
+    }
+    
+    p {
+      font-size: 14px;
+      color: #6B7280;
+      margin: 0 0 24px 0;
+      line-height: 1.5;
+      font-weight: 400;
+    }
+    
+    /* Header avec navigation */
+    .header {
+      display: flex;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+    
+    .back-button {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 32px;
+      height: 32px;
+      cursor: pointer;
+      color: #0F172A;
+      background: none;
+      border: none;
+      padding: 0;
+    }
+    
+    .project-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      width: 100%;
+      margin-bottom: 8px;
+    }
+    
+    .project-title {
+      font-size: 16px;
+      font-weight: 500;
+      color: #0F172A;
+    }
+    
+    .options-menu {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 32px;
+      height: 32px;
+      cursor: pointer;
+      color: #94A3B8;
+      position: relative;
+    }
+    
+    .delete-button {
+      display: none;
+      padding: 8px 16px;
+      font-size: 14px;
+      font-weight: 500;
+      color: #EF4444;
+      background-color: white;
+      border: 1px solid #E2E8F0;
+      border-radius: 6px;
+      cursor: pointer;
+      position: absolute;
+      top: 36px;
+      right: 0;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      z-index: 10;
+    }
+    
+    .delete-button.visible {
+      display: block;
+    }
+    
+    /* Optimization Cards */
+    .optimization-list {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    
+    .optimization-card {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 18px 20px;
+      border: 1px solid #E2E8F0;
+      border-radius: 6px;
+      background-color: white;
+      transition: all 0.2s;
+      cursor: pointer;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+    }
+    
+    .optimization-card:hover {
+      background-color: #EEEEEE;
+    }
+    
+    .optimization-info {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    
+    .optimization-icon {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 32px;
+      height: 32px;
+      color: #0F172A;
+    }
+    
+    .optimization-name {
+      font-size: 14px;
+      font-weight: 500;
+      color: #0F172A;
+    }
+    
+    .optimization-date {
+      font-size: 14px;
+      color: #94A3B8;
+      margin-top: 4px;
+    }
+    
+    .optimization-tags {
+      display: flex;
+      gap: 8px;
+      margin-top: 8px;
+    }
+    
+    .tag {
+      padding: 4px 8px;
+      font-size: 12px;
+      font-weight: 500;
+      color: #3B82F6;
+      background-color: #EFF6FF;
+      border-radius: 4px;
+    }
+    
+    .arrow-icon {
+      color: #94A3B8;
+    }
+    
+    /* Add Optimization Button */
+    .new-optimization {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 18px 20px;
+      border: 1px solid #E2E8F0;
+      border-radius: 6px;
+      background-color: white;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+    }
+    
+    .new-optimization-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      height: 32px;
+      padding: 0 16px;
+      background-color: #0F172A;
+      color: white;
+      font-size: 12px;
+      font-weight: 500;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.2s;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+    
+    .new-optimization-btn:hover {
+      background-color: #1E293B;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.12);
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <button class="back-button" id="back-button">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M15 18L9 12L15 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+    </div>
+    
+    <div class="project-header">
+      <div class="project-title">Project Overview</div>
+      <div class="options-menu" id="options-menu">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 12.5C12.2761 12.5 12.5 12.2761 12.5 12C12.5 11.7239 12.2761 11.5 12 11.5C11.7239 11.5 11.5 11.7239 11.5 12C11.5 12.2761 11.7239 12.5 12 12.5Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M12 18.5C12.2761 18.5 12.5 18.2761 12.5 18C12.5 17.7239 12.2761 17.5 12 17.5C11.7239 17.5 11.5 17.7239 11.5 18C11.5 18.2761 11.7239 18.5 12 18.5Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M12 6.5C12.2761 6.5 12.5 6.27614 12.5 6C12.5 5.72386 12.2761 5.5 12 5.5C11.7239 5.5 11.5 5.72386 11.5 6C11.5 6.27614 11.7239 6.5 12 6.5Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <button class="delete-button" id="delete-button">Delete Project</button>
+      </div>
+    </div>
+    
+    <h1 id="project-name">Linear app</h1>
+    <p>You can import data, analyze pages, and improve user experience based on real product insights.</p>
+    
+    <div class="optimization-list" id="optimization-list">
+      <!-- New Optimization button -->
+      <div class="new-optimization">
+        <div class="optimization-info">
+          <div class="optimization-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M9 12H15M12 9V15M12 21C16.9706 21 21 16.9706 21 12C21 7.02944 16.9706 3 12 3C7.02944 3 3 7.02944 3 12C3 16.9706 7.02944 21 12 21Z" stroke="#0F172A" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <div>
+            <div class="optimization-name">New Optimization</div>
+          </div>
+        </div>
+        <button class="new-optimization-btn" id="new-optimization-btn">New Optimization</button>
+      </div>
+      
+      <!-- Optimizations will be rendered dynamically here -->
+    </div>
+  </div>
+
+  <script>
+    // Variables pour stocker les informations du projet courant
+    let currentProject = {
+      id: null,
+      name: 'Linear app' // Par défaut pour le prototype
+    };
+    
+    // Fonction pour envoyer un message au plugin
+    function sendMessageToPlugin(message) {
+      parent.postMessage({ pluginMessage: message }, '*');
+    }
+    
+    // Fonction pour générer le HTML d'une optimisation
+    function generateOptimizationCardHTML(optimization) {
+      const tagsHTML = optimization.tags.map(tag => `<div class="tag">${tag}</div>`).join('');
+      
+      return `
+        <div class="optimization-card" data-optimization-id="${optimization.id}">
+          <div class="optimization-info">
+            <div class="optimization-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M9 11L12 14L22 4M21 12V19C21 19.5304 20.7893 20.0391 20.4142 20.4142C20.0391 20.7893 19.5304 21 19 21H5C4.46957 21 3.96086 20.7893 3.58579 20.4142C3.21071 20.0391 3 19.5304 3 19V5C3 4.46957 3.21071 3.96086 3.58579 3.58579C3.96086 3.21071 4.46957 3 5 3H16" stroke="#0F172A" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+            <div>
+              <div class="optimization-name">${optimization.name}</div>
+              <div class="optimization-date">${optimization.date}</div>
+              <div class="optimization-tags">
+                ${tagsHTML}
+              </div>
+            </div>
+          </div>
+          <div class="arrow-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M9 6L15 12L9 18" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+          </div>
+        </div>
+      `;
+    }
+    
+    // Fonction pour afficher les optimisations
+    function renderOptimizations(optimizations) {
+      const optimizationList = document.getElementById('optimization-list');
+      const newOptimizationCard = optimizationList.querySelector('.new-optimization');
+      
+      // Supprimer toutes les optimisations existantes (mais garder le bouton "New Optimization")
+      const cards = optimizationList.querySelectorAll('.optimization-card:not(.new-optimization)');
+      cards.forEach(card => card.remove());
+      
+      // Ajouter les nouvelles optimisations après le bouton "New Optimization"
+      optimizations.forEach(optimization => {
+        const optimizationHTML = generateOptimizationCardHTML(optimization);
+        newOptimizationCard.insertAdjacentHTML('afterend', optimizationHTML);
+      });
+      
+      // Attacher les écouteurs d'événements pour les nouvelles optimisations
+      attachOptimizationClickListeners();
+    }
+    
+    // Attacher les écouteurs d'événements aux cartes d'optimisation
+    function attachOptimizationClickListeners() {
+      document.querySelectorAll('.optimization-card:not(.new-optimization)').forEach(card => {
+        card.addEventListener('click', function() {
+          const optimizationName = this.querySelector('.optimization-name').textContent;
+          const optimizationId = this.dataset.optimizationId;
+          sendMessageToPlugin({
+            type: 'VIEW_OPTIMIZATION',
+            optimizationId: optimizationId
+          });
+        });
+      });
+    }
+    
+    // Fonction pour gérer les messages venant du plugin
+    function handlePluginMessages(event) {
+      if (event.data.pluginMessage) {
+        const message = event.data.pluginMessage;
+        console.log('Message reçu du plugin:', message);
+        
+        // Traiter les différents types de messages ici
+        switch (message.type) {
+          case 'PROJECT_DETAILS':
+            if (message.project) {
+              currentProject = message.project;
+              document.getElementById('project-name').textContent = message.project.name;
+            }
+            break;
+          case 'OPTIMIZATIONS_LOADED':
+            if (message.optimizations && Array.isArray(message.optimizations)) {
+              renderOptimizations(message.optimizations);
+            } else {
+              // Si aucune optimisation n'est disponible, ajouter une optimisation de démo
+              const demoOptimizations = [
+                {
+                  id: '1',
+                  name: 'Optimization #1',
+                  date: '03/30/2025',
+                  tags: ['Layout', 'Friction', 'Navigation', '...']
+                }
+              ];
+              renderOptimizations(demoOptimizations);
+            }
+            break;
+          // Ajouter d'autres cas selon les besoins
+        }
+      }
+    }
+    
+    // Ajouter un écouteur pour les messages du plugin
+    window.addEventListener('message', handlePluginMessages);
+    
+    // Notifier le plugin que l'UI est prête
+    window.addEventListener('load', () => {
+      sendMessageToPlugin({ type: 'UI_READY' });
+      // Demander les détails du projet et la liste des optimisations
+      sendMessageToPlugin({ type: 'GET_PROJECT_DETAILS' });
+      sendMessageToPlugin({ type: 'GET_OPTIMIZATIONS' });
+    });
+    
+    // Gérer le clic sur le bouton "New Optimization"
+    document.getElementById('new-optimization-btn').addEventListener('click', function() {
+      sendMessageToPlugin({ type: 'NEW_OPTIMIZATION' });
+    });
+    
+    // Gérer le clic sur le bouton retour
+    document.getElementById('back-button').addEventListener('click', function() {
+      sendMessageToPlugin({ type: 'BACK_TO_PROJECTS' });
+    });
+    
+    // Gérer le clic sur le menu d'options
+    document.getElementById('options-menu').addEventListener('click', function(event) {
+      const deleteButton = document.getElementById('delete-button');
+      deleteButton.classList.toggle('visible');
+      event.stopPropagation();
+    });
+    
+    // Gérer le clic sur le bouton Delete Project
+    document.getElementById('delete-button').addEventListener('click', function() {
+      if (confirm(`Are you sure you want to delete "${currentProject.name}"?`)) {
+        sendMessageToPlugin({ 
+          type: 'DELETE_PROJECT',
+          projectId: currentProject.id
+        });
+      }
+    });
+    
+    // Fermer le menu d'options quand on clique ailleurs
+    document.addEventListener('click', function(event) {
+      const deleteButton = document.getElementById('delete-button');
+      const optionsMenu = document.getElementById('options-menu');
+      
+      if (deleteButton.classList.contains('visible') && !optionsMenu.contains(event.target)) {
+        deleteButton.classList.remove('visible');
+      }
+    });
+  </script>
+</body>
+</html> 

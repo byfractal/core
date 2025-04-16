@@ -4,72 +4,33 @@
 const WIDTH = 450;
 const HEIGHT = 650; 
 
-// HTML pages
-const HTML_PAGES = {
-  PROJECTS: __html__,  // Default UI
-  IMPORT: `
-<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="utf-8">
-  <title>Import Project</title>
-  <style>
-    body, html {
-      margin: 0;
-      padding: 0;
-      height: 100%;
-      width: 100%;
-      overflow: hidden;
-    }
-    iframe {
-      border: none;
-      width: 100%;
-      height: 100%;
-    }
-  </style>
-</head>
-<body>
-  <iframe src="./src/ui/ImportPage.html"></iframe>
-</body>
-</html>
-  `
+// Current page tracker
+let currentPage = 'ProjectOverviewPage';
+
+// Current project tracker
+let currentProject = {
+  id: "proj_001",
+  name: 'Linear app'
 };
 
-// Current page tracker
-let currentPage: 'PROJECTS' | 'IMPORT' = 'PROJECTS';
+// Show UI and initialize
+figma.showUI(__html__, { 
+  width: WIDTH, 
+  height: HEIGHT,
+  themeColors: true
+});
 
 // Handle command from menu selection
 figma.command && handleCommand(figma.command);
 
 function handleCommand(command: string) {
-  switch (command) {
-    case 'projects':
-      currentPage = 'PROJECTS';
-      break;
-    case 'import':
-      currentPage = 'IMPORT';
-      break;
-    default:
-      // Default to projects page
-      currentPage = 'PROJECTS';
-  }
-  
-  // Show the appropriate UI
-  figma.showUI(HTML_PAGES[currentPage], { 
-    width: WIDTH, 
-    height: HEIGHT,
-    themeColors: true
-  });
+  changePage('ProjectOverviewPage');
 }
 
-// If no command is specified, show default UI
-if (!figma.command) {
-  // Show UI with specified dimensions
-  figma.showUI(HTML_PAGES[currentPage], { 
-    width: WIDTH, 
-    height: HEIGHT,
-    themeColors: true // Use Figma theme colors
-  });
+// Helper function to change pages
+function changePage(page: string) {
+  currentPage = page;
+  figma.ui.postMessage({ type: 'CHANGE_PAGE', page });
 }
 
 console.log("Plugin UI launched");
@@ -93,6 +54,22 @@ const demoProjects = [
   }
 ];
 
+// Sample optimizations data for demonstration
+const demoOptimizations = [
+  {
+    id: "opt_001",
+    name: "Optimization #1",
+    date: "03/30/2025",
+    tags: ["Layout", "Friction", "Navigation"]
+  },
+  {
+    id: "opt_002",
+    name: "Optimization #2",
+    date: "03/15/2025",
+    tags: ["Color", "Spacing", "Friction"]
+  }
+];
+
 // Handle messages from the UI
 figma.ui.onmessage = (msg) => {
   console.log("Message received from UI:", msg);
@@ -102,6 +79,19 @@ figma.ui.onmessage = (msg) => {
     switch (msg.type) {
       case 'UI_READY':
         console.log("UI ready - Sending initialization data");
+        
+        changePage('ProjectOverviewPage');
+        
+        figma.ui.postMessage({
+          type: 'PROJECT_DETAILS',
+          project: currentProject
+        });
+        
+        figma.ui.postMessage({
+          type: 'OPTIMIZATIONS_LOADED',
+          optimizations: demoOptimizations
+        });
+        
         figma.ui.postMessage({ 
           type: 'INIT_DATA',
           version: '1.0.0'
@@ -119,35 +109,72 @@ figma.ui.onmessage = (msg) => {
         
       case 'SELECT_PROJECT':
         console.log("Project selected:", msg.projectName);
-        // Handle project selection - could navigate to project details page
-        // For now, just send a message back
+        // Store current project info
+        currentProject = {
+          id: msg.projectId,
+          name: msg.projectName
+        };
+        
+        // Navigate to the project overview page
+        changePage('ProjectOverviewPage');
+        break;
+        
+      case 'GET_PROJECT_DETAILS':
+        console.log("Project details requested");
+        // Send project details
         figma.ui.postMessage({
-          type: 'PROJECT_SELECTED',
-          projectName: msg.projectName
+          type: 'PROJECT_DETAILS',
+          project: currentProject
         });
+        break;
+        
+      case 'GET_OPTIMIZATIONS':
+        console.log("Optimizations requested");
+        // Send demo optimizations
+        figma.ui.postMessage({
+          type: 'OPTIMIZATIONS_LOADED',
+          optimizations: demoOptimizations
+        });
+        break;
+        
+      case 'NEW_OPTIMIZATION':
+        console.log("New optimization requested for project:", currentProject.name);
+        // In a real app, this would initiate a new optimization flow
+        figma.notify("Starting a new optimization for " + currentProject.name);
+        // Navigate to import page for now
+        changePage('ImportPage');
+        break;
+        
+      case 'VIEW_OPTIMIZATION':
+        console.log("View optimization requested:", msg.optimizationId);
+        // In a real app, this would navigate to a detailed view of the optimization
+        figma.notify("Viewing optimization details: " + msg.optimizationId);
+        break;
+        
+      case 'DELETE_PROJECT':
+        console.log("Delete project requested:", msg.projectId);
+        // In a real app, this would delete the project after confirmation
+        figma.notify("Project deleted: " + currentProject.name);
+        // Navigate back to projects page
+        changePage('ProjectsPage');
+        break;
+        
+      case 'BACK_TO_PROJECTS':
+        console.log("Navigating back to projects page");
+        // Update current page
+        changePage('ProjectsPage');
         break;
         
       case 'ADD_PROJECT':
         console.log("Add new project requested");
-        
-        // Change approach: directly set HTML_PAGES['IMPORT'] instead of sending a message
-        currentPage = 'IMPORT';
-        figma.showUI(HTML_PAGES[currentPage], { 
-          width: WIDTH, 
-          height: HEIGHT,
-          themeColors: true
-        });
+        // Navigate to import page
+        changePage('ImportPage');
         break;
         
       case 'NAVIGATE_TO_PROJECTS':
         console.log("Navigating back to projects page");
         // Update current page
-        currentPage = 'PROJECTS';
-        figma.showUI(HTML_PAGES[currentPage], { 
-          width: WIDTH, 
-          height: HEIGHT,
-          themeColors: true
-        });
+        changePage('ProjectsPage');
         break;
         
       case 'IMPORT_DATA':
@@ -175,13 +202,7 @@ figma.ui.onmessage = (msg) => {
         // Here you would navigate to a results or dashboard page
         figma.notify("Import completed successfully!");
         // For now, navigate back to projects page
-        // Update current page
-        currentPage = 'PROJECTS';
-        figma.showUI(HTML_PAGES[currentPage], { 
-          width: WIDTH, 
-          height: HEIGHT,
-          themeColors: true
-        });
+        changePage('ProjectsPage');
         break;
         
       case 'INSTALL_EXTENSION':
