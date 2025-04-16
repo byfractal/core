@@ -3,7 +3,7 @@
   "id": "hcentric-ui-ux-optimizer",
   "api": "1.0.0",
   "main": "dist/code.js",
-  "ui": "dist/ui/ImportPage.html",
+  "ui": "dist/ui.html",
   "editorType": ["figma"],
   "permissions": [],
   "networkAccess": {
