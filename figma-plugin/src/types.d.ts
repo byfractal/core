@@ -64,3 +64,24 @@ export interface SemanticTag {
   text?: string;
   type: SemanticTagType;
 }
+
+// UI Components Props
+export interface ButtonProps
+  extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+  variant?:
+    | "default"
+    | "destructive"
+    | "outline"
+    | "secondary"
+    | "ghost"
+    | "link"
+    | "primary";
+  size?: "default" | "sm" | "lg" | "icon";
+  asChild?: boolean;
+}
+
+export interface SemanticTagProps extends React.HTMLAttributes<HTMLDivElement> {
+  type: SemanticTagType;
+  text?: string;
+  size?: "sm" | "md" | "lg";
+}

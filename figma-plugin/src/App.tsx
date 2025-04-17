@@ -10,8 +10,8 @@ declare global {
   }
 }
 
-// Utiliser VITE au lieu de REACT_APP pour les variables d'environnement
-const CLERK_PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
+// Utiliser process.env au lieu de import.meta.env
+const CLERK_PUBLISHABLE_KEY = process.env.VITE_CLERK_PUBLISHABLE_KEY as string;
 
 export function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);

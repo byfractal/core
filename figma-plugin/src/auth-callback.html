@@ -1,157 +1,113 @@
-<!doctype html>
-<html lang="en">
+<!DOCTYPE html>
+<html lang="fr">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Authentication Callback</title>
+    <title>Authentification en cours...</title>
     <style>
       body {
-        font-family:
-          -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu,
-          Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
         margin: 0;
-        padding: 0;
-        background-color: #f5f5f5;
+        padding: 20px;
         display: flex;
-        justify-content: center;
+        flex-direction: column;
         align-items: center;
+        justify-content: center;
         min-height: 100vh;
+        background-color: #1e293b;
+        color: #f8fafc;
         text-align: center;
       }
 
-      .container {
-        background-color: white;
-        border-radius: 8px;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        padding: 2rem;
-        max-width: 500px;
-        width: 100%;
-      }
-
-      h1 {
-        color: #333;
-        margin-bottom: 1rem;
-      }
-
-      p {
-        color: #666;
-        margin-bottom: 2rem;
-      }
-
-      .loader {
-        border: 4px solid #f3f3f3;
-        border-top: 4px solid #3498db;
-        border-radius: 50%;
+      .spinner {
         width: 40px;
         height: 40px;
-        animation: spin 2s linear infinite;
-        margin: 0 auto;
+        margin: 20px auto;
+        border: 4px solid rgba(255, 255, 255, 0.2);
+        border-top-color: #3b82f6;
+        border-radius: 50%;
+        animation: spin 1s ease-in-out infinite;
       }
 
       @keyframes spin {
-        0% {
-          transform: rotate(0deg);
-        }
-        100% {
+        to {
           transform: rotate(360deg);
         }
       }
 
+      .message {
+        font-size: 18px;
+        max-width: 500px;
+        line-height: 1.5;
+      }
+
       .error {
-        color: #e74c3c;
-        background-color: #fde8e8;
-        padding: 1rem;
+        color: #ef4444;
+        margin-top: 20px;
+        padding: 10px;
         border-radius: 4px;
-        margin-bottom: 1rem;
+        background-color: rgba(239, 68, 68, 0.1);
       }
     </style>
   </head>
   <body>
-    <div class="container" id="app">
-      <h1>Authentication in Progress</h1>
-      <p>Please wait while we complete the authentication process...</p>
-      <div class="loader"></div>
+    <h1>Authentification en cours</h1>
+    <div class="spinner"></div>
+    <div class="message">
+      Finalisation de l'authentification...
+      <p>
+        Cette fenêtre se fermera automatiquement une fois l'authentification
+        complétée.
+      </p>
     </div>
+    <div id="error" class="error" style="display: none"></div>
 
     <script>
-      // Fonction pour extraire les paramètres de l'URL
-      function getUrlParams() {
-        const params = {};
-        const queryString = window.location.search.substring(1);
-        const pairs = queryString.split("&");
+      // Récupérer les paramètres de l'URL
+      const params = new URLSearchParams(window.location.search);
+      const code = params.get("code");
+      const state = params.get("state");
+      const error = params.get("error");
 
-        for (const pair of pairs) {
-          const [key, value] = pair.split("=");
-          params[decodeURIComponent(key)] = decodeURIComponent(value || "");
+      window.onload = function () {
+        if (error) {
+          // Afficher l'erreur
+          const errorEl = document.getElementById("error");
+          errorEl.style.display = "block";
+          errorEl.textContent = `Erreur: ${error}`;
+          return;
         }
 
-        return params;
-      }
-
-      // Fonction pour afficher une erreur
-      function showError(message) {
-        const app = document.getElementById("app");
-        app.innerHTML = `
-        <h1>Authentication Error</h1>
-        <div class="error">${message}</div>
-        <p>Please close this window and try again.</p>
-      `;
-      }
-
-      // Fonction pour afficher un succès
-      function showSuccess() {
-        const app = document.getElementById("app");
-        app.innerHTML = `
-        <h1>Authentication Successful</h1>
-        <p>You have been successfully authenticated. You can close this window and return to the plugin.</p>
-      `;
-      }
-
-      // Exécution du code principal
-      (function main() {
-        try {
-          // Récupérer les paramètres de l'URL
-          const params = getUrlParams();
-
-          // Vérifier s'il y a une erreur
-          if (params.error) {
-            showError(`Error: ${params.error_description || params.error}`);
-            return;
-          }
-
-          // Vérifier s'il y a un code d'autorisation
-          if (!params.code) {
-            showError("No authorization code received");
-            return;
-          }
-
-          // Envoyer le code d'autorisation au plugin Figma via postMessage
-          // La cible est la fenêtre parente (opener)
-          if (window.opener) {
+        if (code && state) {
+          // Envoyer le code à la fenêtre parente (plugin Figma)
+          try {
             window.opener.postMessage(
               {
                 type: "AUTH_CALLBACK",
-                url: window.location.href,
+                code,
+                state,
               },
               "*"
             );
 
-            // Afficher un message de succès
-            showSuccess();
-
-            // Fermer automatiquement cette fenêtre après 3 secondes
+            // Fermer cette fenêtre après 2 secondes
             setTimeout(() => {
               window.close();
-            }, 3000);
-          } else {
-            showError(
-              "Unable to communicate with the plugin. Please close this window and try again."
-            );
+            }, 2000);
+          } catch (err) {
+            console.error("Erreur lors de l'envoi du message:", err);
+            const errorEl = document.getElementById("error");
+            errorEl.style.display = "block";
+            errorEl.textContent = `Erreur de communication: ${err.message}`;
           }
-        } catch (error) {
-          showError(`An unexpected error occurred: ${error.message}`);
+        } else {
+          // Pas de code ou de state
+          const errorEl = document.getElementById("error");
+          errorEl.style.display = "block";
+          errorEl.textContent = "Paramètres de redirection manquants.";
         }
-      })();
+      };
     </script>
   </body>
 </html>
