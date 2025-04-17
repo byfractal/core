@@ -1,9 +1,13 @@
-import React from 'react';
-import { Optimization, SemanticTag } from '@/types';
-import { cn, formatDate } from '@/lib/utils';
-import { ActionMenu, DropdownMenuContent, DropdownMenuItem } from '@/components/ui/dropdown-menu';
-import { SemanticTag as SemanticTagComponent } from '@/components/ui/semantic-tag';
-import { File, Trash, Copy, ExternalLink } from 'lucide-react';
+import React from "react";
+import { Optimization, SemanticTag } from "@/types";
+import { cn, formatDate } from "@/lib/utils";
+import {
+  ActionMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+} from "@/components/ui/dropdown-menu";
+import { SemanticTag as SemanticTagComponent } from "@/components/ui/semantic-tag";
+import { File, Trash, Copy, ExternalLink } from "lucide-react";
 
 interface ProjectCardProps {
   optimization: Optimization;
@@ -15,7 +19,7 @@ interface ProjectCardProps {
 
 /**
  * ProjectCard Component
- * 
+ *
  * Displays a card for a project optimization with title, timestamp, tags and actions
  */
 export const ProjectCard: React.FC<ProjectCardProps> = ({
@@ -23,10 +27,10 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
   onSelect,
   onDelete,
   onDuplicate,
-  className
+  className,
 }) => {
   return (
-    <div 
+    <div
       className={cn(
         "flex flex-row items-center p-4 border border-figma-border rounded-md bg-figma-background cursor-pointer hover:bg-gray-50 transition-colors",
         className
@@ -37,7 +41,7 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
       <div className="flex-shrink-0 mr-4">
         <File className="h-6 w-6 text-figma-text-primary" />
       </div>
-      
+
       {/* Project Info */}
       <div className="flex-grow">
         <div className="flex flex-row items-center justify-between">
@@ -45,17 +49,19 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
             {optimization.title}
           </h3>
         </div>
-        
+
         <div className="mt-1 text-sm font-normal text-figma-text-timestamp font-geist">
-          {formatDate(optimization.createdAt)}
+          {optimization.createdAt
+            ? formatDate(optimization.createdAt)
+            : "No date"}
         </div>
-        
+
         {/* Tags */}
-        {optimization.tags.length > 0 && (
+        {optimization.tags && optimization.tags.length > 0 && (
           <div className="flex flex-wrap gap-2 mt-2">
             {optimization.tags.map((tag) => (
-              <SemanticTagComponent 
-                key={`${optimization.id}-${tag.type}`} 
+              <SemanticTagComponent
+                key={`${optimization.id}-${tag.type}`}
                 type={tag.type}
                 size="sm"
               />
@@ -63,7 +69,7 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
           </div>
         )}
       </div>
-      
+
       {/* More Actions Menu */}
       <div onClick={(e) => e.stopPropagation()}>
         <ActionMenu>
@@ -76,7 +82,7 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
               <ExternalLink className="mr-2 h-4 w-4" />
               <span>Open</span>
             </DropdownMenuItem>
-            <DropdownMenuItem 
+            <DropdownMenuItem
               onClick={() => onDelete(optimization.id)}
               className="text-red-600 hover:text-red-700 hover:bg-red-50"
             >
@@ -98,10 +104,10 @@ interface NewProjectCardProps {
 
 export const NewProjectCard: React.FC<NewProjectCardProps> = ({
   onAddProject,
-  className
+  className,
 }) => {
   return (
-    <div 
+    <div
       className={cn(
         "flex flex-row items-center p-4 border border-figma-border rounded-md bg-figma-background cursor-pointer hover:bg-gray-50 transition-colors",
         className
@@ -121,4 +127,4 @@ export const NewProjectCard: React.FC<NewProjectCardProps> = ({
       </div>
     </div>
   );
-}; 
+};

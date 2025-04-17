@@ -5,8 +5,13 @@
   "main": "dist/code.js",
   "scripts": {
     "build": "webpack --mode=production",
+    "postbuild": "if not exist dist\\ui mkdir dist\\ui && copy src\\ui\\ProjectsPage.html dist\\ui\\ && copy dist\\manifest.json manifest.json",
     "dev": "webpack --mode=development --watch",
-    "test": "jest"
+    "sync": "./sync-manifest.sh",
+    "lint": "eslint --ext .ts,.tsx src/",
+    "format": "prettier --write \"src/**/*.{ts,tsx}\"",
+    "test": "jest",
+    "test:clerk": "echo \"Testing Clerk Connection\" && webpack --mode=development && echo \"Test build completed. Please run the plugin in Figma to see test results.\""
   },
   "dependencies": {
     "react": "^18.2.0",
