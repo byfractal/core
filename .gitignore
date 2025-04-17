@@ -49,6 +49,7 @@ Thumbs.db
 # Fichiers spécifiques au projet
 /test_*.py
 /notebook_*.ipynb
+node_modules/
 
 hcentric_interface.egg-info/
 
