@@ -5,7 +5,10 @@
   "main": "dist/code.js",
   "scripts": {
     "build": "webpack --mode=production",
-    "postbuild": "if not exist dist\\ui mkdir dist\\ui && copy src\\ui\\ProjectsPage.html dist\\ui\\ && copy dist\\manifest.json manifest.json",
+    "postbuild": "npm run create-ui-dir && npm run copy-html-files && npm run copy-manifest",
+    "create-ui-dir": "if not exist dist\\ui mkdir dist\\ui",
+    "copy-html-files": "copy src\\ui\\ProjectsPage.html dist\\ui\\ && copy src\\ui\\ImportPage.html dist\\ui\\",
+    "copy-manifest": "copy dist\\manifest.json manifest.json",
     "dev": "webpack --mode=development --watch",
     "sync": "./sync-manifest.sh",
     "lint": "eslint --ext .ts,.tsx src/",
