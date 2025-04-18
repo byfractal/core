@@ -222,6 +222,113 @@
       background-color: #293446;
       box-shadow: 0 2px 4px rgba(0, 0, 0, 0.12);
     }
+
+    /* Confirm Delete Project Modal Styles */
+    .confirm-delete-project-modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color:#ffffff50;
+      backdrop-filter: blur(4px);
+      z-index: 400;
+      display: none;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .confirm-delete-project-modal.visible {
+      display: flex;
+      animation: fadeIn 0.3s ease-out;
+    }
+    
+    .confirm-delete-project-container {
+      background-color: white;
+      border: 1px solid #CBD5E1;
+      border-radius: 6px;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      width: 100%;
+      width: 326px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+      animation: slideUp 0.3s ease-out;
+    }
+    
+    .confirm-delete-project-title {
+      font-size: 24px;
+      font-weight: 600;
+      color: #0F172A;
+      margin: 0;
+      letter-spacing: -0.75%;
+      line-height: 1.5em;
+    }
+    
+    .confirm-delete-project-content {
+      align-items: center;
+      width: 100%;
+      text-align: left;
+    }
+    
+    .confirm-delete-project-description {
+      font-size: 16px;
+      font-weight: 500;
+      color: #64748B;
+      margin: 0;
+      line-height: 1.75em;
+      text-align: left;
+      padding: 12px 0 12px 0;
+    }
+    
+    .confirm-delete-project-actions {
+      display: flex;
+      gap: 12px;
+      width: 100%;
+    }
+    
+    .confirm-delete-project-button {
+      flex: 1;
+      height: 36px;
+      width: 120px;
+      border-radius: 6px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+    }
+    
+    .confirm-delete-project-button {
+      background-color: #DC2626;
+      color: white;
+      border: none;
+    }
+    
+    .confirm-delete-project-button:hover {
+      background-color: #bc1b1b;
+    }
+    
+    .cancel-button {
+      border-radius: 6px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+      background-color: white;
+      color: #0F172A;
+      border: 1px solid #CBD5E1;
+    }
+    
+    .cancel-button:hover {
+      background-color: #f6fbff;
+    }
   </style>
 </head>
 <body>
@@ -269,6 +376,20 @@
       <!-- Optimizations will be rendered dynamically here -->
     </div>
   </div>
+
+    <!-- Confirm Delete Project Modal -->
+    <div class="confirm-delete-project-modal" id="confirm-delete-project-modal">
+      <div class="confirm-delete-project-container">
+        <h2 class="confirm-delete-project-title">Linear app</h2>
+        <div class="confirm-delete-project-content">
+          <p class="confirm-delete-project-description">Are you sure you want to delete <br> this project ?</p>
+          <div class="confirm-delete-project-actions">
+            <button class="confirm-delete-project-button confirm-delete-project-button" id="confirm-delete-project-button">Delete</button>
+            <button class="confirm-delete-project-button cancel-button" id="cancel-button">Cancel</button>
+          </div>
+        </div>
+      </div>
+    </div>
 
   <script>
     // Variables pour stocker les informations du projet courant
@@ -413,12 +534,10 @@
     
     // Gérer le clic sur le bouton Delete Project
     document.getElementById('delete-button').addEventListener('click', function() {
-      if (confirm(`Are you sure you want to delete "${currentProject.name}"?`)) {
-        sendMessageToPlugin({ 
-          type: 'DELETE_PROJECT',
-          projectId: currentProject.id
-        });
-      }
+      // Update the project name in the modal
+      document.querySelector('.confirm-delete-project-title').textContent = currentProject.name;
+      // Show the custom delete confirmation modal
+      document.getElementById('confirm-delete-project-modal').classList.add('visible');
     });
     
     // Fermer le menu d'options quand on clique ailleurs
@@ -428,6 +547,53 @@
       
       if (deleteButton.classList.contains('visible') && !optionsMenu.contains(event.target)) {
         deleteButton.classList.remove('visible');
+      }
+    });
+
+    // Confirm Delete Project Modal functionality
+    const confirmDeleteProjectModal = document.getElementById('confirm-delete-project-modal');
+    const confirmDeleteButton = document.getElementById('confirm-delete-project-button');
+    const cancelButton = document.getElementById('cancel-button');
+    
+    // Function to show Confirm Delete Project modal
+    function showConfirmDeleteProject(projectName) {
+      // Update the modal content with dynamic data
+      document.querySelector('.confirm-delete-project-title').textContent = projectName || 'Linear app';
+      document.querySelector('.confirm-delete-project-description').textContent = 
+        `${confirmDeleteProjectCount || 5} confirm delete project to be applied`;
+      
+      // Show the modal
+      confirmDeleteProjectModal.classList.add('visible');
+    }
+    
+    // Function to hide Confirm Delete Project modal
+    function hideConfirmDeleteProject() {
+      confirmDeleteProjectModal.classList.remove('visible');
+    }
+    
+    // Confirm Delete button click handler
+    confirmDeleteButton.addEventListener('click', function() {
+      sendMessageToPlugin({
+        type: 'DELETE_PROJECT',
+        projectId: currentProject.id
+      });
+      
+      // Hide the modal
+      hideConfirmDeleteProject();
+    });
+    
+    // Cancel button click handler
+    cancelButton.addEventListener('click', function() {
+      hideConfirmDeleteProject();
+      
+      // Hide the modal
+      hideConfirmDeleteProject();
+    });
+    
+    // Close Confirm Delete Project modal when clicking outside
+    confirmDeleteProjectModal.addEventListener('click', function(e) {
+      if (e.target === confirmDeleteProjectModal) {
+        hideConfirmDeleteProject();
       }
     });
   </script>
