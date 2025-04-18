@@ -14,7 +14,7 @@
       margin: 0;
       padding: 0;
       height: 100%;
-      font-family: "Inter", "Geist", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
       -webkit-font-smoothing: antialiased;
       overflow: hidden;
     }
@@ -26,11 +26,9 @@
     }
     
     .container {
-      padding: 16px;
+      padding: 32px 50px 0 50px;
       width: 100%;
       height: 100%;
-      display: flex;
-      flex-direction: column;
     }
     
     /* Navigation */
@@ -38,7 +36,7 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      margin-bottom: 24px;
+      margin-bottom: 12px;
     }
     
     .back-button {
@@ -57,7 +55,22 @@
       font-size: 30px;
       font-weight: 600;
       color: #0F172A;
-      margin: 16px 0 24px 0;
+      margin-bottom: 16px;
+    }
+
+      /* Back button */
+      .back-button {
+      display: inline-flex;
+      align-items: center;
+      color: #6B7280;
+      margin-bottom: 20px;
+      margin-left: -18px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+    
+    .back-button svg {
+      margin-right: 8px;
     }
     
     /* Analysis Card */
@@ -187,6 +200,7 @@
       font-weight: 600;
       color: #64748B;
       line-height: 1.3;
+      padding: 4px 8px 4px 4px;
     }
     
     .link-icon {
@@ -294,10 +308,11 @@
   <div class="container">
     <!-- Navigation -->
     <div class="nav-header">
-      <div class="back-button">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M15 18L9 12L15 6" stroke="#0F172A" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+      <div class="back-button" id="back-button">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M15.8332 10.0001H4.1665M4.1665 10.0001L9.99984 15.8334M4.1665 10.0001L9.99984 4.16675" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
+        Back to Projects
       </div>
       <div class="organization-label">Organization #1</div>
     </div>
@@ -338,7 +353,11 @@
           <!-- NN Group Source Badge -->
           <div class="source-badge nn-group">
             <span>NN Group</span>
-            <span class="link-icon">↗</span>
+            <svg width="9" height="10" viewBox="0 0 9 10" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M4.80833 7.26284L4.24264 7.82852C3.86757 8.20359 3.35886 8.41431 2.82843 8.41431C2.29799 8.41431 1.78929 8.20359 1.41421 7.82852C1.03914 7.45345 0.828427 6.94474 0.828427 6.41431C0.828427 5.88387 1.03914 5.37517 1.41421 5.00009L1.9799 4.43441" stroke="#64748B" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M3.677 2.7373L4.24269 2.17162C4.61776 1.79655 5.12647 1.58583 5.6569 1.58583C6.18733 1.58583 6.69604 1.79655 7.07111 2.17162C7.44619 2.54669 7.6569 3.0554 7.6569 3.58583C7.6569 4.11627 7.44619 4.62497 7.07111 5.00005L6.50543 5.56573" stroke="#64748B" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M3.11133 6.13159L5.37407 3.86885" stroke="#64748B" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>              
           </div>
         </div>
       </div>
@@ -352,7 +371,11 @@
           <!-- Lucidpark Source Badge -->
           <div class="source-badge lucidpark">
             <span>Lucidpark</span>
-            <span class="link-icon">↗</span>
+            <svg width="9" height="10" viewBox="0 0 9 10" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M4.80833 7.26284L4.24264 7.82852C3.86757 8.20359 3.35886 8.41431 2.82843 8.41431C2.29799 8.41431 1.78929 8.20359 1.41421 7.82852C1.03914 7.45345 0.828427 6.94474 0.828427 6.41431C0.828427 5.88387 1.03914 5.37517 1.41421 5.00009L1.9799 4.43441" stroke="#64748B" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M3.677 2.7373L4.24269 2.17162C4.61776 1.79655 5.12647 1.58583 5.6569 1.58583C6.18733 1.58583 6.69604 1.79655 7.07111 2.17162C7.44619 2.54669 7.6569 3.0554 7.6569 3.58583C7.6569 4.11627 7.44619 4.62497 7.07111 5.00005L6.50543 5.56573" stroke="#64748B" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M3.11133 6.13159L5.37407 3.86885" stroke="#64748B" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>              
           </div>
         </div>
       </div>
@@ -495,6 +518,13 @@
       document.querySelector('.back-button').addEventListener('click', function() {
         parent.postMessage({ type: 'NAVIGATE_BACK' }, '*');
       });
+
+    // Back button logic
+    document.getElementById('back-button').addEventListener('click', function() {
+      sendMessageToPlugin({
+        type: 'NAVIGATE_TO_PROJECTS'
+      });
+    });
       
       // Gestion du bouton Fix Issue
       document.getElementById('fix-issue-button').addEventListener('click', function() {
