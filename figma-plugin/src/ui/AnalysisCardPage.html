@@ -356,7 +356,7 @@
     <!-- Page Title -->
     <h1 class="page-title">Linear app</h1>
     
-    <!-- Version Standard (Preview All): Analysis Card avec bouton Fix Issue actif -->
+    <!-- Version Standard (Preview All): Analysis Card with active Fix Issue button -->
     <div class="analysis-card" id="standard-card">
       <!-- Issue Header & Severity -->
       <div class="analysis-card-header">
@@ -459,7 +459,7 @@
       </button>
     </div>
     
-    <!-- Version ReadOnly (Fix All Issues): Analysis Card avec bouton Fix Issue désactivé -->
+    <!-- Version ReadOnly (Fix All Issues): Analysis Card with disabled Fix Issue button -->
     <div class="analysis-card" id="readonly-card">
       <!-- Issue Header & Severity -->
       <div class="analysis-card-header">
@@ -564,9 +564,9 @@
   </div>
   
   <script>
-    // Initialisation
+    // Initialization
     document.addEventListener('DOMContentLoaded', function() {
-      // Gestion du bouton de retour
+      // Back button handler
       document.querySelector('.back-button').addEventListener('click', function() {
         parent.postMessage({ type: 'NAVIGATE_BACK' }, '*');
       });
@@ -578,9 +578,9 @@
       });
     });
       
-      // Gestion du bouton Fix Issue
+      // Fix Issue button handler
       document.getElementById('fix-issue-button').addEventListener('click', function() {
-        // Envoi du message au parent (code principal du plugin)
+        // Send message to parent (main plugin code)
         parent.postMessage({ type: 'FIX_ISSUE', issueId: 'issue-001' }, '*');
       });
     });

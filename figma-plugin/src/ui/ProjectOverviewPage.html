@@ -14,7 +14,7 @@
       margin: 0;
       padding: 0;
       height: 100%;
-      font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      font-family: "Geist", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
       -webkit-font-smoothing: antialiased;
       overflow: hidden;
     }
@@ -392,18 +392,18 @@
     </div>
 
   <script>
-    // Variables pour stocker les informations du projet courant
+    // Variables to store current project information
     let currentProject = {
       id: null,
-      name: 'Linear app' // Par défaut pour le prototype
+      name: 'Linear app' // Default for prototype
     };
     
-    // Fonction pour envoyer un message au plugin
+    // Function to send a message to the plugin
     function sendMessageToPlugin(message) {
       parent.postMessage({ pluginMessage: message }, '*');
     }
     
-    // Fonction pour générer le HTML d'une optimisation
+    // Function to generate HTML for an optimization
     function generateOptimizationCardHTML(optimization) {
       const tagsHTML = optimization.tags.map(tag => `<div class="tag">${tag}</div>`).join('');
       
@@ -434,26 +434,26 @@
       `;
     }
     
-    // Fonction pour afficher les optimisations
+    // Function to display optimizations
     function renderOptimizations(optimizations) {
       const optimizationList = document.getElementById('optimization-list');
       const newOptimizationCard = optimizationList.querySelector('.new-optimization');
       
-      // Supprimer toutes les optimisations existantes (mais garder le bouton "New Optimization")
+      // Remove all existing optimizations (but keep the "New Optimization" button)
       const cards = optimizationList.querySelectorAll('.optimization-card:not(.new-optimization)');
       cards.forEach(card => card.remove());
       
-      // Ajouter les nouvelles optimisations après le bouton "New Optimization"
+      // Add new optimizations after the "New Optimization" button
       optimizations.forEach(optimization => {
         const optimizationHTML = generateOptimizationCardHTML(optimization);
         newOptimizationCard.insertAdjacentHTML('afterend', optimizationHTML);
       });
       
-      // Attacher les écouteurs d'événements pour les nouvelles optimisations
+      // Attach event listeners to optimization cards
       attachOptimizationClickListeners();
     }
     
-    // Attacher les écouteurs d'événements aux cartes d'optimisation
+    // Attach event listeners to optimization cards
     function attachOptimizationClickListeners() {
       document.querySelectorAll('.optimization-card:not(.new-optimization)').forEach(card => {
         card.addEventListener('click', function() {
@@ -467,13 +467,13 @@
       });
     }
     
-    // Fonction pour gérer les messages venant du plugin
+    // Function to handle messages from the plugin
     function handlePluginMessages(event) {
       if (event.data.pluginMessage) {
         const message = event.data.pluginMessage;
-        console.log('Message reçu du plugin:', message);
+        console.log('Message received from plugin:', message);
         
-        // Traiter les différents types de messages ici
+        // Process different types of messages here
         switch (message.type) {
           case 'PROJECT_DETAILS':
             if (message.project) {
@@ -485,7 +485,7 @@
             if (message.optimizations && Array.isArray(message.optimizations)) {
               renderOptimizations(message.optimizations);
             } else {
-              // Si aucune optimisation n'est disponible, ajouter une optimisation de démo
+              // If no optimizations are available, add a demo optimization
               const demoOptimizations = [
                 {
                   id: '1',
@@ -497,23 +497,23 @@
               renderOptimizations(demoOptimizations);
             }
             break;
-          // Ajouter d'autres cas selon les besoins
+          // Add other cases as needed
         }
       }
     }
     
-    // Ajouter un écouteur pour les messages du plugin
+    // Add event listener for messages from the plugin
     window.addEventListener('message', handlePluginMessages);
     
-    // Notifier le plugin que l'UI est prête
+    // Notify the plugin that the UI is ready
     window.addEventListener('load', () => {
       sendMessageToPlugin({ type: 'UI_READY' });
-      // Demander les détails du projet et la liste des optimisations
+      // Ask for project details and optimizations
       sendMessageToPlugin({ type: 'GET_PROJECT_DETAILS' });
       sendMessageToPlugin({ type: 'GET_OPTIMIZATIONS' });
     });
     
-    // Gérer le clic sur le bouton "New Optimization"
+    // Handle click on "New Optimization" button
     document.getElementById('new-optimization-btn').addEventListener('click', function() {
       sendMessageToPlugin({ type: 'NEW_OPTIMIZATION' });
     });
@@ -525,14 +525,14 @@
       });
     });
     
-    // Gérer le clic sur le menu d'options
+    // Handle click on options menu
     document.getElementById('options-menu').addEventListener('click', function(event) {
       const deleteButton = document.getElementById('delete-button');
       deleteButton.classList.toggle('visible');
       event.stopPropagation();
     });
     
-    // Gérer le clic sur le bouton Delete Project
+    // Handle click on Delete Project button
     document.getElementById('delete-button').addEventListener('click', function() {
       // Update the project name in the modal
       document.querySelector('.confirm-delete-project-title').textContent = currentProject.name;
@@ -540,7 +540,7 @@
       document.getElementById('confirm-delete-project-modal').classList.add('visible');
     });
     
-    // Fermer le menu d'options quand on clique ailleurs
+    // Hide options menu when clicking outside
     document.addEventListener('click', function(event) {
       const deleteButton = document.getElementById('delete-button');
       const optionsMenu = document.getElementById('options-menu');
