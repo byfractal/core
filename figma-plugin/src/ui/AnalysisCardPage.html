@@ -49,6 +49,7 @@
       font-size: 14px;
       font-weight: 600;
       color: #64748B;
+      margin-bottom: 20px;
     }
     
     .page-title {
@@ -137,9 +138,9 @@
     .section-title {
       font-family: "Geist", sans-serif;
       font-size: 12px;
-      font-weight: 400;
-      color: #0F172A;
-      margin-bottom: 4px;
+      font-weight: 500;
+      color: #64748B;
+      margin-top: 8px;
     }
     
     .section-content {
@@ -149,14 +150,22 @@
       color: #0F172A;
       line-height: 1.5;
     }
+
+    .section-content-context {
+      font-family: "Geist", sans-serif;
+      font-size: 13px;
+      font-weight: 500;
+      color: #0F172A;
+      line-height: 1.5;
+      padding-top: 4px;
+    }
     
     .supporting-metric {
       display: inline-flex;
       background-color: #FEF9C3;
-      padding: 0 8px;
+      padding: 0 4px;
       border-radius: 4px;
       margin-top: 4px;
-      margin-bottom: 4px;
     }
     
     .supporting-metric span {
@@ -184,14 +193,32 @@
       margin-top: 4px;
       line-height: 1.6;
     }
+
+    .actionable-suggestion {
+      font-family: "Geist", sans-serif;
+      font-size: 12px;
+      font-weight: 500;
+      color: #0F172A;
+      margin-top: 4px;
+    }
+
+    .impact-estimate {
+      font-family: "Geist", sans-serif;
+      font-size: 12px;
+      font-weight: 500;
+      color: #0F172A;
+      margin-top: 4px;
+    }
     
     .source-badge {
       display: inline-flex;
       align-items: center;
       background-color: #F1F5F9;
-      padding: 0 8px;
+      padding: 3px 8px 3px 8px;
       border-radius: 19px;
-      margin-top: 4px;
+      margin-top: 0;
+      margin-left: 4px;
+      vertical-align: middle;
     }
     
     .source-badge span {
@@ -200,13 +227,13 @@
       font-weight: 600;
       color: #64748B;
       line-height: 1.3;
-      padding: 4px 8px 4px 4px;
+      padding: 0 0 0 4px;
     }
     
     .link-icon {
-      margin-left: 4px;
-      font-size: 8px;
-      color: #64748B;
+      display: inline-flex;
+      align-items: center;
+      vertical-align: middle;
     }
     
     .analysis-card-footer {
@@ -337,7 +364,7 @@
       <div class="analysis-section">
         <div class="section-title">📊 Root cause</div>
         <div class="section-content">
-          <p>Users seem to miss this button — its position and contrast might be the reason.</p>
+          <div class="section-content-context">Users seem to miss this button — its position and contrast might be the reason.</div>
           
           <!-- Supporting Metric -->
           <div class="supporting-metric">
@@ -348,17 +375,19 @@
           <p class="contextual-data">Click-through rate is 4.2%, 60% below median for CTAs with similar intent in your app.</p>
           
           <!-- Conversion Impact Warning -->
-          <p class="conversion-impact">⚠️ This might be causing up to 60% conversion loss on this page.</p>
-          
-          <!-- NN Group Source Badge -->
-          <div class="source-badge nn-group">
-            <span>NN Group</span>
-            <svg width="9" height="10" viewBox="0 0 9 10" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M4.80833 7.26284L4.24264 7.82852C3.86757 8.20359 3.35886 8.41431 2.82843 8.41431C2.29799 8.41431 1.78929 8.20359 1.41421 7.82852C1.03914 7.45345 0.828427 6.94474 0.828427 6.41431C0.828427 5.88387 1.03914 5.37517 1.41421 5.00009L1.9799 4.43441" stroke="#64748B" stroke-linecap="round" stroke-linejoin="round"/>
-              <path d="M3.677 2.7373L4.24269 2.17162C4.61776 1.79655 5.12647 1.58583 5.6569 1.58583C6.18733 1.58583 6.69604 1.79655 7.07111 2.17162C7.44619 2.54669 7.6569 3.0554 7.6569 3.58583C7.6569 4.11627 7.44619 4.62497 7.07111 5.00005L6.50543 5.56573" stroke="#64748B" stroke-linecap="round" stroke-linejoin="round"/>
-                <path d="M3.11133 6.13159L5.37407 3.86885" stroke="#64748B" stroke-linecap="round" stroke-linejoin="round"/>
-              </svg>              
-          </div>
+          <p class="conversion-impact">⚠️ This might be causing up to 60% conversion loss on this page.
+            <!-- NN Group Source Badge -->
+            <span class="source-badge nn-group">
+              <span>NN Group</span>
+              <span class="link-icon">
+                <svg width="9" height="10" viewBox="0 0 9 10" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M4.80833 7.26284L4.24264 7.82852C3.86757 8.20359 3.35886 8.41431 2.82843 8.41431C2.29799 8.41431 1.78929 8.20359 1.41421 7.82852C1.03914 7.45345 0.828427 6.94474 0.828427 6.41431C0.828427 5.88387 1.03914 5.37517 1.41421 5.00009L1.9799 4.43441" stroke="#64748B" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M3.677 2.7373L4.24269 2.17162C4.61776 1.79655 5.12647 1.58583 5.6569 1.58583C6.18733 1.58583 6.69604 1.79655 7.07111 2.17162C7.44619 2.54669 7.6569 3.0554 7.6569 3.58583C7.6569 4.11627 7.44619 4.62497 7.07111 5.00005L6.50543 5.56573" stroke="#64748B" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M3.11133 6.13159L5.37407 3.86885" stroke="#64748B" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </span>
+            </span>
+          </p>
         </div>
       </div>
       
@@ -366,17 +395,20 @@
       <div class="analysis-section">
         <div class="section-title">🔧 Recommended fix</div>
         <div class="section-content">
-          <p>Move it closer to the scroll start and darken the background.</p>
-          
-          <!-- Lucidpark Source Badge -->
-          <div class="source-badge lucidpark">
-            <span>Lucidpark</span>
-            <svg width="9" height="10" viewBox="0 0 9 10" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M4.80833 7.26284L4.24264 7.82852C3.86757 8.20359 3.35886 8.41431 2.82843 8.41431C2.29799 8.41431 1.78929 8.20359 1.41421 7.82852C1.03914 7.45345 0.828427 6.94474 0.828427 6.41431C0.828427 5.88387 1.03914 5.37517 1.41421 5.00009L1.9799 4.43441" stroke="#64748B" stroke-linecap="round" stroke-linejoin="round"/>
-              <path d="M3.677 2.7373L4.24269 2.17162C4.61776 1.79655 5.12647 1.58583 5.6569 1.58583C6.18733 1.58583 6.69604 1.79655 7.07111 2.17162C7.44619 2.54669 7.6569 3.0554 7.6569 3.58583C7.6569 4.11627 7.44619 4.62497 7.07111 5.00005L6.50543 5.56573" stroke="#64748B" stroke-linecap="round" stroke-linejoin="round"/>
-                <path d="M3.11133 6.13159L5.37407 3.86885" stroke="#64748B" stroke-linecap="round" stroke-linejoin="round"/>
-              </svg>              
-          </div>
+          <p class="actionable-suggestion">Move it closer to the scroll start and darken the <br> background.
+            <!-- Lucidpark Source Badge -->
+            <span class="source-badge lucidpark">
+              <span>Lucidpark</span>
+              <span class="link-icon">
+                <svg width="9" height="10" viewBox="0 0 9 10" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M4.80833 7.26284L4.24264 7.82852C3.86757 8.20359 3.35886 8.41431 2.82843 8.41431C2.29799 8.41431 1.78929 8.20359 1.41421 7.82852C1.03914 7.45345 0.828427 6.94474 0.828427 6.41431C0.828427 5.88387 1.03914 5.37517 1.41421 5.00009L1.9799 4.43441" stroke="#64748B" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M3.677 2.7373L4.24269 2.17162C4.61776 1.79655 5.12647 1.58583 5.6569 1.58583C6.18733 1.58583 6.69604 1.79655 7.07111 2.17162C7.44619 2.54669 7.6569 3.0554 7.6569 3.58583C7.6569 4.11627 7.44619 4.62497 7.07111 5.00005L6.50543 5.56573" stroke="#64748B" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M3.11133 6.13159L5.37407 3.86885" stroke="#64748B" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </div>
+              </span>
+            </span>
+          </p>
         </div>
       </div>
       
@@ -384,7 +416,7 @@
       <div class="analysis-section">
         <div class="section-title">📈 Impact estimate</div>
         <div class="section-content">
-          <p>Based on similar usage patterns, this could increase click-through rates by 12-18%.</p>
+          <p class="impact-estimate">Based on similar usage patterns, this could increase click-through rates by 12-18%.</p>
         </div>
       </div>
       
@@ -436,7 +468,7 @@
       <div class="analysis-section">
         <div class="section-title">📊 Root cause</div>
         <div class="section-content">
-          <p>Users seem to miss this button — its position and contrast might be the reason.</p>
+          <div class="section-content-context">Users seem to miss this button — its position and contrast might be the reason.</div>
           
           <!-- Supporting Metric -->
           <div class="supporting-metric">
@@ -448,12 +480,18 @@
           
           <!-- Conversion Impact Warning -->
           <p class="conversion-impact">⚠️ This might be causing up to 60% conversion loss on this page.</p>
-          
-          <!-- NN Group Source Badge -->
-          <div class="source-badge nn-group">
-            <span>NN Group</span>
-            <span class="link-icon">↗</span>
-          </div>
+            <!-- NN Group Source Badge -->
+            <span class="source-badge nn-group">
+              <span>NN Group</span>
+              <span class="link-icon">
+                <svg width="9" height="10" viewBox="0 0 9 10" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M4.80833 7.26284L4.24264 7.82852C3.86757 8.20359 3.35886 8.41431 2.82843 8.41431C2.29799 8.41431 1.78929 8.20359 1.41421 7.82852C1.03914 7.45345 0.828427 6.94474 0.828427 6.41431C0.828427 5.88387 1.03914 5.37517 1.41421 5.00009L1.9799 4.43441" stroke="#64748B" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M3.677 2.7373L4.24269 2.17162C4.61776 1.79655 5.12647 1.58583 5.6569 1.58583C6.18733 1.58583 6.69604 1.79655 7.07111 2.17162C7.44619 2.54669 7.6569 3.0554 7.6569 3.58583C7.6569 4.11627 7.44619 4.62497 7.07111 5.00005L6.50543 5.56573" stroke="#64748B" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M3.11133 6.13159L5.37407 3.86885" stroke="#64748B" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </span>
+            </span>
+          </p>
         </div>
       </div>
       
@@ -461,13 +499,19 @@
       <div class="analysis-section">
         <div class="section-title">🔧 Recommended fix</div>
         <div class="section-content">
-          <p>Move it closer to the scroll start and darken the background.</p>
-          
-          <!-- Lucidpark Source Badge -->
-          <div class="source-badge lucidpark">
-            <span>Lucidpark</span>
-            <span class="link-icon">↗</span>
-          </div>
+          <p class="actionable-suggestion">Move it closer to the scroll start and darken the <br> background.
+            <!-- Lucidpark Source Badge -->
+            <span class="source-badge lucidpark">
+              <span>Lucidpark</span>
+              <span class="link-icon">
+                <svg width="9" height="10" viewBox="0 0 9 10" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M4.80833 7.26284L4.24264 7.82852C3.86757 8.20359 3.35886 8.41431 2.82843 8.41431C2.29799 8.41431 1.78929 8.20359 1.41421 7.82852C1.03914 7.45345 0.828427 6.94474 0.828427 6.41431C0.828427 5.88387 1.03914 5.37517 1.41421 5.00009L1.9799 4.43441" stroke="#64748B" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M3.677 2.7373L4.24269 2.17162C4.61776 1.79655 5.12647 1.58583 5.6569 1.58583C6.18733 1.58583 6.69604 1.79655 7.07111 2.17162C7.44619 2.54669 7.6569 3.0554 7.6569 3.58583C7.6569 4.11627 7.44619 4.62497 7.07111 5.00005L6.50543 5.56573" stroke="#64748B" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M3.11133 6.13159L5.37407 3.86885" stroke="#64748B" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </span>
+            </span>
+          </p>
         </div>
       </div>
       
@@ -475,7 +519,7 @@
       <div class="analysis-section">
         <div class="section-title">📈 Impact estimate</div>
         <div class="section-content">
-          <p>Based on similar usage patterns, this could increase click-through rates by 12-18%.</p>
+          <p class="impact-estimate">Based on similar usage patterns, this could increase click-through rates by 12-18%.</p>
         </div>
       </div>
       
