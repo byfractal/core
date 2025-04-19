@@ -9,19 +9,5 @@
   "networkAccess": {
     "allowedDomains": ["*"],
     "reasoning": "The plugin needs to connect to authentication services and analytics APIs to process user data and optimize UI/UX designs."
-  },
-  "menu": [
-    {
-      "name": "Projects Page",
-      "command": "projects"
-    },
-    {
-      "name": "Import Page",
-      "command": "import"
-    },
-    {
-      "name": "Project Overview Page",
-      "command": "project-overview"
-    }
-  ]
+  }
 }
