@@ -78,42 +78,36 @@ def save_data_to_file(data: bytes, filename: str, base_path: Optional[Path] = No
         logger.error(f"Erreur lors de la sauvegarde des données: {e}")
         raise
 
-def process_raw_file(file_path: Path) -> List[Dict[str, Any]]:
+def process_raw_file(file_path: Path) -> List[Dict[Any, Any]]:
     """
-    Process a raw Amplitude data file.
+    Process a raw Amplitude data file (.gz format).
     
     Args:
-        file_path: Path to the raw file
+        file_path: Path to the gzipped Amplitude data file
         
     Returns:
         List of processed events
     """
+    logger.info(f"Processing file: {file_path}")
+    
     try:
-        events = []
-        
-        # Vérifier si c'est un fichier gzip
-        if file_path.suffix == ".gz":
-            with gzip.open(file_path, 'rt', encoding='utf-8') as f:
-                for line in f:
-                    try:
-                        event = json.loads(line)
-                        events.append(event)
-                    except json.JSONDecodeError:
-                        logger.warning(f"Ligne ignorée: {line[:50]}...")
-        else:
-            # Fichier JSON normal
-            with open(file_path, 'r', encoding='utf-8') as f:
-                data = json.load(f)
-                if isinstance(data, list):
-                    events = data
-                else:
-                    events = [data]
-        
-        logger.info(f"Traité {len(events)} événements depuis {file_path}")
+        # Read and decompress the gzipped file
+        with gzip.open(file_path, 'rt', encoding='utf-8') as f:
+            # Each line is a JSON object
+            events = []
+            for line in f:
+                try:
+                    event = json.loads(line.strip())
+                    events.append(event)
+                except json.JSONDecodeError as e:
+                    logger.warning(f"Failed to parse event: {e}")
+                    continue
+                    
+        logger.info(f"Successfully processed {len(events)} events")
         return events
         
     except Exception as e:
-        logger.error(f"Erreur lors du traitement du fichier {file_path}: {e}")
+        logger.error(f"Error processing file {file_path}: {e}")
         raise
 
 def prepare_for_vectorization(events: List[Dict[str, Any]]) -> List[Document]:

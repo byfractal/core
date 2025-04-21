@@ -48,6 +48,7 @@ class AmplitudeClient:
         # URLs from environment or defaults
         self.export_url = os.getenv("AMPLITUDE_EXPORT_URL", "https://analytics.eu.amplitude.com/api/2/export")
         self.http_api_url = os.getenv("AMPLITUDE_HTTP_API_URL", "https://api.eu.amplitude.com/2/httpapi")
+        self.session_replay_url = os.getenv("AMPLITUDE_SESSION_REPLAY_URL", "https://api.eu.amplitude.com/replay/v1")
         
         # Initialize encryption
         self._init_encryption()
@@ -319,6 +320,59 @@ class AmplitudeClient:
         filename = f"amplitude_data_{datetime.now().strftime('%Y%m%d_%H%M%S')}.gz"
         
         return data, filename
+
+    def _validate_api_keys(self) -> Tuple[str, str]:
+        """Validate and decrypt API keys"""
+        if not self.api_key:
+            raise ValueError("API key is required")
+        if not self.secret_key:
+            raise ValueError("Secret key is required")
+            
+        try:
+            api_key = self._decrypt_value(self.api_key)
+            secret_key = self._decrypt_value(self.secret_key)
+            return api_key, secret_key
+        except Exception as e:
+            raise ValueError(f"Failed to decrypt API keys: {str(e)}")
+
+    def get_session_replay(self, session_id: str) -> Dict[str, Any]:
+        """
+        Get session replay data for a specific session.
+        
+        Args:
+            session_id: Session ID to fetch replay data for
+            
+        Returns:
+            Dictionary containing session replay data
+        """
+        if not session_id:
+            raise ValueError("Session ID is required")
+            
+        try:
+            api_key, secret_key = self._validate_api_keys()
+            
+            # Construct URL with session ID
+            url = f"{self.session_replay_url}/sessions/{session_id}"
+            
+            # Use basic auth with API key and secret key
+            auth = base64.b64encode(f"{api_key}:{secret_key}".encode()).decode()
+            headers = {
+                "Authorization": f"Basic {auth}",
+                "Accept": "application/json"
+            }
+            
+            response = requests.get(url, headers=headers)
+            response.raise_for_status()
+            
+            return response.json()
+            
+        except requests.exceptions.RequestException as e:
+            logger.error(f"Failed to fetch session replay: {str(e)}")
+            raise ValueError(f"Failed to fetch session replay: {str(e)}")
+            
+        except Exception as e:
+            logger.error(f"Error fetching session replay: {str(e)}")
+            raise ValueError(f"Error fetching session replay: {str(e)}")
 
 def fetch_amplitude_data(start_date: str, end_date: str) -> List[Dict[Any, Any]]:
     """
