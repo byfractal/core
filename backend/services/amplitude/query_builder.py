@@ -1,115 +1,191 @@
 """
-Build queries for Amplitude API.
+Functions to build queries for the Amplitude API.
 """
-from typing import Dict, Any, Optional, List
 from datetime import datetime, timedelta
+from typing import Dict, Any, Optional, List, Union
+import re
+import bleach
+from urllib.parse import quote_plus
 
-def build_query(start_date: Optional[datetime] = None, 
-                end_date: Optional[datetime] = None,
-                event_type: Optional[str] = None,
-                user_id: Optional[str] = None,
-                page: Optional[str] = None,
-                limit: int = 100) -> Dict[str, Any]:
+def sanitize_string(value: str) -> str:
     """
-    Build a query for Amplitude API.
+    Sanitize a string input to prevent injection attacks.
     
     Args:
-        start_date: Start date
-        end_date: End date
-        event_type: Type of event to filter by
-        user_id: User ID to filter by
-        page: Page to filter by
-        limit: Maximum number of results to return
+        value: The string to sanitize
         
     Returns:
-        Query dictionary
+        The sanitized and URL-encoded string
     """
-    # Dates par défaut si non spécifiées
-    if not start_date:
-        start_date = datetime.now() - timedelta(days=30)
-    if not end_date:
-        end_date = datetime.now()
+    if not isinstance(value, str):
+        raise ValueError("Input must be a string")
     
-    # Formater les dates au format attendu par Amplitude
-    start_str = start_date.strftime("%Y%m%dT%H")
-    end_str = end_date.strftime("%Y%m%dT%H")
+    # Clean the string using bleach to remove any HTML/scripts
+    cleaned = bleach.clean(value, tags=[], strip=True)
+    # URL encode the cleaned string
+    return quote_plus(cleaned)
+
+def validate_date_range(start_date: datetime, end_date: datetime) -> None:
+    """
+    Validate that the date range is valid for Amplitude queries.
     
-    # Construire la requête de base
+    Args:
+        start_date: The start date
+        end_date: The end date
+        
+    Raises:
+        ValueError: If the date range is invalid
+    """
+    if not isinstance(start_date, datetime) or not isinstance(end_date, datetime):
+        raise ValueError("Dates must be datetime objects")
+        
+    if start_date >= end_date:
+        raise ValueError("Start date must be before end date")
+        
+    date_range = end_date - start_date
+    if date_range > timedelta(days=365):
+        raise ValueError("Date range cannot exceed 1 year")
+
+def validate_event_type(event_type: str) -> None:
+    """
+    Validate that an event type meets Amplitude's requirements.
+    
+    Args:
+        event_type: The event type to validate
+        
+    Raises:
+        ValueError: If the event type is invalid
+    """
+    if not event_type:
+        raise ValueError("Event type cannot be empty")
+        
+    if not re.match(r'^[\w\- ]{1,40}$', event_type):
+        raise ValueError(
+            "Event type can only contain letters, numbers, underscores, hyphens and spaces, "
+            "and must be 40 characters or less"
+        )
+
+def build_query(
+    start_date: datetime,
+    end_date: datetime,
+    event_type: Optional[str] = None,
+    user_id: Optional[str] = None,
+    properties: Optional[Dict[str, str]] = None
+) -> Dict[str, Union[str, Dict]]:
+    """
+    Build a query for the Amplitude Analytics API with input validation.
+    
+    Args:
+        start_date: Query start date
+        end_date: Query end date
+        event_type: Optional event type to filter by
+        user_id: Optional user ID to filter by
+        properties: Optional properties to filter by
+        
+    Returns:
+        A dictionary containing the validated and sanitized query parameters
+    """
+    validate_date_range(start_date, end_date)
+    
     query = {
-        "start": start_str,
-        "end": end_str,
+        "start": start_date.strftime("%Y-%m-%d"),
+        "end": end_date.strftime("%Y-%m-%d")
     }
     
-    # Ajouter des filtres optionnels
     if event_type:
-        query["event_type"] = event_type
-    
+        validate_event_type(event_type)
+        query["event_type"] = sanitize_string(event_type)
+        
     if user_id:
-        query["user_id"] = user_id
-    
-    if page:
-        query.setdefault("event_properties", {})["page"] = page
-    
-    # Ajouter la limite
-    query["limit"] = limit
-    
+        query["user_id"] = sanitize_string(user_id)
+        
+    if properties:
+        sanitized_props = {}
+        for key, value in properties.items():
+            sanitized_key = sanitize_string(key)
+            sanitized_value = sanitize_string(str(value))
+            sanitized_props[sanitized_key] = sanitized_value
+        query["properties"] = sanitized_props
+        
     return query
 
-def build_export_query(start_date: Optional[datetime] = None,
-                     end_date: Optional[datetime] = None) -> Dict[str, str]:
+def build_export_query(
+    start_date: datetime,
+    end_date: datetime,
+    event_types: Optional[List[str]] = None
+) -> Dict[str, Union[str, List[str]]]:
     """
-    Build a query for Amplitude Export API.
+    Build a query for the Amplitude Export API with input validation.
     
     Args:
-        start_date: Start date
-        end_date: End date
+        start_date: Export start date
+        end_date: Export end date
+        event_types: Optional list of event types to filter by
         
     Returns:
-        Query params dictionary
+        A dictionary containing the validated and sanitized query parameters
     """
-    # Dates par défaut si non spécifiées
-    if not start_date:
-        start_date = datetime.now() - timedelta(days=30)
-    if not end_date:
-        end_date = datetime.now()
+    validate_date_range(start_date, end_date)
     
-    # Formater les dates au format attendu par l'API Export
-    start_str = start_date.strftime("%Y%m%dT%H")
-    end_str = end_date.strftime("%Y%m%dT%H")
-    
-    return {
-        "start": start_str,
-        "end": end_str
+    query = {
+        "start_time": start_date.strftime("%Y-%m-%d"),
+        "end_time": end_date.strftime("%Y-%m-%d")
     }
+    
+    if event_types:
+        sanitized_types = []
+        for event_type in event_types:
+            validate_event_type(event_type)
+            sanitized_types.append(sanitize_string(event_type))
+        query["event_types"] = sanitized_types
+        
+    return query
 
-def build_event_payload(user_id: str, 
-                      device_id: str, 
-                      event_type: str, 
-                      event_properties: Dict[str, Any]) -> Dict[str, Any]:
+def build_event_payload(
+    event_type: str,
+    user_id: str,
+    device_id: Optional[str] = None,
+    user_properties: Optional[Dict[str, str]] = None,
+    event_properties: Optional[Dict[str, str]] = None
+) -> Dict[str, Union[str, Dict]]:
     """
-    Build an event payload for Amplitude HTTP API.
+    Build an event payload for the Amplitude Ingestion API with input validation.
     
     Args:
-        user_id: User ID
-        device_id: Device ID
-        event_type: Type of event
-        event_properties: Event properties
+        event_type: The type of event
+        user_id: The user's ID
+        device_id: Optional device ID
+        user_properties: Optional user properties
+        event_properties: Optional event properties
         
     Returns:
-        Event payload dictionary
+        A dictionary containing the validated and sanitized event payload
     """
-    # Timestamp actuel en millisecondes
-    timestamp = int(datetime.now().timestamp() * 1000)
+    validate_event_type(event_type)
     
-    return {
-        "api_key": None,  # Sera ajouté par le client
-        "events": [
-            {
-                "user_id": user_id,
-                "device_id": device_id,
-                "event_type": event_type,
-                "time": timestamp,
-                "event_properties": event_properties
-            }
-        ]
+    event = {
+        "event_type": sanitize_string(event_type),
+        "user_id": sanitize_string(user_id),
+        "time": int(datetime.now().timestamp() * 1000)
     }
+    
+    if device_id:
+        event["device_id"] = sanitize_string(device_id)
+        
+    if user_properties:
+        sanitized_user_props = {}
+        for key, value in user_properties.items():
+            sanitized_key = sanitize_string(key)
+            sanitized_value = sanitize_string(str(value))
+            sanitized_user_props[sanitized_key] = sanitized_value
+        event["user_properties"] = sanitized_user_props
+        
+    if event_properties:
+        sanitized_event_props = {}
+        for key, value in event_properties.items():
+            sanitized_key = sanitize_string(key)
+            sanitized_value = sanitize_string(str(value))
+            sanitized_event_props[sanitized_key] = sanitized_value
+        event["event_properties"] = sanitized_event_props
+        
+    return event
