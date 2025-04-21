@@ -6,14 +6,26 @@ import os
 import base64
 import requests
 from datetime import datetime, timedelta
-from typing import Dict, Any, Optional, Union, Tuple
+from typing import Dict, Any, Optional, Union, Tuple, List
 from dotenv import load_dotenv
 import logging
 from cryptography.fernet import Fernet
 from pathlib import Path
+import json
+import gzip
+import zipfile
+import io
+from io import BytesIO
+from zipfile import ZipFile
 
 # Load environment variables
 load_dotenv()
+
+logger = logging.getLogger(__name__)
+
+class AmplitudeError(Exception):
+    """Custom exception for Amplitude API errors"""
+    pass
 
 class AmplitudeClient:
     """Client for interacting with Amplitude API"""
@@ -90,8 +102,87 @@ class AmplitudeClient:
         self.encryption_key = new_key
         self.fernet = new_fernet
     
+    def _read_compressed_response(self, response: bytes) -> List[Dict[str, Any]]:
+        """
+        Read a compressed response from Amplitude API.
+        The response can be:
+        - A ZIP file containing GZIP compressed JSON files
+        - A GZIP compressed JSON file
+        - A plain text JSON file
+        
+        Returns:
+            List of event dictionaries
+        """
+        events = []
+        
+        # First try to read as ZIP
+        try:
+            with BytesIO(response) as bio:
+                with ZipFile(bio) as zip_file:
+                    for filename in zip_file.namelist():
+                        logging.info(f"Successfully read ZIP file: {filename}")
+                        # Read the content of each file in the ZIP
+                        with zip_file.open(filename) as f:
+                            file_content = f.read()
+                            # Try to decompress as GZIP (files in ZIP are usually GZIP compressed)
+                            try:
+                                with gzip.GzipFile(fileobj=BytesIO(file_content)) as gz:
+                                    content = gz.read().decode('utf-8')
+                            except Exception as e:
+                                logging.warning(f"Failed to decompress {filename} as GZIP: {str(e)}")
+                                # If GZIP fails, try to read as plain text
+                                try:
+                                    content = file_content.decode('utf-8')
+                                except UnicodeDecodeError as ue:
+                                    logging.error(f"Failed to decode {filename} content: {str(ue)}")
+                                    continue
+                            
+                            # Parse JSON lines
+                            for line in content.splitlines():
+                                if line.strip():  # Skip empty lines
+                                    try:
+                                        event = json.loads(line)
+                                        events.append(event)
+                                    except json.JSONDecodeError as je:
+                                        logging.warning(f"Failed to parse JSON line: {str(je)}")
+                    return events
+        except Exception as e:
+            logging.warning(f"Failed to read as ZIP: {str(e)}")
+        
+        # If ZIP fails, try GZIP
+        try:
+            with gzip.GzipFile(fileobj=BytesIO(response)) as gz:
+                content = gz.read().decode('utf-8')
+                for line in content.splitlines():
+                    if line.strip():
+                        try:
+                            event = json.loads(line)
+                            events.append(event)
+                        except json.JSONDecodeError as je:
+                            logging.warning(f"Failed to parse JSON line: {str(je)}")
+                return events
+        except Exception as e:
+            logging.warning(f"Failed to read as GZIP: {str(e)}")
+        
+        # If both ZIP and GZIP fail, try plain text
+        try:
+            content = response.decode('utf-8')
+            for line in content.splitlines():
+                if line.strip():
+                    try:
+                        event = json.loads(line)
+                        events.append(event)
+                    except json.JSONDecodeError as je:
+                        logging.warning(f"Failed to parse JSON line: {str(je)}")
+            return events
+        except UnicodeDecodeError as e:
+            logging.error(f"Failed to decode content as UTF-8: {str(e)}")
+            raise
+        
+        return events
+    
     def get_data(self, start_date: Optional[datetime] = None, 
-                  end_date: Optional[datetime] = None) -> bytes:
+                  end_date: Optional[datetime] = None) -> List[Dict[str, Any]]:
         """
         Get data from Amplitude API for the specified date range.
         
@@ -100,7 +191,7 @@ class AmplitudeClient:
             end_date: End date (defaults to today)
             
         Returns:
-            Amplitude data as bytes
+            List of event dictionaries
         """
         # If dates not provided, use last 30 days
         if start_date is None:
@@ -114,41 +205,66 @@ class AmplitudeClient:
         decrypted_api_key = self._decrypt_value(self.api_key)
         decrypted_secret_key = self._decrypt_value(self.secret_key)
         
+        # Verify we have valid keys (without logging them)
+        if not decrypted_api_key or len(decrypted_api_key) < 5:
+            raise AmplitudeError("Invalid API key format")
+        if not decrypted_secret_key or len(decrypted_secret_key) < 5:
+            raise AmplitudeError("Invalid Secret key format")
+            
+        logger.info("API keys validated")
+        
         # Create Basic auth header
         credentials = f"{decrypted_api_key}:{decrypted_secret_key}"
         encoded_credentials = base64.b64encode(credentials.encode('utf-8')).decode('utf-8')
         
         headers = {
             'Authorization': f'Basic {encoded_credentials}',
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            'Accept': '*/*'  # Accept any content type
         }
         
-        # Format dates in ISO 8601 format for Amplitude EU
-        start_str = start_date.strftime("%Y%m%dT%H")
-        end_str = end_date.strftime("%Y%m%dT%H")
+        # Format dates in YYYYMMDD format
+        start_str = start_date.strftime("%Y%m%d")
+        end_str = end_date.strftime("%Y%m%d")
         
         # Try standard URL first
         url = f"{self.export_url}?start={start_str}&end={end_str}"
         
-        logger = logging.getLogger(__name__)
-        logger.info(f"Calling Amplitude Export API: {url}")
+        logger.info(f"Fetching events from {start_str} to {end_str}")
+        logger.info(f"Using URL: {url}")
         
         try:
             # Make request
             response = requests.get(url, headers=headers)
+            
+            if response.status_code == 403:
+                logger.error("Authentication failed - please verify API keys")
+                raise AmplitudeError("Authentication failed")
+                
             response.raise_for_status()
-            return response.content
+            
+            # Parse response
+            events = self._read_compressed_response(response.content)
+            logger.info(f"Successfully fetched {len(events)} events")
+            return events
+            
         except requests.exceptions.HTTPError as e:
             # If 404, try alternative URL format
             if e.response.status_code == 404:
                 alt_url = f"https://analytics.eu.amplitude.com/api/2/events/export?start={start_str}&end={end_str}"
                 logger.info(f"Retrying with alternative URL: {alt_url}")
+                
                 alt_response = requests.get(alt_url, headers=headers)
                 alt_response.raise_for_status()
-                return alt_response.content
-            raise Exception(f"Error fetching data: {str(e)}")
+                
+                # Parse alternative response
+                events = self._read_compressed_response(alt_response.content)
+                logger.info(f"Successfully fetched {len(events)} events from alternative URL")
+                return events
+                
+            raise AmplitudeError(f"Error fetching data: {str(e)}")
         except requests.exceptions.RequestException as e:
-            raise Exception(f"Error fetching data: {str(e)}")
+            raise AmplitudeError(f"Error fetching data: {str(e)}")
     
     def send_event(self, events: Dict[str, Any]) -> Dict[str, Any]:
         """
@@ -203,3 +319,64 @@ class AmplitudeClient:
         filename = f"amplitude_data_{datetime.now().strftime('%Y%m%d_%H%M%S')}.gz"
         
         return data, filename
+
+def fetch_amplitude_data(start_date: str, end_date: str) -> List[Dict[Any, Any]]:
+    """
+    Fetch real user events from Amplitude between two dates.
+    
+    Args:
+        start_date: Start date in format YYYYMMDDT00
+        end_date: End date in format YYYYMMDDT00
+        
+    Returns:
+        List of event dictionaries
+        
+    Raises:
+        AmplitudeError: If API call fails
+    """
+    api_key = os.getenv("AMPLITUDE_API_KEY")
+    secret_key = os.getenv("AMPLITUDE_SECRET_KEY")
+    
+    if not api_key or not secret_key:
+        raise AmplitudeError("Missing Amplitude credentials in .env")
+        
+    # Create Basic Auth header
+    credentials = f"{api_key}:{secret_key}"
+    auth_header = base64.b64encode(credentials.encode()).decode()
+    
+    headers = {
+        "Authorization": f"Basic {auth_header}",
+        "Accept": "application/json"
+    }
+    
+    url = f"https://analytics.amplitude.com/api/2/export"
+    params = {
+        "start": start_date,
+        "end": end_date
+    }
+    
+    try:
+        response = requests.get(
+            url,
+            headers=headers,
+            params=params,
+            timeout=30,  # 30 seconds timeout
+            stream=True  # Stream response for large datasets
+        )
+        
+        response.raise_for_status()
+        
+        # Parse NDJSON response (each line is a JSON object)
+        events = []
+        for line in response.iter_lines():
+            if line:  # Skip empty lines
+                event = response.json()
+                events.append(event)
+                
+        logger.info(f"Successfully fetched {len(events)} events from Amplitude")
+        return events
+        
+    except requests.exceptions.RequestException as e:
+        error_msg = f"Failed to fetch data from Amplitude: {str(e)}"
+        logger.error(error_msg)
+        raise AmplitudeError(error_msg) from e
