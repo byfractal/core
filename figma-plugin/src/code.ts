@@ -2,7 +2,7 @@
 
 // UI Configuration
 const WIDTH = 450;
-const HEIGHT = 650; 
+const HEIGHT = 700; 
 
 // Current page tracker
 let currentPage = 'ProjectOverviewPage';

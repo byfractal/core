@@ -65,7 +65,7 @@
     
     /* Form elements */
     .form-group {
-      margin-bottom: 20px;
+      margin-bottom: 16px;
     }
     
     .form-label {
@@ -219,7 +219,7 @@
     .divider {
       display: flex;
       align-items: center;
-      margin: 24px 0;
+      margin: 14px 0 14px 0;
       color: #CBD5E1;
       font-size: 14px;
     }
@@ -229,7 +229,7 @@
       content: "";
       flex: 1;
       height: 1px;
-      background-color: #E2E8F0;
+      background-color: #CBD5E1;
     }
     
     .divider::before {
@@ -246,8 +246,6 @@
       border-radius: 6px;
       border: 1px solid #CBD5E1;
       padding: 18px;
-      padding-left: 32px;
-      margin-bottom: 24px;
     }
     
     .extension-title {
@@ -863,6 +861,38 @@
     .preview-all-button:hover {
       background-color: #f6fbff;
     }
+
+    .file-upload {
+      margin-bottom: 24px;
+
+    }
+
+    .file-upload-label {
+      display: flex;
+      align-items: center;
+      padding: 8px 12px;
+      background-color: white;
+      border: 1px solid #CBD5E1;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.2s;
+      box-shadow: 0 1px 5px rgba(0, 0, 0, 0.07);
+    }
+
+    .file-upload-label:hover {
+      border-color: #94A3B8;
+      background-color: #F8FAFC;
+    }
+
+    .file-icon {
+      margin-right: 12px;
+    }
+
+    .upload-text {
+      font-size: 14px;
+      font-weight: 400;
+      color: #848484;
+    }
   </style>
 </head>
 <body>
@@ -899,8 +929,22 @@
         </div>
       </div>
       
+      <!-- Import from CSV / Excel Section -->
       <div class="form-group">
-        <label for="date-range" class="form-label">Pick a date</label>
+        <label for="quali-data" class="form-label">Qualitative data</label>
+        <label for="file-upload" class="file-upload-label">
+          <div class="file-icon">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M6.66667 13.3333L10 10M10 10L13.3333 13.3333M10 10V17.5M16.6667 13.9524C17.6845 13.1117 18.3333 11.8399 18.3333 10.4167C18.3333 7.88536 16.2813 5.83333 13.75 5.83333C13.5679 5.83333 13.3975 5.73833 13.3051 5.58145C12.2184 3.73736 10.212 2.5 7.91667 2.5C4.46489 2.5 1.66667 5.29822 1.66667 8.75C1.66667 10.4718 2.36287 12.0309 3.48912 13.1613" stroke="#64748B" stroke-width="1.66667" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <span class="upload-text" id="upload-text">Feedback from CSV, Sheets, Notion...</span>
+          <input type="file" id="file-upload" accept=".csv,.xlsx,.xls" style="display: none;" />
+        </label>
+      </div>
+      
+      <div class="form-group">
+        <label for="date-range" class="form-label">Date range</label>
         <div class="input-wrapper">
           <div class="input-icon">
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -950,7 +994,7 @@
               <path d="M10.8334 4.29175H5.95841M7.58341 9.70841H2.70841M7.58341 9.70841C7.58341 10.6059 8.31095 11.3334 9.20841 11.3334C10.1059 11.3334 10.8334 10.6059 10.8334 9.70841C10.8334 8.81095 10.1059 8.08341 9.20841 8.08341C8.31095 8.08341 7.58341 8.81095 7.58341 9.70841ZM5.41675 4.29175C5.41675 5.18921 4.68921 5.91675 3.79175 5.91675C2.89429 5.91675 2.16675 5.18921 2.16675 4.29175C2.16675 3.39429 2.89429 2.66675 3.79175 2.66675C4.68921 2.66675 5.41675 3.39429 5.41675 4.29175Z" stroke="#717279" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>              
           </div>
-          <input type="text" class="filter-input" placeholder="Choose a filter" id="filter-input">
+          <input type="text" class="filter-input" placeholder="Choose a filter" id="filter-input" >
         </div>
         
         <!-- Wrap both the button and menu in a container for positioning -->
