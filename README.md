@@ -1,110 +1,109 @@
-## Prerequisites
+# Backend API with Auth0 Authentication
 
-- Python : latest version
-- Required libraries (see `requirements.txt`)
-- Remove any existing files in the `data/raw/`, `data/processed/`, and `data/filtered/` directories to test the application.
+This project is a secure FastAPI backend application with Auth0 authentication integration.
 
-## Installation
+## Features
 
-1. Clone the repository:
+- **Authentication**: Auth0 integration with JWT validation and role-based access control
+- **Security**: Rate limiting, input validation, and secure middleware
+- **API Endpoints**: RESTful API endpoints for various functionalities
+- **Modular Design**: Well-structured code with separation of concerns
 
+## Getting Started
+
+### Prerequisites
+
+- Python 3.8 or higher
+- [Poetry](https://python-poetry.org/) or pip for dependency management
+- Redis (optional, for rate limiting)
+- Auth0 account (for authentication)
+
+### Installation
+
+1. Clone the repository
    ```bash
-   git clone https://github.com/byfractal/core.git
-   cd core
+   git clone <repository-url>
+   cd project-directory
    ```
 
-2. Create a virtual environment:
-
-   ```bash
-   python -m venv .venv
-   ```
-
-3. Activate the virtual environment:
-
-   - On Windows:
-     ```bash
-     .venv\Scripts\activate
-     ```
-   - On macOS/Linux:
-     ```bash
-     source .venv/bin/activate
-     ```
-
-4. Install the dependencies:
+2. Install dependencies
    ```bash
    pip install -r requirements.txt
    ```
 
-## Usage
-
-### Data Collection and Processing
-
-1. Configure your `.env` file with the necessary variables.
-2. Run the application:
+3. Set up environment variables
    ```bash
-   python app/api.py
+   cp .env.example .env
    ```
+   Edit `.env` with your specific configuration values.
 
-### Feedback Analysis Pipeline
+### Running the Application
 
-The project includes a complete feedback analysis pipeline that processes user feedback using LLM chains:
+```bash
+python -m backend.api.main
+```
 
-1. To analyze feedback data from Amplitude or other sources:
+Or using uvicorn directly:
 
-   ```bash
-   python backend/analyze_feedback.py --input path/to/feedback.json --page homepage
-   ```
+```bash
+uvicorn backend.api.main:app --reload
+```
 
-   Options:
+The API will be available at http://localhost:8000
 
-   - `--input`: Path to the input JSON file containing feedback data
-   - `--output`: Path to save the analysis results
-   - `--page`: Filter feedback by page ID
-   - `--days`: Number of days to look back for feedback (default: 30)
-   - `--model`: OpenAI model to use for analysis (default: gpt-4o)
+## Authentication with Auth0
 
-2. To generate design recommendations based on feedback analysis:
-   ```bash
-   python backend/models/design_recommendations.py
-   ```
+This project uses Auth0 for authentication and authorization. For detailed setup instructions, see [AUTH0_SETUP.md](AUTH0_SETUP.md).
+
+### Key Auth0 Features
+
+- JWT token validation
+- Role-based access control with permissions
+- Authentication middleware for protected routes
+- Auth0 Universal Login integration
+
+## API Documentation
+
+Once the server is running, API documentation is available at:
+
+- Swagger UI: http://localhost:8000/docs
+- ReDoc: http://localhost:8000/redoc
 
 ## Project Structure
 
 ```
-core/
-├── backend/
-│   ├── models/
-│   │   ├── embeddings.py         # OpenAI embeddings configuration
-│   │   ├── vector_store.py       # FAISS vector store for RAG
-│   │   ├── chain.py              # Basic conversation chain
-│   │   ├── prompts.py            # Prompt templates for analysis
-│   │   ├── analysis_chains.py    # LLM chains for feedback analysis
-│   │   └── design_recommendations.py # Design recommendation generator
-│   ├── services/
-│   │   └── amplitude/            # Amplitude API integration
-│   └── analyze_feedback.py       # Main entry point for analysis
-├── datasets/                     # Sample datasets for testing
-└── (other files)
+backend/
+├── api/                  # API routes and endpoints
+│   ├── main.py           # Main FastAPI application
+│   ├── auth.py           # Authentication routes
+│   └── ...               # Other API modules
+├── security/             # Security-related modules
+│   ├── auth.py           # JWT authentication
+│   ├── auth0.py          # Auth0 integration
+│   ├── encryption.py     # Data encryption utilities
+│   ├── validation.py     # Input validation utilities
+│   └── middlewares/      # Security middleware
+│       ├── jwt.py        # JWT middleware
+│       ├── auth0.py      # Auth0 middleware
+│       ├── rate_limiter.py # Rate limiting middleware
+│       └── input_validation.py # Input validation middleware
+└── models/               # Data models and business logic
 ```
 
-## Feedback Analysis Features
+## Security Features
 
-The feedback analysis system consists of three main components:
+- **JWT Validation**: Secure validation of Auth0 JWT tokens
+- **RBAC**: Role-based access control using Auth0 permissions
+- **Rate Limiting**: Protection against brute-force attacks
+- **Input Validation**: Prevents injection attacks and validates user inputs
+- **Middleware Protection**: Multiple security layers for API endpoints
 
-1. **Sentiment Analysis**: Classifies feedback as positive, negative, or neutral with confidence scores.
+## License
 
-2. **Emotion/Theme Extraction**: Identifies key emotions, themes, and specific UI/UX issues from feedback.
+[MIT License](LICENSE)
 
-3. **Feedback Summarization**: Generates concise summaries of multiple feedback items, highlighting patterns and key issues.
+## Acknowledgments
 
-4. **Design Recommendations**: Provides concrete UI/UX improvement suggestions based on feedback analysis.
-
-## Contributing
-
-Steps:
-
-1. Fork the project.
-2. Create a new branch (`git checkout -b feature/YourFeature`).
-3. Make your changes and commit (`git commit -m 'Add some feature'`).
-4. Push to the branch (`git push origin feature/YourFeature`).
-5. Open a Pull Request.
+- [FastAPI](https://fastapi.tiangolo.com/)
+- [Auth0](https://auth0.com/)
+- [Python](https://www.python.org/)

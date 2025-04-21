@@ -3,62 +3,115 @@ Main FastAPI application.
 This is the entry point for the backend API.
 """
 
+import os
 import sys
+import logging
 from pathlib import Path
-from typing import Dict
+from typing import Dict, Optional
+import secrets
 
 # Add root directory to Python path to enable imports
 root_dir = str(Path(__file__).parent.parent.parent)
 sys.path.append(root_dir)
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Depends, HTTPException, Security, status
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
+
+# Import API routers
 from backend.api.feedback import feedback_router
 from backend.api.design import design_router
+from backend.api.analysis import analysis_router
+from backend.api.auth import auth_router
 
-# Create the main application
-app = FastAPI(
-    title="HCentric Feedback Analysis API",
-    description="API for analyzing user feedback with insights generation",
-    version="1.0.0"
+# Import security modules
+from backend.security import (
+    # Configure security middlewares
+    configure_security_middlewares,
+    
+    # Auth0 modules if using Auth0
+    Auth0User,
+    get_auth0_user,
+    requires_auth,
+    requires_scopes,
 )
 
-# Add CORS middleware to allow cross-origin requests
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+)
+logger = logging.getLogger(__name__)
+
+# Create FastAPI application
+app = FastAPI(
+    title="Backend API",
+    description="API for the application",
+    version="1.0.0",
+)
+
+# Add CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Allows all origins
+    allow_origins=os.getenv("CORS_ORIGINS", "*").split(","),
     allow_credentials=True,
-    allow_methods=["*"],  # Allows all methods
-    allow_headers=["*"],  # Allows all headers
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
-# Include routers
-app.mount("/feedback", feedback_router)
-app.mount("/design", design_router)
+# Configure security middlewares
+USE_AUTH0 = os.getenv("USE_AUTH0", "false").lower() == "true"
 
-@app.get("/")
-async def root():
-    """
-    Root endpoint that returns basic API information.
-    """
-    return {
-        "name": "HCentric Feedback Analysis API",
-        "version": "1.0.0",
-        "status": "online",
-        "endpoints": {
-            "feedback": "/feedback",
-            "design": "/design"
-        }
-    }
+# Apply security middlewares based on configuration
+configure_security_middlewares(
+    app=app,
+    use_auth0=USE_AUTH0,
+    jwt_secret_key=os.getenv("JWT_SECRET_KEY"),
+    redis_url=os.getenv("REDIS_URL"),
+    global_rate_limit=100,  # 100 requests per minute by default
+    global_rate_period=60,  # 1 minute
+    public_paths=[
+        "/docs",
+        "/redoc",
+        "/openapi.json",
+        "/api/auth/login",
+        "/api/auth/callback",
+        "/api/public",
+        "/health",
+    ],
+)
 
-@app.get("/health")
-async def health_check() -> Dict[str, str]:
+# Health check endpoint
+@app.get("/health", tags=["health"])
+async def health_check():
     """
-    Health check endpoint to verify the API is running correctly.
+    Health check endpoint.
+    Used to verify the API is running.
     """
-    return {"status": "healthy"}
+    return {"status": "ok"}
 
-# Main entry point for running the application directly
+# Include API routers
+app.include_router(auth_router)
+app.include_router(feedback_router)
+app.include_router(design_router)
+app.include_router(analysis_router)
+
+# Error handlers
+@app.exception_handler(Exception)
+async def generic_exception_handler(request, exc):
+    """Handle generic exceptions."""
+    logger.exception("Unhandled exception")
+    return JSONResponse(
+        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        content={"detail": "An unexpected error occurred"},
+    )
+
+# Run the application
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000) 
+    uvicorn.run(
+        "backend.api.main:app",
+        host=os.getenv("HOST", "0.0.0.0"),
+        port=int(os.getenv("PORT", "8000")),
+        reload=os.getenv("DEBUG", "false").lower() == "true",
+    ) 

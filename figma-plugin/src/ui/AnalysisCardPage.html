@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HCentric UI/UX Optimizer - Analysis Card</title>
+  <style>
+    /* Reset et styles de base */
+    *, *::before, *::after {
+      box-sizing: border-box;
+    }
+    
+    body, html {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      -webkit-font-smoothing: antialiased;
+      overflow: hidden;
+    }
+    
+    body {
+      display: flex;
+      flex-direction: column;
+      background-color: white;
+    }
+    
+    .container {
+      padding: 32px 50px 0 50px;
+      width: 100%;
+      height: 100%;
+    }
+    
+    /* Navigation */
+    .nav-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    
+    .back-button {
+      display: inline-flex;
+      align-items: center;
+      cursor: pointer;
+    }
+    
+    .organization-label {
+      font-size: 14px;
+      font-weight: 600;
+      color: #64748B;
+      margin-bottom: 20px;
+    }
+    
+    .page-title {
+      font-size: 30px;
+      font-weight: 600;
+      color: #0F172A;
+      margin: 0 0 16px 0;
+    }
+
+      /* Back button */
+      .back-button {
+      display: inline-flex;
+      align-items: center;
+      color: #6B7280;
+      margin-bottom: 20px;
+      margin-left: -18px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+    
+    .back-button svg {
+      margin-right: 8px;
+    }
+    
+    /* Analysis Card */
+    .analysis-card {
+      border: 1px solid #CBD5E1;
+      border-radius: 6px;
+      background-color: white;
+      padding: 12px;
+      box-shadow: 0px 1px 5px rgba(0, 0, 0, 0.07);
+      margin-bottom: 16px;
+    }
+    
+    .analysis-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+    
+    .issue-title {
+      font-family: "Geist", sans-serif;
+      font-size: 14px;
+      font-weight: 600;
+      color: #0F172A;
+    }
+    
+    .severity-tag {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 3px 8px;
+      border-radius: 6px;
+      font-family: "Geist", sans-serif;
+      font-size: 12px;
+      font-weight: 600;
+    }
+    
+    .severity-tag.underperforming {
+      background-color: rgba(234, 88, 12, 0.1);
+      color: #EA580C;
+    }
+    
+    .severity-tag.needs-improvement {
+      background-color: rgba(234, 179, 8, 0.1);
+      color: #EAB308;
+    }
+
+    .severity-tag.minor {
+      background-color: rgba(96, 165, 250, 0.1);
+      color: #60A5FA;
+    }
+    
+    .separator {
+      height: 1px;
+      background-color: #CBD5E1;
+      margin: 8px 0;
+      width: 100%;
+    }
+    
+    .analysis-section {
+      margin-bottom: 16px;
+    }
+    
+    .section-title {
+      font-family: "Geist", sans-serif;
+      font-size: 12px;
+      font-weight: 600;
+      color: #64748B;
+      margin-top: 8px;
+    }
+    
+    .section-content {
+      font-family: "Geist", sans-serif;
+      font-size: 13px;
+      font-weight: 500;
+      color: #0F172A;
+      line-height: 1.5;
+    }
+
+    .section-content-context {
+      font-family: "Geist", sans-serif;
+      font-size: 13px;
+      font-weight: 600;
+      color: #0F172A;
+      line-height: 1.5;
+      padding-top: 4px;
+    }
+    
+    .supporting-metric {
+      display: inline-flex;
+      background-color: #FEF9C3;
+      padding: 0 8px;
+      border-radius: 4px;
+      margin-top: 4px;
+    }
+    
+    .supporting-metric span {
+      font-family: "Geist", sans-serif;
+      font-size: 10px;
+      font-weight: 600;
+      color: #B45309;
+      line-height: 2;
+    }
+    
+    .contextual-data {
+      font-family: "Geist", sans-serif;
+      font-size: 12px;
+      font-weight: 500;
+      color: #0F172A;
+      margin: 4px 0 0 0;
+      line-height: 1.6;
+      padding-left: 16px;
+      position: relative;
+    }
+    
+    .contextual-data::before {
+      content: "•";
+      position: absolute;
+      left: 4px;
+      color: #0F172A;
+    }
+    
+    .conversion-impact {
+      font-family: "Geist", sans-serif;
+      font-size: 12px;
+      font-weight: 500;
+      color: #0F172A;
+      margin-top: 4px;
+      line-height: 1.6;
+    }
+
+    .actionable-suggestion {
+      font-family: "Geist", sans-serif;
+      font-size: 12px;
+      font-weight: 500;
+      color: #0F172A;
+      margin-top: 4px;
+    }
+
+    .impact-estimate {
+      font-family: "Geist", sans-serif;
+      font-size: 12px;
+      font-weight: 500;
+      color: #0F172A;
+      margin: 4px 0 0 0;
+    }
+    
+    .source-badge {
+      display: inline-flex;
+      align-items: center;
+      background-color: #F1F5F9;
+      padding: 3px 8px 3px 8px;
+      border-radius: 19px;
+      margin-top: 0;
+      margin-left: 4px;
+      vertical-align: middle;
+    }
+    
+    .source-badge span {
+      font-family: "Geist", sans-serif;
+      font-size: 8px;
+      font-weight: 600;
+      color: #64748B;
+      line-height: 1.3;
+      padding: 0 0 0 4px;
+    }
+    
+    .link-icon {
+      display: inline-flex;
+      align-items: center;
+      vertical-align: middle;
+    }
+    
+    .analysis-card-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 8px;
+    }
+    
+    .source-composite {
+      display: flex;
+      align-items: center;
+    }
+    
+    .source-label {
+      display: flex;
+      align-items: center;
+      background-color: white;
+      border: 1px solid #CBD5E1;
+      border-radius: 18px;
+      padding: 0 6px;
+      height: 28px;
+      box-shadow: 0px 1px 5px rgba(0, 0, 0, 0.07);
+    }
+    
+    .avatar-group {
+      display: flex;
+      margin-right: 4px;
+    }
+    
+    .avatar {
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      border: 0.5px solid #CBD5E1;
+      background-size: cover;
+      background-position: center;
+    }
+    
+    .avatar.avatar-1 {
+      background-image: url('../assets/avatar-1.png');
+      margin-right: -4px;
+      z-index: 2;
+    }
+    
+    .avatar.avatar-2 {
+      background-image: url('../assets/avatar-2.png');
+      z-index: 1;
+    }
+    
+    .source-label span {
+      font-family: "Geist", sans-serif;
+      font-size: 12px;
+      font-weight: 500;
+      color: #0F172A;
+    }
+    
+    .insight-tags {
+      display: flex;
+      gap: 4px;
+    }
+    
+    .insight-tag {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background-color: rgba(43, 78, 255, 0.1);
+      padding: 3px 8px;
+      border-radius: 6px;
+    }
+    
+    .insight-tag span {
+      font-family: "Geist", sans-serif;
+      font-size: 12px;
+      font-weight: 600;
+      color: #2B4EFF;
+    }
+    
+    .fix-issue-button {
+      width: 100%;
+      height: 36px;
+      background-color: #0F172A;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      margin-top: 16px;
+      box-shadow: 0px 1px 5px rgba(0, 0, 0, 0.07);
+    }
+    
+    .fix-issue-button.disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Navigation -->
+    <div class="nav-header">
+      <div class="back-button" id="back-button">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M15.8332 10.0001H4.1665M4.1665 10.0001L9.99984 15.8334M4.1665 10.0001L9.99984 4.16675" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        Back to Projects
+      </div>
+      <div class="organization-label">Organization #1</div>
+    </div>
+    
+    <!-- Page Title -->
+    <h1 class="page-title">Linear app</h1>
+    
+    <!-- Version Standard (Preview All): Analysis Card with active Fix Issue button -->
+    <div class="analysis-card" id="standard-card">
+      <!-- Issue Header & Severity -->
+      <div class="analysis-card-header">
+        <div class="issue-title">CTA too low on the page</div>
+        <div class="severity-tag underperforming">
+          <span>Underperforming</span>
+        </div>
+      </div>
+      
+      <!-- Separator -->
+      <div class="separator"></div>
+      
+      <!-- Root Cause Section -->
+      <div class="analysis-section">
+        <div class="section-title">📊 Root cause</div>
+        <div class="section-content">
+          <div class="section-content-context">Users seem to miss this button — its position and contrast might be the reason.</div>
+          
+          <!-- Supporting Metric -->
+          <div class="supporting-metric">
+            <span>Low CTR · 60% below benchmark</span>
+          </div>
+          
+          <!-- Contextual Data -->
+          <p class="contextual-data">Click-through rate is 4.2%, 60% below median for CTAs with similar intent in your app.</p>
+          
+          <!-- Conversion Impact Warning -->
+          <p class="conversion-impact">⚠️ This might be causing up to 60% conversion loss on this page.
+            <!-- NN Group Source Badge -->
+            <span class="source-badge nn-group">
+              <span>NN Group</span>
+              <span class="link-icon">
+                <svg width="9" height="10" viewBox="0 0 9 10" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M4.80833 7.26284L4.24264 7.82852C3.86757 8.20359 3.35886 8.41431 2.82843 8.41431C2.29799 8.41431 1.78929 8.20359 1.41421 7.82852C1.03914 7.45345 0.828427 6.94474 0.828427 6.41431C0.828427 5.88387 1.03914 5.37517 1.41421 5.00009L1.9799 4.43441" stroke="#64748B" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M3.677 2.7373L4.24269 2.17162C4.61776 1.79655 5.12647 1.58583 5.6569 1.58583C6.18733 1.58583 6.69604 1.79655 7.07111 2.17162C7.44619 2.54669 7.6569 3.0554 7.6569 3.58583C7.6569 4.11627 7.44619 4.62497 7.07111 5.00005L6.50543 5.56573" stroke="#64748B" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M3.11133 6.13159L5.37407 3.86885" stroke="#64748B" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </span>
+            </span>
+          </p>
+        </div>
+      </div>
+      
+      <!-- Recommended Fix Section -->
+      <div class="analysis-section">
+        <div class="section-title">🔧 Recommended fix</div>
+        <div class="section-content">
+          <p class="actionable-suggestion">Move it closer to the scroll start and darken the <br> background.
+            <!-- Lucidpark Source Badge -->
+            <span class="source-badge lucidpark">
+              <span>Lucidpark</span>
+              <span class="link-icon">
+                <svg width="9" height="10" viewBox="0 0 9 10" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M4.80833 7.26284L4.24264 7.82852C3.86757 8.20359 3.35886 8.41431 2.82843 8.41431C2.29799 8.41431 1.78929 8.20359 1.41421 7.82852C1.03914 7.45345 0.828427 6.94474 0.828427 6.41431C0.828427 5.88387 1.03914 5.37517 1.41421 5.00009L1.9799 4.43441" stroke="#64748B" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M3.677 2.7373L4.24269 2.17162C4.61776 1.79655 5.12647 1.58583 5.6569 1.58583C6.18733 1.58583 6.69604 1.79655 7.07111 2.17162C7.44619 2.54669 7.6569 3.0554 7.6569 3.58583C7.6569 4.11627 7.44619 4.62497 7.07111 5.00005L6.50543 5.56573" stroke="#64748B" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M3.11133 6.13159L5.37407 3.86885" stroke="#64748B" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </span>
+            </span>
+          </p>
+        </div>
+      </div>
+      
+      <!-- Impact Estimate Section -->
+      <div class="analysis-section">
+        <div class="section-title">📈 Impact estimate</div>
+        <div class="section-content">
+          <p class="impact-estimate">Based on similar usage patterns, this could increase click-through rates by 12-18%.</p>
+        </div>
+      </div>
+      
+      <!-- Separator -->
+      <div class="separator"></div>
+      
+      <!-- Footer with Sources & Tags -->
+      <div class="analysis-card-footer">
+        <div class="source-composite">
+          <div class="source-label">
+            <div class="avatar-group">
+              <div class="avatar avatar-1"></div>
+              <div class="avatar avatar-2"></div>
+            </div>
+            <span>Source</span>
+          </div>
+        </div>
+        
+        <div class="insight-tags">
+          <div class="insight-tag">
+            <span>Layout</span>
+          </div>
+          <div class="insight-tag">
+            <span>Friction</span>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Fix Issue Button -->
+      <button class="fix-issue-button" id="fix-issue-button">
+        Fix Issue
+      </button>
+    </div>
+    
+    <!-- Version ReadOnly (Fix All Issues): Analysis Card with disabled Fix Issue button -->
+    <div class="analysis-card" id="readonly-card">
+      <!-- Issue Header & Severity -->
+      <div class="analysis-card-header">
+        <div class="issue-title">CTA too low on the page</div>
+        <div class="severity-tag needs-improvement">
+          <span>Needs improvement</span>
+        </div>
+      </div>
+      
+      <!-- Separator -->
+      <div class="separator"></div>
+      
+      <!-- Root Cause Section -->
+      <div class="analysis-section">
+        <div class="section-title">📊 Root cause</div>
+        <div class="section-content">
+          <div class="section-content-context">Users seem to miss this button — its position and contrast might be the reason.</div>
+          
+          <!-- Supporting Metric -->
+          <div class="supporting-metric">
+            <span>Low CTR · 60% below benchmark</span>
+          </div>
+          
+          <!-- Contextual Data -->
+          <p class="contextual-data">Click-through rate is 4.2%, 60% below median for CTAs with similar intent in your app.</p>
+          
+          <!-- Conversion Impact Warning -->
+          <p class="conversion-impact">⚠️ This might be causing up to 60% conversion loss on this page.
+            <!-- NN Group Source Badge -->
+            <span class="source-badge nn-group">
+              <span>NN Group</span>
+              <span class="link-icon">
+                <svg width="9" height="10" viewBox="0 0 9 10" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M4.80833 7.26284L4.24264 7.82852C3.86757 8.20359 3.35886 8.41431 2.82843 8.41431C2.29799 8.41431 1.78929 8.20359 1.41421 7.82852C1.03914 7.45345 0.828427 6.94474 0.828427 6.41431C0.828427 5.88387 1.03914 5.37517 1.41421 5.00009L1.9799 4.43441" stroke="#64748B" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M3.677 2.7373L4.24269 2.17162C4.61776 1.79655 5.12647 1.58583 5.6569 1.58583C6.18733 1.58583 6.69604 1.79655 7.07111 2.17162C7.44619 2.54669 7.6569 3.0554 7.6569 3.58583C7.6569 4.11627 7.44619 4.62497 7.07111 5.00005L6.50543 5.56573" stroke="#64748B" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M3.11133 6.13159L5.37407 3.86885" stroke="#64748B" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </span>
+            </span>
+          </p>
+        </div>
+      </div>
+      
+      <!-- Recommended Fix Section -->
+      <div class="analysis-section">
+        <div class="section-title">🔧 Recommended fix</div>
+        <div class="section-content">
+          <p class="actionable-suggestion">Move it closer to the scroll start and darken the <br> background.
+            <!-- Lucidpark Source Badge -->
+            <span class="source-badge lucidpark">
+              <span>Lucidpark</span>
+              <span class="link-icon">
+                <svg width="9" height="10" viewBox="0 0 9 10" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M4.80833 7.26284L4.24264 7.82852C3.86757 8.20359 3.35886 8.41431 2.82843 8.41431C2.29799 8.41431 1.78929 8.20359 1.41421 7.82852C1.03914 7.45345 0.828427 6.94474 0.828427 6.41431C0.828427 5.88387 1.03914 5.37517 1.41421 5.00009L1.9799 4.43441" stroke="#64748B" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M3.677 2.7373L4.24269 2.17162C4.61776 1.79655 5.12647 1.58583 5.6569 1.58583C6.18733 1.58583 6.69604 1.79655 7.07111 2.17162C7.44619 2.54669 7.6569 3.0554 7.6569 3.58583C7.6569 4.11627 7.44619 4.62497 7.07111 5.00005L6.50543 5.56573" stroke="#64748B" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M3.11133 6.13159L5.37407 3.86885" stroke="#64748B" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </span>
+            </span>
+          </p>
+        </div>
+      </div>
+      
+      <!-- Impact Estimate Section -->
+      <div class="analysis-section">
+        <div class="section-title">📈 Impact estimate</div>
+        <div class="section-content">
+          <p class="impact-estimate">Based on similar usage patterns, this could increase click-through rates by 12-18%.</p>
+        </div>
+      </div>
+      
+      <!-- Separator -->
+      <div class="separator"></div>
+      
+      <!-- Footer with Sources & Tags -->
+      <div class="analysis-card-footer">
+        <div class="source-composite">
+          <div class="source-label">
+            <div class="avatar-group">
+              <div class="avatar avatar-1"></div>
+              <div class="avatar avatar-2"></div>
+            </div>
+            <span>Source</span>
+          </div>
+        </div>
+        
+        <div class="insight-tags">
+          <div class="insight-tag">
+            <span>Layout</span>
+          </div>
+          <div class="insight-tag">
+            <span>Friction</span>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Fix Issue Button (Disabled) -->
+      <button class="fix-issue-button disabled" id="fix-issue-button-disabled" disabled>
+        Fix Issue
+      </button>
+    </div>
+  </div>
+  
+  <script>
+    // Initialization
+    document.addEventListener('DOMContentLoaded', function() {
+      // Back button handler
+      document.querySelector('.back-button').addEventListener('click', function() {
+        parent.postMessage({ type: 'NAVIGATE_BACK' }, '*');
+      });
+
+    // Back button logic
+    document.getElementById('back-button').addEventListener('click', function() {
+      sendMessageToPlugin({
+        type: 'NAVIGATE_TO_PROJECTS'
+      });
+    });
+      
+      // Fix Issue button handler
+      document.getElementById('fix-issue-button').addEventListener('click', function() {
+        // Send message to parent (main plugin code)
+        parent.postMessage({ type: 'FIX_ISSUE', issueId: 'issue-001' }, '*');
+      });
+    });
+  </script>
+</body>
+</html> 

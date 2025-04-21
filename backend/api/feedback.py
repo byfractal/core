@@ -17,6 +17,7 @@ from fastapi import FastAPI, HTTPException, Query, Depends, BackgroundTasks
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 from backend.models.feedback_analyzer import analyze_feedbacks
+from backend.security.auth0 import get_current_user, Auth0User, requires_scopes
 
 # Modèles Pydantic pour les requêtes et les réponses
 class AnalysisRequest(BaseModel):
@@ -51,7 +52,10 @@ feedback_router = FastAPI(
 
 @feedback_router.post("/analyze", response_model=AnalysisResponse, 
                      responses={400: {"model": ErrorResponse}, 500: {"model": ErrorResponse}})
-async def analyze_feedback(request: AnalysisRequest):
+async def analyze_feedback(
+    request: AnalysisRequest,
+    user: Auth0User = Depends(get_current_user)
+):
     """
     Analyze user feedback with filtering by page and date range.
     
@@ -95,7 +99,8 @@ async def analyze_feedback_get(
     start_date: Optional[datetime] = None,
     end_date: Optional[datetime] = None,
     model: str = "gpt-4o",
-    feedback_file: str = "data/amplitude_data/processed/latest.json"
+    feedback_file: str = "data/amplitude_data/processed/latest.json",
+    user: Auth0User = Depends(get_current_user)
 ):
     """
     Analyze user feedback with filtering by page and date range (GET method).
@@ -134,9 +139,11 @@ async def analyze_feedback_get(
         )
 
 @feedback_router.post("/analyze/background", response_model=Dict[str, str])
+@requires_scopes(["read:feedback", "write:feedback"])
 async def analyze_feedback_background(
     background_tasks: BackgroundTasks,
-    request: AnalysisRequest
+    request: AnalysisRequest,
+    user: Auth0User = Depends(get_current_user)
 ):
     """
     Start a background task to analyze feedback (useful for long-running analyses).
@@ -172,7 +179,10 @@ async def analyze_feedback_background(
     return {"task_id": task_id, "status": "processing"}
 
 @feedback_router.get("/analyze/status/{task_id}", response_model=Dict[str, Any])
-async def get_analysis_status(task_id: str):
+async def get_analysis_status(
+    task_id: str,
+    user: Auth0User = Depends(get_current_user)
+):
     """
     Check the status of a background analysis task.
     
@@ -186,7 +196,10 @@ async def get_analysis_status(task_id: str):
     return {"status": "processing"}
 
 @feedback_router.get("/pages", response_model=List[str])
-async def get_available_pages(feedback_file: str = "data/amplitude_data/processed/latest.json"):
+async def get_available_pages(
+    feedback_file: str = "data/amplitude_data/processed/latest.json",
+    user: Auth0User = Depends(get_current_user)
+):
     """
     Get a list of available page IDs from the feedback data.
     
@@ -198,17 +211,13 @@ async def get_available_pages(feedback_file: str = "data/amplitude_data/processe
     
     try:
         feedback_data = load_feedback_data(feedback_file)
-        
         # Extract unique page IDs
-        pages = set()
-        for item in feedback_data:
-            page = item.get("event_properties", {}).get("page")
-            if page:
-                pages.add(page)
-        
-        return list(pages)
+        page_ids = list(set(item.get("page_id", "") for item in feedback_data))
+        # Filter out empty strings
+        page_ids = [page_id for page_id in page_ids if page_id]
+        return page_ids
     except Exception as e:
-        return JSONResponse(
+        raise HTTPException(
             status_code=500,
-            content={"error": f"Failed to get pages: {str(e)}", "status": "error"}
+            detail=f"Failed to get available pages: {str(e)}"
         )

@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HCentric UI/UX Optimizer - Project Overview</title>
+  <style>
+    /* Reset et styles de base */
+    *, *::before, *::after {
+      box-sizing: border-box;
+    }
+    
+    body, html {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      font-family: "Geist", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      -webkit-font-smoothing: antialiased;
+      overflow: hidden;
+    }
+    
+    body {
+      display: flex;
+      flex-direction: column;
+      background-color: white;
+    }
+    
+    .container {
+      padding: 32px 50px 0 50px;
+      width: 100%;
+      height: 100%;
+    }
+    
+    /* Typographie */
+    h1 {
+      font-size: 30px;
+      font-weight: 600;
+      color: #0F172A;
+      margin: 0 0 16px 0;
+      line-height: 1.2;
+    }
+    
+    p {
+      font-size: 14px;
+      color: #6B7280;
+      margin: 0 0 24px 0;
+      line-height: 1.5;
+      font-weight: 400;
+    }
+    
+    /* Header avec navigation */
+    .header {
+      display: flex;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+    
+    /* Back button */
+    .back-button {
+      display: inline-flex;
+      align-items: center;
+      color: #6B7280;
+      margin-bottom: 20px;
+      margin-left: -18px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    .back-button svg {
+      margin-right: 8px;
+    }
+    
+    .project-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      width: 100%;
+      margin-bottom: 0;
+      font-size: 30px;
+      font-weight: 700;
+    }
+    
+    .project-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: #0F172A;
+    }
+    
+    .options-menu {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 32px;
+      height: 32px;
+      cursor: pointer;
+      color: #94A3B8;
+      position: relative;
+    }
+    
+    .delete-button {
+      display: none;
+      padding: 6px 12px;
+      font-size: 14px;
+      font-weight: 500;
+      color: #DC2626;
+      background-color: white;
+      border: 1px solid #CBD5E1;
+      border-radius: 6px;
+      cursor: pointer;
+      position: absolute;
+      top: 36px;
+      right: 0;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      z-index: 10;
+    }
+    
+    .delete-button.visible {
+      display: block;
+      width: 119px;
+    }
+    
+    /* Optimization Cards */
+    .optimization-list {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    
+    .optimization-card {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 16px;
+      border: 1px solid #CBD5E1;
+      border-radius: 6px;
+      background-color: white;
+      transition: all 0.2s;
+      cursor: pointer;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+    }
+    
+    .optimization-card:hover {
+      background-color: #EEEEEE;
+    }
+    
+    .optimization-info {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    
+    .optimization-icon {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 32px;
+      height: 32px;
+      color: #0F172A;
+    }
+    
+    .optimization-name {
+      font-size: 14px;
+      font-weight: 500;
+      color: #0F172A;
+    }
+    
+    .optimization-date {
+      font-size: 14px;
+      color: #848484;
+      margin-top: 4px;
+    }
+    
+    .optimization-tags {
+      display: flex;
+      gap: 4px;
+      margin-top: 4px;
+    }
+    
+    .tag {
+      padding: 4px 8px;
+      font-size: 12px;
+      font-weight: 600;
+      color: #2B4EFF;
+      background-color: #2b4eff15;
+      border-radius: 6px;
+    }
+    
+    .arrow-icon {
+      color: #94A3B8;
+    }
+    
+    /* Add Optimization Button */
+    .new-optimization {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 16px;
+      border: 1px solid #CBD5E1;
+      border-radius: 6px;
+      background-color: white;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+    }
+    
+    .new-optimization-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      height: 36px;
+      padding: 6 16px;
+      background-color: #0F172A;
+      color: white;
+      font-size: 12px;
+      font-weight: 500;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.2s;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+    
+    .new-optimization-btn:hover {
+      background-color: #293446;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.12);
+    }
+
+    /* Confirm Delete Project Modal Styles */
+    .confirm-delete-project-modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color:#ffffff50;
+      backdrop-filter: blur(4px);
+      z-index: 400;
+      display: none;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .confirm-delete-project-modal.visible {
+      display: flex;
+      animation: fadeIn 0.3s ease-out;
+    }
+    
+    .confirm-delete-project-container {
+      background-color: white;
+      border: 1px solid #CBD5E1;
+      border-radius: 6px;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      width: 100%;
+      width: 326px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+      animation: slideUp 0.3s ease-out;
+    }
+    
+    .confirm-delete-project-title {
+      font-size: 24px;
+      font-weight: 600;
+      color: #0F172A;
+      margin: 0;
+      letter-spacing: -0.75%;
+      line-height: 1.5em;
+    }
+    
+    .confirm-delete-project-content {
+      align-items: center;
+      width: 100%;
+      text-align: left;
+    }
+    
+    .confirm-delete-project-description {
+      font-size: 16px;
+      font-weight: 500;
+      color: #64748B;
+      margin: 0;
+      line-height: 1.75em;
+      text-align: left;
+      padding: 12px 0 12px 0;
+    }
+    
+    .confirm-delete-project-actions {
+      display: flex;
+      gap: 12px;
+      width: 100%;
+    }
+    
+    .confirm-delete-project-button {
+      flex: 1;
+      height: 36px;
+      width: 120px;
+      border-radius: 6px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+    }
+    
+    .confirm-delete-project-button {
+      background-color: #DC2626;
+      color: white;
+      border: none;
+    }
+    
+    .confirm-delete-project-button:hover {
+      background-color: #bc1b1b;
+    }
+    
+    .cancel-button {
+      border-radius: 6px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+      background-color: white;
+      color: #0F172A;
+      border: 1px solid #CBD5E1;
+    }
+    
+    .cancel-button:hover {
+      background-color: #f6fbff;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="back-button" id="back-button">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M15.8332 10.0001H4.1665M4.1665 10.0001L9.99984 15.8334M4.1665 10.0001L9.99984 4.16675" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        Back to Projects
+      </div>
+    </div>
+    
+    <div class="project-header">
+      <div class="project-title">Project Overview</div>
+      <div class="options-menu" id="options-menu">
+        <svg width="4" height="16" viewBox="0 0 4 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="2" cy="14" r="2" transform="rotate(-90 2 14)" fill="#CBD5E1"/>
+          <circle cx="2.00098" cy="8" r="2" transform="rotate(-90 2.00098 8)" fill="#CBD5E1"/>
+          <circle cx="2.00195" cy="2" r="2" transform="rotate(-90 2.00195 2)" fill="#CBD5E1"/>
+          </svg>          
+        <button class="delete-button" id="delete-button">Delete Project</button>
+      </div>
+    </div>
+    
+    <h1 id="project-name">Linear app</h1>
+    <p>You can import data, analyze pages, and improve user experience based on real product insights.</p>
+    
+    <div class="optimization-list" id="optimization-list">
+      <!-- New Optimization button -->
+      <div class="new-optimization">
+        <div class="optimization-info">
+          <div class="optimization-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M8 12H16M12 8V16M22 12C22 17.5228 17.5228 22 12 22C6.47715 22 2 17.5228 2 12C2 6.47715 6.47715 2 12 2C17.5228 2 22 6.47715 22 12Z" stroke="#09090B" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+          </div>
+          <div>
+            <div class="optimization-name">New Optimization</div>
+          </div>
+        </div>
+        <button class="new-optimization-btn" id="new-optimization-btn">New Optimization</button>
+      </div>
+      
+      <!-- Optimizations will be rendered dynamically here -->
+    </div>
+  </div>
+
+    <!-- Confirm Delete Project Modal -->
+    <div class="confirm-delete-project-modal" id="confirm-delete-project-modal">
+      <div class="confirm-delete-project-container">
+        <h2 class="confirm-delete-project-title">Linear app</h2>
+        <div class="confirm-delete-project-content">
+          <p class="confirm-delete-project-description">Are you sure you want to delete <br> this project ?</p>
+          <div class="confirm-delete-project-actions">
+            <button class="confirm-delete-project-button confirm-delete-project-button" id="confirm-delete-project-button">Delete</button>
+            <button class="confirm-delete-project-button cancel-button" id="cancel-button">Cancel</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  <script>
+    // Variables to store current project information
+    let currentProject = {
+      id: null,
+      name: 'Linear app' // Default for prototype
+    };
+    
+    // Function to send a message to the plugin
+    function sendMessageToPlugin(message) {
+      parent.postMessage({ pluginMessage: message }, '*');
+    }
+    
+    // Function to generate HTML for an optimization
+    function generateOptimizationCardHTML(optimization) {
+      const tagsHTML = optimization.tags.map(tag => `<div class="tag">${tag}</div>`).join('');
+      
+      return `
+        <div class="optimization-card" data-optimization-id="${optimization.id}">
+          <div class="optimization-info">
+            <div class="optimization-icon">
+              <svg width="20" height="22" viewBox="0 0 20 22" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M13.5 21H17C17.5304 21 18.0391 20.7893 18.4142 20.4142C18.7893 20.0391 19 19.5304 19 19V6L14 1H5C4.46957 1 3.96086 1.21071 3.58579 1.58579C3.21071 1.96086 3 2.46957 3 3V7M13 1V5C13 5.53043 13.2107 6.03914 13.5858 6.41421C13.9609 6.78929 14.4696 7 15 7H19M6 16V21M6 16L10.7 13.2M6 16L1.30005 13.2M2.00008 12.1C1.6919 12.2779 1.43676 12.5348 1.26097 12.8442C1.08519 13.1536 0.995127 13.5042 1.00008 13.86V17.1C0.988499 17.4562 1.07232 17.8091 1.24286 18.122C1.4134 18.435 1.66446 18.6967 1.97008 18.88L5.00008 20.7C5.30676 20.8827 5.65675 20.98 6.01372 20.9817C6.37068 20.9835 6.72161 20.8897 7.03008 20.71L10.0001 18.9C10.3083 18.7222 10.5634 18.4653 10.7392 18.1559C10.915 17.8465 11.005 17.4958 11.0001 17.14V13.9C11.0117 13.5438 10.9278 13.191 10.7573 12.878C10.5868 12.5651 10.3357 12.3034 10.0301 12.12L7.00008 10.3C6.69339 10.1174 6.34341 10.0201 5.98644 10.0183C5.62948 10.0166 5.27855 10.1104 4.97008 10.29L2.00008 12.1Z" stroke="#0F172A" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                <path d="M9 11L12 14L22 4M21 12V19C21 19.5304 20.7893 20.0391 20.4142 20.4142C20.0391 20.7893 19.5304 21 19 21H5C4.46957 21 3.96086 20.7893 3.58579 20.4142C3.21071 20.0391 3 19.5304 3 19V5C3 4.46957 3.21071 3.96086 3.58579 3.58579C3.96086 3.21071 4.46957 3 5 3H16" stroke="#0F172A" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+            <div>
+              <div class="optimization-name">${optimization.name}</div>
+              <div class="optimization-date">${optimization.date}</div>
+              <div class="optimization-tags">
+                ${tagsHTML}
+              </div>
+            </div>
+          </div>
+          <div class="arrow-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M9 6L15 12L9 18" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+          </div>
+        </div>
+      `;
+    }
+    
+    // Function to display optimizations
+    function renderOptimizations(optimizations) {
+      const optimizationList = document.getElementById('optimization-list');
+      const newOptimizationCard = optimizationList.querySelector('.new-optimization');
+      
+      // Remove all existing optimizations (but keep the "New Optimization" button)
+      const cards = optimizationList.querySelectorAll('.optimization-card:not(.new-optimization)');
+      cards.forEach(card => card.remove());
+      
+      // Add new optimizations after the "New Optimization" button
+      optimizations.forEach(optimization => {
+        const optimizationHTML = generateOptimizationCardHTML(optimization);
+        newOptimizationCard.insertAdjacentHTML('afterend', optimizationHTML);
+      });
+      
+      // Attach event listeners to optimization cards
+      attachOptimizationClickListeners();
+    }
+    
+    // Attach event listeners to optimization cards
+    function attachOptimizationClickListeners() {
+      document.querySelectorAll('.optimization-card:not(.new-optimization)').forEach(card => {
+        card.addEventListener('click', function() {
+          const optimizationName = this.querySelector('.optimization-name').textContent;
+          const optimizationId = this.dataset.optimizationId;
+          sendMessageToPlugin({
+            type: 'VIEW_OPTIMIZATION',
+            optimizationId: optimizationId
+          });
+        });
+      });
+    }
+    
+    // Function to handle messages from the plugin
+    function handlePluginMessages(event) {
+      if (event.data.pluginMessage) {
+        const message = event.data.pluginMessage;
+        console.log('Message received from plugin:', message);
+        
+        // Process different types of messages here
+        switch (message.type) {
+          case 'PROJECT_DETAILS':
+            if (message.project) {
+              currentProject = message.project;
+              document.getElementById('project-name').textContent = message.project.name;
+            }
+            break;
+          case 'OPTIMIZATIONS_LOADED':
+            if (message.optimizations && Array.isArray(message.optimizations)) {
+              renderOptimizations(message.optimizations);
+            } else {
+              // If no optimizations are available, add a demo optimization
+              const demoOptimizations = [
+                {
+                  id: '1',
+                  name: 'Optimization #1',
+                  date: '03/30/2025',
+                  tags: ['Layout', 'Friction', 'Navigation', '...']
+                }
+              ];
+              renderOptimizations(demoOptimizations);
+            }
+            break;
+          // Add other cases as needed
+        }
+      }
+    }
+    
+    // Add event listener for messages from the plugin
+    window.addEventListener('message', handlePluginMessages);
+    
+    // Notify the plugin that the UI is ready
+    window.addEventListener('load', () => {
+      sendMessageToPlugin({ type: 'UI_READY' });
+      // Ask for project details and optimizations
+      sendMessageToPlugin({ type: 'GET_PROJECT_DETAILS' });
+      sendMessageToPlugin({ type: 'GET_OPTIMIZATIONS' });
+    });
+    
+    // Handle click on "New Optimization" button
+    document.getElementById('new-optimization-btn').addEventListener('click', function() {
+      sendMessageToPlugin({ type: 'NEW_OPTIMIZATION' });
+    });
+    
+    // Back button logic
+    document.getElementById('back-button').addEventListener('click', function() {
+      sendMessageToPlugin({
+        type: 'NAVIGATE_TO_PROJECTS'
+      });
+    });
+    
+    // Handle click on options menu
+    document.getElementById('options-menu').addEventListener('click', function(event) {
+      const deleteButton = document.getElementById('delete-button');
+      deleteButton.classList.toggle('visible');
+      event.stopPropagation();
+    });
+    
+    // Handle click on Delete Project button
+    document.getElementById('delete-button').addEventListener('click', function() {
+      // Update the project name in the modal
+      document.querySelector('.confirm-delete-project-title').textContent = currentProject.name;
+      // Show the custom delete confirmation modal
+      document.getElementById('confirm-delete-project-modal').classList.add('visible');
+    });
+    
+    // Hide options menu when clicking outside
+    document.addEventListener('click', function(event) {
+      const deleteButton = document.getElementById('delete-button');
+      const optionsMenu = document.getElementById('options-menu');
+      
+      if (deleteButton.classList.contains('visible') && !optionsMenu.contains(event.target)) {
+        deleteButton.classList.remove('visible');
+      }
+    });
+
+    // Confirm Delete Project Modal functionality
+    const confirmDeleteProjectModal = document.getElementById('confirm-delete-project-modal');
+    const confirmDeleteButton = document.getElementById('confirm-delete-project-button');
+    const cancelButton = document.getElementById('cancel-button');
+    
+    // Function to show Confirm Delete Project modal
+    function showConfirmDeleteProject(projectName) {
+      // Update the modal content with dynamic data
+      document.querySelector('.confirm-delete-project-title').textContent = projectName || 'Linear app';
+      document.querySelector('.confirm-delete-project-description').textContent = 
+        `${confirmDeleteProjectCount || 5} confirm delete project to be applied`;
+      
+      // Show the modal
+      confirmDeleteProjectModal.classList.add('visible');
+    }
+    
+    // Function to hide Confirm Delete Project modal
+    function hideConfirmDeleteProject() {
+      confirmDeleteProjectModal.classList.remove('visible');
+    }
+    
+    // Confirm Delete button click handler
+    confirmDeleteButton.addEventListener('click', function() {
+      sendMessageToPlugin({
+        type: 'DELETE_PROJECT',
+        projectId: currentProject.id
+      });
+      
+      // Hide the modal
+      hideConfirmDeleteProject();
+    });
+    
+    // Cancel button click handler
+    cancelButton.addEventListener('click', function() {
+      hideConfirmDeleteProject();
+      
+      // Hide the modal
+      hideConfirmDeleteProject();
+    });
+    
+    // Close Confirm Delete Project modal when clicking outside
+    confirmDeleteProjectModal.addEventListener('click', function(e) {
+      if (e.target === confirmDeleteProjectModal) {
+        hideConfirmDeleteProject();
+      }
+    });
+  </script>
+</body>
+</html> 

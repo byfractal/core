@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HCentric UI/UX Optimizer</title>
+  <style>
+    body, html {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      overflow: hidden;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+    
+    iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
+  </style>
+</head>
+<body>
+  <!-- Utilisation d'un iframe pour charger la page des projets -->
+  <iframe src="./ui/ProjectOverviewPage.html" id="content-frame"></iframe>
+  
+  <script>
+    // Notification au plugin que l'UI est prête
+    window.addEventListener('load', () => {
+      parent.postMessage({ 
+        pluginMessage: { type: 'UI_READY' }
+      }, '*');
+    });
+    
+    // Proxy pour les messages entre l'iframe et le plugin
+    window.addEventListener('message', (event) => {
+      // Si le message vient de l'iframe, le transmettre au plugin
+      if (event.source === document.getElementById('content-frame').contentWindow) {
+        parent.postMessage(event.data, '*');
+      }
+      // Si le message vient du plugin, le transmettre à l'iframe
+      else if (event.data.pluginMessage) {
+        document.getElementById('content-frame').contentWindow.postMessage(event.data, '*');
+      }
+    });
+  </script>
+</body>
+</html> 
