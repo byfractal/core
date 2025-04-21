@@ -224,9 +224,9 @@ class AmplitudeClient:
             'Accept': '*/*'  # Accept any content type
         }
         
-        # Format dates in YYYYMMDD format
-        start_str = start_date.strftime("%Y%m%d")
-        end_str = end_date.strftime("%Y%m%d")
+        # Format dates in YYYYMMDDTHH format as required by Amplitude Export API
+        start_str = start_date.strftime("%Y%m%dT00")
+        end_str = end_date.strftime("%Y%m%dT23")
         
         # Try standard URL first
         url = f"{self.export_url}?start={start_str}&end={end_str}"
