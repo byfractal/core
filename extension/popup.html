@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HCentric UI Optimizer</title>
+  <style>
+    body, html {
+      margin: 0;
+      padding: 0;
+      width: 420px;
+      height: 600px;
+      overflow: hidden;
+      font-family: "Geist", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+    
+    .iframe-container {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+    }
+    
+    iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
+    
+    /* Pour débogage uniquement - sera masqué en production */
+    .debug-panel {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: #f0f0f0;
+      border-top: 1px solid #ccc;
+      padding: 8px;
+      font-size: 12px;
+      z-index: 1000;
+      display: none;
+    }
+    
+    .debug-panel.show {
+      display: block;
+    }
+    
+    .debug-actions {
+      display: flex;
+      margin-top: 4px;
+    }
+    
+    .debug-btn {
+      background: #e0e0e0;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      padding: 4px 8px;
+      margin-right: 4px;
+      font-size: 11px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <div class="iframe-container">
+    <iframe id="content-frame" src="pages/AnalysisCardPage.html"></iframe>
+  </div>
+  
+  <!-- Panneau de débogage (masqué en production) -->
+  <div class="debug-panel" id="debug-panel">
+    <div>Page actuelle: <span id="current-page">AnalysisCardPage</span></div>
+    <div class="debug-actions">
+      <button class="debug-btn" data-page="ProjectsPage">Projects</button>
+      <button class="debug-btn" data-page="ProjectOverviewPage">Project Overview</button>
+      <button class="debug-btn" data-page="ImportPage">Import</button>
+      <button class="debug-btn" data-page="AnalysisCardPage">Analysis Card</button>
+    </div>
+  </div>
+  
+  <script>
+    // Montrer/cacher panel debug avec Alt+D ou Shift+D
+    document.addEventListener('keydown', function(e) {
+      if ((e.altKey || e.shiftKey) && e.key === 'd') {
+        document.getElementById('debug-panel').classList.toggle('show');
+      }
+    });
+    
+    // Navigation via boutons debug
+    document.querySelectorAll('.debug-btn').forEach(btn => {
+      btn.addEventListener('click', function() {
+        const page = this.dataset.page;
+        navigateToPage(page);
+      });
+    });
+    
+    // Fonction pour changer de page
+    function navigateToPage(pageName) {
+      const iframe = document.getElementById('content-frame');
+      iframe.src = `pages/${pageName}.html`;
+      document.getElementById('current-page').textContent = pageName;
+    }
+    
+    // Écouteur de messages provenant de l'iframe
+    window.addEventListener('message', function(event) {
+      // Vérifier si le message vient de notre iframe
+      const iframe = document.getElementById('content-frame');
+      if (iframe && event.source === iframe.contentWindow) {
+        const message = event.data.pluginMessage;
+        
+        // Traiter les messages de navigation
+        if (message && message.type) {
+          console.log('Message reçu de l\'iframe:', message);
+          
+          switch (message.type) {
+            case 'NAVIGATE_TO_PROJECTS':
+              navigateToPage('ProjectsPage');
+              break;
+            case 'NAVIGATE_TO_PROJECT_OVERVIEW':
+              navigateToPage('ProjectOverviewPage');
+              break;
+            case 'NEW_OPTIMIZATION':
+            case 'IMPORT_DATA':
+              navigateToPage('ImportPage');
+              break;
+            case 'VIEW_OPTIMIZATION':
+              navigateToPage('AnalysisCardPage');
+              break;
+          }
+        }
+      }
+    });
+    
+    // Communication avec le script de contenu Chrome
+    chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+      console.log('Message reçu du background:', message);
+      
+      // Répondre si nécessaire
+      sendResponse({ success: true });
+      return true; // Garder la connexion ouverte pour les réponses asynchrones
+    });
+  </script>
+</body>
+</html> 

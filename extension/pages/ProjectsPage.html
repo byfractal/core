@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HCentric UI/UX Optimizer - Projects</title>
+  <style>
+    /* Reset et styles de base */
+    *, *::before, *::after {
+      box-sizing: border-box;
+    }
+    
+    body, html {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      font-family: "Geist", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      -webkit-font-smoothing: antialiased;
+      overflow: hidden;
+    }
+    
+    body {
+      display: flex;
+      flex-direction: column;
+      background-color: white;
+    }
+    
+    .container {
+      padding: 105px 50px 0 50px;
+      width: 100%;
+      height: 100%;
+    }
+    
+    /* Typographie */
+    h1 {
+      font-size: 30px;
+      font-weight: 600;
+      color: #0F172A;
+      margin: 0 0 16px 0;
+      line-height: 1.2;
+    }
+    
+    p {
+      font-size: 14px;
+      color: #6B7280;
+      margin: 0 0 24px 0;
+      line-height: 1.5;
+      font-weight: 400;
+    }
+    
+    /* Project Cards */
+    .project-list {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    
+    .project-card {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 18px 20px;
+      border: 1px solid #E2E8F0;
+      border-radius: 6px;
+      background-color: white;
+      transition: all 0.2s;
+      cursor: pointer;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+    }
+    
+    .project-card:hover {
+      background-color: #EEEEEE;
+    }
+    
+    .project-info {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    
+    .project-icon {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 32px;
+      height: 32px;
+      color: #0F172A;
+    }
+    
+    .project-name {
+      font-size: 14px;
+      font-weight: 500;
+      color: #0F172A;
+    }
+    
+    .project-date {
+      font-size: 14px;
+      color: #94A3B8;
+      margin-top: 4px;
+    }
+
+    .arrow-icon {
+      color: #94A3B8;
+    }
+    
+    /* Add Project Card & Button */
+    .add-project {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    
+    .add-project-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      height: 32px;
+      padding: 0 16px;
+      background-color: #0F172A;
+      color: white;
+      font-size: 12px;
+      font-weight: 500;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.2s;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+    
+    .add-project-btn:hover {
+      background-color: #1E293B;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.12);
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Projects</h1>
+    <p>You can import data, analyze pages, and improve user experience based on real product insights.</p>
+    
+    <div class="project-list" id="project-list">
+      <!-- Projects will be rendered dynamically here -->
+      
+      <!-- Template for "Add Project" button - always displayed at the bottom -->
+      <div class="project-card add-project">
+        <div class="project-info">
+          <div class="optimization-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M8 12H16M12 8V16M22 12C22 17.5228 17.5228 22 12 22C6.47715 22 2 17.5228 2 12C2 6.47715 6.47715 2 12 2C17.5228 2 22 6.47715 22 12Z" stroke="#09090B" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+          </div>
+          <div>
+            <div class="project-name">New Project</div>
+          </div>
+        </div>
+        <button class="add-project-btn">Add Project</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Function to send a message to the plugin
+    function sendMessageToPlugin(message) {
+      parent.postMessage({ pluginMessage: message }, '*');
+    }
+    
+    // Function to generate HTML for a project
+    function generateProjectCardHTML(project) {
+      return `
+        <div class="project-card" data-project-id="${project.id}">
+          <div class="project-info">
+            <div class="project-icon">
+              <!-- Document-cube icon to match Figma design -->
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M7 18H17V8H7V18Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M7 8V4H13L17 8H7Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M13 15L10 12L11 11L13 13L17 9L18 10L13 15Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+            <div>
+              <div class="project-name">${project.name}</div>
+              <div class="project-date">Edited ${project.editedAt}</div>
+            </div>
+          </div>
+          <div class="arrow-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M9 6L15 12L9 18" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+          </div>
+        </div>
+      `;
+    }
+    
+    // Function to display projects
+    function renderProjects(projects) {
+      const projectList = document.getElementById('project-list');
+      const addProjectCard = projectList.querySelector('.add-project');
+      
+      // Remove all existing projects (but keep the "Add Project" button)
+      while (projectList.firstChild && !projectList.firstChild.classList.contains('add-project')) {
+        projectList.removeChild(projectList.firstChild);
+      }
+      
+      // Add new projects before the "Add Project" button
+      projects.forEach(project => {
+        const projectHTML = generateProjectCardHTML(project);
+        projectList.insertAdjacentHTML('afterbegin', projectHTML);
+      });
+      
+      // Attach event listeners to project cards
+      attachProjectClickListeners();
+    }
+    
+    // Attach event listeners to project cards
+    function attachProjectClickListeners() {
+      document.querySelectorAll('.project-card:not(.add-project)').forEach(card => {
+        card.addEventListener('click', function() {
+          const projectName = this.querySelector('.project-name').textContent;
+          const projectId = this.dataset.projectId;
+          sendMessageToPlugin({
+            type: 'SELECT_PROJECT',
+            projectId: projectId,
+            projectName: projectName
+          });
+        });
+      });
+    }
+    
+    // Function to handle messages from the plugin
+    function handlePluginMessages(event) {
+      if (event.data.pluginMessage) {
+        const message = event.data.pluginMessage;
+        console.log('Message received from plugin:', message);
+        
+        // Process different types of messages here
+        switch (message.type) {
+          case 'PROJECTS_LOADED':
+            if (message.projects && Array.isArray(message.projects)) {
+              renderProjects(message.projects);
+            }
+            break;
+          case 'PROJECT_SELECTED':
+            console.log('Project selected:', message.projectName);
+            // Here we could navigate to a project details page
+            break;
+          case 'SHOW_CREATE_PROJECT':
+            console.log('Navigating to project creation form');
+            // Redirect to the import page with absolute path
+            window.location.href = '/ui/ImportPage.html';
+            break;
+          // Add other cases as needed
+        }
+      }
+    }
+    
+    // Add event listener for messages from the plugin
+    window.addEventListener('message', handlePluginMessages);
+    
+    // Notify the plugin that the UI is ready
+    window.addEventListener('load', () => {
+      sendMessageToPlugin({ type: 'UI_READY' });
+      // Ask for the list of projects
+      sendMessageToPlugin({ type: 'GET_PROJECTS' });
+    });
+    
+    // Handle click on "Add Project" button
+    document.querySelector('.add-project-btn').addEventListener('click', function() {
+      sendMessageToPlugin({ type: 'ADD_PROJECT' });
+    });
+  </script>
+</body>
+</html> 
