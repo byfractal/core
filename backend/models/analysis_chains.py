@@ -2,6 +2,11 @@
 This module implements the analysis chains for processing user feedback.
 It uses the prompt templates defined in prompts.py to create specialized
 chains for sentiment analysis, theme extraction, and summary generation.
+
+This implementation incorporates advanced prompt engineering techniques such as:
+1. Tool-first design with explicit JSON schemas
+2. Step-by-step reasoning with self-critique
+3. Strict output formatting guidelines
 """
 
 # Configure encoding for API requests
@@ -49,7 +54,9 @@ from langchain_openai import ChatOpenAI
 from backend.models.prompts import (
     sentiment_classification_template,
     emotion_theme_extraction_template,
-    feedback_summary_template
+    feedback_summary_template,
+    user_journey_analyzer_template,
+    dom_modification_validator_template
 )
 
 class FeedbackAnalysisChains:
@@ -59,6 +66,9 @@ class FeedbackAnalysisChains:
     This class encapsulates the various chains needed for the complete
     feedback analysis pipeline, including sentiment analysis, emotion/theme
     extraction, and feedback summarization.
+    
+    Implements the self-critique loop pattern where the model first analyzes the data, 
+    then validates its own findings and adjusts as needed.
     """
     
     def __init__(self, model="gpt-4o", temperature=0):
@@ -116,14 +126,20 @@ class FeedbackAnalysisChains:
         
     def _initialize_chains(self):
         """Initialize all the necessary chains for feedback analysis."""
-        # Create the sentiment analysis chain using pipe syntax instead of from_components
-        self.sentiment_chain = sentiment_classification_template | self.llm
+        # Create parser for JSON output
+        json_parser = JsonOutputParser()
         
-        # Create the emotion/theme extraction chain
-        self.emotion_theme_chain = emotion_theme_extraction_template | self.llm
+        # Create the sentiment analysis chain with JSON parser
+        self.sentiment_chain = sentiment_classification_template | self.llm | json_parser
         
-        # Create the feedback summary chain
-        self.summary_chain = feedback_summary_template | self.llm
+        # Create the emotion/theme extraction chain with JSON parser
+        self.emotion_theme_chain = emotion_theme_extraction_template | self.llm | json_parser
+        
+        # Create the feedback summary chain with JSON parser
+        self.summary_chain = feedback_summary_template | self.llm | json_parser
+        
+        # Create the user journey analysis chain with JSON parser
+        self.journey_chain = user_journey_analyzer_template | self.llm | json_parser
     
     def analyze_sentiment(self, feedback: str) -> Dict[str, Any]:
         """
@@ -135,26 +151,46 @@ class FeedbackAnalysisChains:
         Returns:
             Dict: A dictionary with sentiment classification results
         """
-        result = self.sentiment_chain.invoke({"feedback": feedback})
-        
-        # Si le résultat est un AIMessage (ChatOpenAI), extraire le contenu
-        if hasattr(result, 'content'):
-            result_content = result.content
-        else:
-            result_content = result
-            
         try:
-            # Ensure the result is treated as UTF-8
-            if isinstance(result_content, bytes):
-                result_content = result_content.decode('utf-8')
-            return json.loads(result_content)
-        except (json.JSONDecodeError, TypeError):
-            # Fallback if the result isn't a valid JSON
-            return {"raw_result": str(result_content)}
+            # Step 1: Initial analysis
+            result = self.sentiment_chain.invoke({"feedback": feedback})
+            
+            # Step 2: Self-critique and verification (if needed and not in test mode)
+            if os.getenv("TESTING", "false").lower() != "true" and result.get("confidence", 1.0) < 0.8:
+                # If confidence is low, add a validation step with self-critique
+                validation_prompt = PromptTemplate(
+                    input_variables=["feedback", "initial_analysis"],
+                    template="""
+                    You are an expert UX researcher analyzing user feedback about a digital interface.
+                    
+                    Review this initial sentiment analysis and verify if it's correct:
+                    
+                    User Feedback: {feedback}
+                    
+                    Initial Analysis: {initial_analysis}
+                    
+                    First, critically examine if the sentiment classification makes sense given the feedback.
+                    Then, determine if the confidence score is appropriate.
+                    If you believe the initial analysis is incorrect, provide a corrected analysis.
+                    
+                    Output your final analysis as a valid JSON object with fields "sentiment", "confidence", and "reasoning".
+                    """
+                )
+                
+                validation_chain = validation_prompt | self.llm | json_parser
+                result = validation_chain.invoke({
+                    "feedback": feedback,
+                    "initial_analysis": json.dumps(result)
+                })
+            
+            return result
+        except Exception as e:
+            print(f"Error analyzing sentiment: {e}")
+            return {"error": str(e), "sentiment": "UNKNOWN", "confidence": 0, "reasoning": "Error in analysis"}
     
     def extract_emotions_themes(self, feedback: str) -> Dict[str, Any]:
         """
-        Extract emotions and themes from a single feedback.
+        Extract emotions and themes from a single feedback using a step-by-step approach.
         
         Args:
             feedback (str): The user feedback text to analyze
@@ -162,21 +198,44 @@ class FeedbackAnalysisChains:
         Returns:
             Dict: A dictionary with emotions, themes, and issues
         """
-        result = self.emotion_theme_chain.invoke({"feedback": feedback})
-        
-        # Si le résultat est un AIMessage (ChatOpenAI), extraire le contenu
-        if hasattr(result, 'content'):
-            result_content = result.content
-        else:
-            result_content = result
-            
         try:
-            # Ensure the result is treated as UTF-8
-            if isinstance(result_content, bytes):
-                result_content = result_content.decode('utf-8')
-            return json.loads(result_content)
-        except (json.JSONDecodeError, TypeError):
-            return {"raw_result": str(result_content)}
+            # Direct chain invocation with additional parse step
+            result = self.emotion_theme_chain.invoke({"feedback": feedback})
+            
+            # Implement a self-validation step for complex feedback (if not in test mode)
+            if os.getenv("TESTING", "false").lower() != "true" and len(feedback.split()) > 50:
+                # For longer feedback, run a validation pass to ensure completeness
+                validation_prompt = PromptTemplate(
+                    input_variables=["feedback", "initial_analysis"],
+                    template="""
+                    You are an expert UX researcher validating an emotion and theme analysis of user feedback.
+                    
+                    User Feedback: {feedback}
+                    
+                    Initial Analysis: {initial_analysis}
+                    
+                    Review the initial analysis and check if:
+                    1. All emotions mentioned or implied in the feedback are captured
+                    2. All UX/UI themes present in the feedback are identified
+                    3. All specific issues mentioned are extracted
+                    4. The severity rating is appropriate for the issues described
+                    
+                    If anything is missing or incorrect, add it to the appropriate lists.
+                    
+                    Output your final complete analysis as a valid JSON object with fields "emotions", "themes", "issues", and "severity".
+                    """
+                )
+                
+                validation_chain = validation_prompt | self.llm | json_parser
+                result = validation_chain.invoke({
+                    "feedback": feedback,
+                    "initial_analysis": json.dumps(result)
+                })
+            
+            return result
+        except Exception as e:
+            print(f"Error extracting emotions and themes: {e}")
+            return {"error": str(e), "emotions": [], "themes": [], "issues": [], "severity": "unknown"}
     
     def summarize_feedback(self, feedback_list: List[str]) -> Dict[str, Any]:
         """
@@ -190,18 +249,51 @@ class FeedbackAnalysisChains:
         """
         # Format the feedback list as a numbered list for the prompt
         formatted_feedback = "\n".join([f"{i+1}. {feedback}" for i, feedback in enumerate(feedback_list)])
-        result = self.summary_chain.invoke({"feedback_list": formatted_feedback})
-        
-        # Si le résultat est un AIMessage (ChatOpenAI), extraire le contenu
-        if hasattr(result, 'content'):
-            result_content = result.content
-        else:
-            result_content = result
         
         try:
-            return json.loads(result_content)
-        except (json.JSONDecodeError, TypeError):
-            return {"raw_result": str(result_content)}
+            result = self.summary_chain.invoke({"feedback_list": formatted_feedback})
+            return result
+        except Exception as e:
+            print(f"Error summarizing feedback: {e}")
+            return {
+                "error": str(e),
+                "summary": "Error generating summary",
+                "key_issues": [],
+                "positive_aspects": [],
+                "overall_sentiment": "UNKNOWN",
+                "priority_recommendations": []
+            }
+    
+    def analyze_user_journey(self, session_recordings: List[Dict], page_id: str) -> Dict[str, Any]:
+        """
+        Analyze user journey data to identify patterns, friction points, and drop-offs.
+        
+        Args:
+            session_recordings: List of session recording data
+            page_id: Identifier of the page being analyzed
+            
+        Returns:
+            Dict with journey patterns, confusion areas, and recommendations
+        """
+        try:
+            # Convert session recordings to JSON string for template
+            session_data = json.dumps(session_recordings, indent=2)
+            
+            # Invoke the journey analysis chain
+            result = self.journey_chain.invoke({
+                "session_recordings": session_data,
+                "page_id": page_id
+            })
+            
+            return result
+        except Exception as e:
+            print(f"Error analyzing user journey: {e}")
+            return {
+                "error": str(e),
+                "journey_patterns": [],
+                "confusion_areas": [],
+                "recommendations": []
+            }
     
     def run_complete_analysis(self, feedback: str) -> Dict[str, Any]:
         """
@@ -256,7 +348,93 @@ class FeedbackAnalysisChains:
         if "Specific Feature Requests" in themes:
             complete_results["specialized_insights"]["feature_request_analysis"] = self._analyze_feature_requests(feedback)
         
+        # Final self-critique and validation step
+        if os.getenv("TESTING", "false").lower() != "true":
+            complete_results = self._validate_analysis_completeness(feedback, complete_results)
+        
         return complete_results
+    
+    def _validate_analysis_completeness(self, feedback: str, analysis: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Perform a final validation of the complete analysis to ensure nothing important was missed.
+        
+        Args:
+            feedback: The original user feedback
+            analysis: The completed analysis to validate
+            
+        Returns:
+            The validated (and potentially enhanced) analysis
+        """
+        try:
+            # Create validation prompt
+            validation_prompt = PromptTemplate(
+                input_variables=["feedback", "analysis"],
+                template="""
+                You are an expert UX researcher validating a complete feedback analysis.
+                
+                Original User Feedback: {feedback}
+                
+                Complete Analysis: {analysis}
+                
+                Review the complete analysis and check for:
+                1. Any emotions or sentiments that might have been missed
+                2. Any UX/UI themes that weren't identified
+                3. Any specialized insights that should be added based on the feedback content
+                4. Any contradictions or inconsistencies between different parts of the analysis
+                
+                If you identify any issues, provide ONLY the specific additions or corrections needed.
+                If the analysis is complete and accurate, simply respond with the original analysis.
+                
+                Output your response as a valid JSON object.
+                """
+            )
+            
+            # Create validation chain
+            validation_chain = validation_prompt | self.llm | json_parser
+            
+            # Run validation
+            validation_result = validation_chain.invoke({
+                "feedback": feedback,
+                "analysis": json.dumps(analysis, indent=2)
+            })
+            
+            # If validation found issues, incorporate the changes
+            if validation_result.get("additions") or validation_result.get("corrections"):
+                # Add any new items to the analysis
+                if validation_result.get("additions", {}).get("themes_emotions", {}).get("emotions"):
+                    analysis["themes_emotions"]["emotions"].extend(
+                        [e for e in validation_result["additions"]["themes_emotions"]["emotions"] 
+                         if e not in analysis["themes_emotions"]["emotions"]]
+                    )
+                
+                if validation_result.get("additions", {}).get("themes_emotions", {}).get("themes"):
+                    analysis["themes_emotions"]["themes"].extend(
+                        [t for t in validation_result["additions"]["themes_emotions"]["themes"] 
+                         if t not in analysis["themes_emotions"]["themes"]]
+                    )
+                
+                if validation_result.get("additions", {}).get("specialized_insights"):
+                    for insight_type, insight_data in validation_result["additions"]["specialized_insights"].items():
+                        if insight_type not in analysis["specialized_insights"]:
+                            analysis["specialized_insights"][insight_type] = insight_data
+                
+                # Apply any corrections
+                if validation_result.get("corrections"):
+                    for section, corrections in validation_result["corrections"].items():
+                        if section in analysis:
+                            for key, value in corrections.items():
+                                if key in analysis[section]:
+                                    analysis[section][key] = value
+                
+                # Add a note about the validation
+                analysis["validation_notes"] = "Analysis was enhanced through self-critique validation"
+            
+            return analysis
+        except Exception as e:
+            print(f"Error in validation step: {e}")
+            # If validation fails, return the original analysis
+            analysis["validation_notes"] = f"Validation step failed: {str(e)}"
+            return analysis
     
     # Additional specialized analysis methods
     def _analyze_form_issues(self, feedback: str) -> Dict[str, Any]:
@@ -264,16 +442,32 @@ class FeedbackAnalysisChains:
         form_analysis_prompt = PromptTemplate(
             input_variables=["feedback"],
             template="""
-            Analyze the following feedback focusing specifically on form-related issues:
+            You are an expert UX researcher analyzing form-related issues in user feedback.
             
-            Feedback: {feedback}
+            ### Input JSON Schema
+            {
+                "feedback": "User feedback text focusing on form issues"
+            }
             
-            Identify:
-            1. Which specific form elements are problematic
-            2. The exact user pain points (too many fields, unclear labels, validation errors, etc.)
-            3. Specific recommendations to improve the form experience
+            ### Output JSON Schema
+            {
+                "form_elements": ["List of problematic form elements identified"],
+                "pain_points": ["List of specific pain points with forms"],
+                "recommendations": ["List of specific form improvement recommendations"],
+                "priority": "high|medium|low"
+            }
             
-            Return your analysis as a JSON object.
+            ### Step-by-Step Analysis Process
+            1. Identify specific form elements mentioned in the feedback
+            2. Determine exact user pain points (too many fields, unclear labels, etc.)
+            3. Formulate specific recommendations to improve each issue
+            4. Assign overall priority based on severity and impact
+            5. Verify your analysis is complete and actionable
+            
+            ### Input
+            User Feedback: {feedback}
+            
+            Output your response as a valid JSON object with no additional text.
             """
         )
         form_chain = form_analysis_prompt | self.llm | JsonOutputParser()
@@ -283,12 +477,12 @@ class FeedbackAnalysisChains:
         if isinstance(result, dict):
             return result
         
-        # Sinon, extraire le contenu si c'est un AIMessage
-        if hasattr(result, 'content'):
+        # Fallback handling
+        if isinstance(result, str):
             try:
-                return json.loads(result.content)
+                return json.loads(result)
             except:
-                return {"raw_result": str(result.content)}
+                return {"error": "Failed to parse result", "raw_result": result}
         
         return result
     
@@ -297,16 +491,33 @@ class FeedbackAnalysisChains:
         navigation_prompt = PromptTemplate(
             input_variables=["feedback"],
             template="""
-            Analyze the following feedback focusing specifically on navigation and layout issues:
+            You are an expert UX researcher analyzing navigation and layout issues in user feedback.
             
-            Feedback: {feedback}
+            ### Input JSON Schema
+            {
+                "feedback": "User feedback text focusing on navigation issues"
+            }
             
-            Identify:
-            1. Which specific navigation elements or page layouts are problematic
-            2. The exact user pain points (confusing menu structure, poor information hierarchy, etc.)
-            3. Specific recommendations to improve the navigation and layout
+            ### Output JSON Schema
+            {
+                "navigation_elements": ["List of problematic navigation elements identified"],
+                "layout_issues": ["List of layout problems mentioned"],
+                "pain_points": ["List of specific user pain points"],
+                "recommendations": ["List of specific navigation/layout improvement recommendations"],
+                "priority": "high|medium|low"
+            }
             
-            Return your analysis as a JSON object.
+            ### Step-by-Step Analysis Process
+            1. Identify specific navigation elements or layouts mentioned
+            2. Determine exact user pain points (confusing structure, poor hierarchy, etc.)
+            3. Formulate specific recommendations to improve each issue
+            4. Assign overall priority based on severity and impact
+            5. Verify your analysis is complete and actionable
+            
+            ### Input
+            User Feedback: {feedback}
+            
+            Output your response as a valid JSON object with no additional text.
             """
         )
         navigation_chain = navigation_prompt | self.llm | JsonOutputParser()
@@ -316,12 +527,12 @@ class FeedbackAnalysisChains:
         if isinstance(result, dict):
             return result
         
-        # Sinon, extraire le contenu si c'est un AIMessage
-        if hasattr(result, 'content'):
+        # Fallback handling
+        if isinstance(result, str):
             try:
-                return json.loads(result.content)
+                return json.loads(result)
             except:
-                return {"raw_result": str(result.content)}
+                return {"error": "Failed to parse result", "raw_result": result}
         
         return result
     
@@ -330,16 +541,32 @@ class FeedbackAnalysisChains:
         performance_prompt = PromptTemplate(
             input_variables=["feedback"],
             template="""
-            Analyze the following feedback focusing specifically on performance issues:
+            You are an expert UX researcher analyzing performance issues in user feedback.
             
-            Feedback: {feedback}
+            ### Input JSON Schema
+            {
+                "feedback": "User feedback text focusing on performance issues"
+            }
             
-            Identify:
-            1. Which specific performance aspects are problematic (loading time, responsiveness, etc.)
-            2. The user's expectations regarding performance
-            3. Specific recommendations to improve the performance perception
+            ### Output JSON Schema
+            {
+                "performance_aspects": ["List of performance aspects mentioned"],
+                "user_expectations": ["List of user expectations regarding performance"],
+                "recommendations": ["List of specific performance improvement recommendations"],
+                "priority": "high|medium|low"
+            }
             
-            Return your analysis as a JSON object.
+            ### Step-by-Step Analysis Process
+            1. Identify specific performance aspects mentioned (loading time, responsiveness, etc.)
+            2. Determine user expectations regarding acceptable performance
+            3. Formulate specific recommendations to improve each issue
+            4. Assign overall priority based on severity and impact
+            5. Verify your analysis is complete and actionable
+            
+            ### Input
+            User Feedback: {feedback}
+            
+            Output your response as a valid JSON object with no additional text.
             """
         )
         performance_chain = performance_prompt | self.llm | JsonOutputParser()
@@ -349,12 +576,12 @@ class FeedbackAnalysisChains:
         if isinstance(result, dict):
             return result
         
-        # Sinon, extraire le contenu si c'est un AIMessage
-        if hasattr(result, 'content'):
+        # Fallback handling
+        if isinstance(result, str):
             try:
-                return json.loads(result.content)
+                return json.loads(result)
             except:
-                return {"raw_result": str(result.content)}
+                return {"error": "Failed to parse result", "raw_result": result}
         
         return result
     
@@ -363,17 +590,32 @@ class FeedbackAnalysisChains:
         feature_prompt = PromptTemplate(
             input_variables=["feedback"],
             template="""
-            Analyze the following feedback focusing specifically on feature requests:
+            You are an expert UX researcher analyzing feature requests in user feedback.
             
-            Feedback: {feedback}
+            ### Input JSON Schema
+            {
+                "feedback": "User feedback text focusing on feature requests"
+            }
             
-            Identify:
-            1. The specific features being requested
-            2. The underlying user needs these features would address
-            3. Priority assessment (how critical this feature might be)
-            4. How this feature would improve the overall user experience
+            ### Output JSON Schema
+            {
+                "requested_features": ["List of specific features requested"],
+                "user_needs": ["List of underlying user needs these features would address"],
+                "implementation_priority": ["List of priority assessments per feature"],
+                "ux_impact": ["List of expected user experience improvements"]
+            }
             
-            Return your analysis as a JSON object.
+            ### Step-by-Step Analysis Process
+            1. Identify specific features being requested
+            2. Determine underlying user needs these features would address
+            3. Assess implementation priority for each feature
+            4. Evaluate how each feature would improve user experience
+            5. Verify your analysis is complete and actionable
+            
+            ### Input
+            User Feedback: {feedback}
+            
+            Output your response as a valid JSON object with no additional text.
             """
         )
         feature_chain = feature_prompt | self.llm | JsonOutputParser()
@@ -383,12 +625,12 @@ class FeedbackAnalysisChains:
         if isinstance(result, dict):
             return result
         
-        # Sinon, extraire le contenu si c'est un AIMessage
-        if hasattr(result, 'content'):
+        # Fallback handling
+        if isinstance(result, str):
             try:
-                return json.loads(result.content)
+                return json.loads(result)
             except:
-                return {"raw_result": str(result.content)}
+                return {"error": "Failed to parse result", "raw_result": result}
         
         return result
     

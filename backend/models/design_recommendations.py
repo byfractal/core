@@ -25,71 +25,8 @@ from langchain_core.output_parsers import JsonOutputParser
 from langchain_core.runnables import RunnableSequence
 from .recommendation_validator import RecommendationValidator
 
-# Define the enhanced prompt template for design recommendations
-design_recommendations_template = PromptTemplate(
-    input_variables=["analysis_summary", "page_id", "component_list"],
-    template="""
-You are an expert UI/UX designer with deep knowledge of user behavior analytics, psychology, and conversion optimization.
-Based on the following user feedback analysis for page '{page_id}', generate concrete, specific, and actionable design improvement recommendations.
-
-ANALYSIS SUMMARY:
-{analysis_summary}
-
-AVAILABLE COMPONENTS:
-{component_list}
-
-Generate design recommendations that:
-1. Address the key issues identified in the analysis with HIGH SPECIFICITY
-2. Maintain or enhance the positive aspects mentioned
-3. Follow current UI/UX best practices and design standards
-4. Can be implemented using the available components listed above
-5. Provide clear, data-driven justification based on user feedback
-6. Are concrete enough to be implemented without additional interpretation
-
-For each recommendation:
-- Be extremely specific about what should change and how
-- Include exact measures where possible (e.g., "increase button size by 20%", "reduce form fields from 8 to 5")
-- Specify the exact location or element to modify
-- Explain the direct user impact with quantifiable metrics if possible
-- Assign appropriate priority based on potential impact and implementation effort
-- Include clear before/after descriptions that leave no ambiguity
-
-You MUST return a valid JSON object with this exact structure:
-{{
-    "page_id": "{page_id}",
-    "recommendations": [
-        {{
-            "title": "Clear, action-oriented recommendation title",
-            "description": "Detailed description with exact specifications of what should change",
-            "component": "Specific UI component from the available list",
-            "location": "Precise location on the page",
-            "expected_impact": "Specific, measurable impact on user experience or conversion",
-            "priority": "high|medium|low",
-            "justification": "Data-driven justification directly citing the analysis",
-            "before_after": {{
-                "before": "Specific description of current problematic state",
-                "after": "Specific description of improved state with exact changes"
-            }}
-        }}
-    ],
-    "implementation_notes": "Technical guidance for developers implementing these changes",
-    "general_observations": "Overall observations about the page design"
-}}
-
-IMPORTANT GUIDELINES:
-1. Focus on QUALITY over quantity - 3-5 high-quality recommendations are better than many vague ones
-2. Be as SPECIFIC as possible - avoid generic advice like "improve the design"
-3. Prioritize improvements with the highest potential impact on user experience and conversion
-4. Consider mobile and desktop experiences, accessibility standards, and performance implications
-5. Use only component types from the available components list
-
-Your recommendations must be valid JSON with:
-- No comments in the JSON
-- No placeholders - replace with actual content
-- Double quotes for all JSON keys and string values
-- Exact structure as shown above
-"""
-)
+# Use the new UX design recommendations template from prompts.py
+from .prompts import ux_design_recommendations_template as design_recommendations_template
 
 class PostHogClient:
     """
