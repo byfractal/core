@@ -16,7 +16,7 @@ from fastapi import FastAPI, HTTPException, Query, Depends, BackgroundTasks
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 
-from models.code_to_design import (
+from backend.models.code_to_design import (
     CodeToDesignClient, 
     FigmaLayoutGenerator,
     extract_components_from_website

@@ -1,422 +1,181 @@
 """
-Rate limiting middleware for FastAPI applications.
-Protects against brute-force attacks and API abuse.
-Uses Redis for distributed rate limiting across multiple instances.
+Redis-based rate limiting middleware for FastAPI.
+This module provides a middleware for rate limiting API requests using Redis.
 """
 
 import time
-from typing import Callable, Dict, Optional, Union, List, Tuple
-
+import asyncio
+from typing import Callable, Dict, Optional, Union
 from fastapi import FastAPI, Request, Response, status
 from fastapi.responses import JSONResponse
-from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
-from starlette.types import ASGIApp
+import redis.asyncio as redis
+import os
+from dotenv import load_dotenv
 
-import asyncio
-import aioredis
+# Load environment variables
+load_dotenv()
 
-# Rate limit strategies
-class RateLimitStrategy:
-    """Base class for rate limit strategies."""
-    
-    async def is_rate_limited(self, key: str) -> Tuple[bool, int]:
-        """
-        Check if a key is rate limited.
-        
-        Args:
-            key: The key to check
-            
-        Returns:
-            Tuple containing:
-                - Whether the key is rate limited
-                - Time remaining (in seconds) until the limit resets
-        """
-        raise NotImplementedError()
-    
-    async def increment(self, key: str) -> None:
-        """
-        Increment the counter for a key.
-        
-        Args:
-            key: The key to increment
-        """
-        raise NotImplementedError()
-
-class FixedWindowStrategy(RateLimitStrategy):
+class RateLimiter:
     """
-    Fixed window rate limiting strategy.
+    Redis-based rate limiting middleware for FastAPI.
     
-    Allows a fixed number of requests in a time window.
-    """
-    
-    def __init__(
-        self, 
-        redis: aioredis.Redis, 
-        window_seconds: int, 
-        max_requests: int
-    ):
-        """
-        Initialize the fixed window strategy.
-        
-        Args:
-            redis: Redis client
-            window_seconds: Time window in seconds
-            max_requests: Maximum number of requests allowed in the window
-        """
-        self.redis = redis
-        self.window_seconds = window_seconds
-        self.max_requests = max_requests
-    
-    async def is_rate_limited(self, key: str) -> Tuple[bool, int]:
-        """
-        Check if a key is rate limited using a fixed window.
-        
-        Args:
-            key: The key to check
-            
-        Returns:
-            Tuple containing:
-                - Whether the key is rate limited
-                - Time remaining (in seconds) until the limit resets
-        """
-        # Get the current count and TTL
-        count = await self.redis.get(key)
-        if count is None:
-            return False, 0
-        
-        count = int(count)
-        ttl = await self.redis.ttl(key)
-        
-        # Check if the count exceeds the limit
-        if count >= self.max_requests:
-            return True, ttl
-        
-        return False, 0
-    
-    async def increment(self, key: str) -> None:
-        """
-        Increment the counter for a key.
-        
-        Args:
-            key: The key to increment
-        """
-        # Increment the counter, creating it if it doesn't exist
-        await self.redis.incr(key)
-        
-        # Set the expiration if it's a new key
-        ttl = await self.redis.ttl(key)
-        if ttl == -1:
-            await self.redis.expire(key, self.window_seconds)
-
-class SlidingWindowStrategy(RateLimitStrategy):
-    """
-    Sliding window rate limiting strategy.
-    
-    More precise than fixed window, but more expensive.
-    Counts requests in the last N seconds.
-    """
-    
-    def __init__(
-        self, 
-        redis: aioredis.Redis, 
-        window_seconds: int, 
-        max_requests: int
-    ):
-        """
-        Initialize the sliding window strategy.
-        
-        Args:
-            redis: Redis client
-            window_seconds: Time window in seconds
-            max_requests: Maximum number of requests allowed in the window
-        """
-        self.redis = redis
-        self.window_seconds = window_seconds
-        self.max_requests = max_requests
-    
-    async def is_rate_limited(self, key: str) -> Tuple[bool, int]:
-        """
-        Check if a key is rate limited using a sliding window.
-        
-        Args:
-            key: The key to check
-            
-        Returns:
-            Tuple containing:
-                - Whether the key is rate limited
-                - Time remaining (in seconds) until the limit resets
-        """
-        # Get the current timestamp
-        now = int(time.time())
-        
-        # Remove expired entries
-        await self.redis.zremrangebyscore(key, 0, now - self.window_seconds)
-        
-        # Count the number of requests in the window
-        count = await self.redis.zcard(key)
-        
-        # Check if the count exceeds the limit
-        if count >= self.max_requests:
-            # Get the oldest timestamp in the set
-            oldest = await self.redis.zrange(key, 0, 0, withscores=True)
-            if oldest:
-                # Calculate the time until the oldest entry expires
-                _, timestamp = oldest[0]
-                reset_time = int(timestamp) + self.window_seconds - now
-                return True, max(0, reset_time)
-            
-            return True, self.window_seconds
-        
-        return False, 0
-    
-    async def increment(self, key: str) -> None:
-        """
-        Add the current timestamp to the sorted set for a key.
-        
-        Args:
-            key: The key to increment
-        """
-        # Add the current timestamp to the sorted set
-        now = int(time.time())
-        await self.redis.zadd(key, {str(now): now})
-        
-        # Set the expiration if it's a new key
-        ttl = await self.redis.ttl(key)
-        if ttl == -1:
-            await self.redis.expire(key, self.window_seconds * 2)  # Extra buffer
-
-class RateLimitConfig:
-    """Configuration for a rate limit rule."""
-    
-    def __init__(
-        self,
-        limit: int,
-        window_seconds: int,
-        strategy: str = "fixed",
-        key_func: Callable[[Request], str] = None,
-    ):
-        """
-        Initialize the rate limit configuration.
-        
-        Args:
-            limit: Maximum number of requests allowed
-            window_seconds: Time window in seconds
-            strategy: Rate limiting strategy ("fixed" or "sliding")
-            key_func: Function to extract the rate limit key from a request
-        """
-        self.limit = limit
-        self.window_seconds = window_seconds
-        self.strategy = strategy
-        self.key_func = key_func or self._default_key_func
-    
-    @staticmethod
-    def _default_key_func(request: Request) -> str:
-        """
-        Default function to extract the rate limit key from a request.
-        Uses the client's IP address.
-        
-        Args:
-            request: The request
-            
-        Returns:
-            Rate limit key
-        """
-        # Get the client's IP address
-        forwarded = request.headers.get("X-Forwarded-For")
-        if forwarded:
-            ip = forwarded.split(",")[0]
-        else:
-            ip = request.client.host if request.client else "unknown"
-        
-        return f"ratelimit:{ip}"
-
-class RateLimitMiddleware(BaseHTTPMiddleware):
-    """
-    Middleware for rate limiting in FastAPI applications.
-    
-    Limits the number of requests from a client within a time window.
+    This middleware limits the number of requests by client IP address.
     """
     
     def __init__(
         self,
-        app: ASGIApp,
-        redis_url: str,
-        global_rate_limit: Optional[RateLimitConfig] = None,
-        path_rate_limits: Optional[Dict[str, RateLimitConfig]] = None,
-        prefix_rate_limits: Optional[Dict[str, RateLimitConfig]] = None,
-        method_rate_limits: Optional[Dict[str, RateLimitConfig]] = None,
+        redis_url: Optional[str] = None,
+        redis_host: Optional[str] = None,
+        redis_port: Optional[int] = None,
+        redis_password: Optional[str] = None,
+        redis_db: Optional[int] = None,
+        requests: int = 100,
+        period: int = 60,
+        headers: bool = True,
     ):
         """
-        Initialize the rate limit middleware.
+        Initialize the rate limiter.
         
         Args:
-            app: ASGI application
-            redis_url: Redis connection URL
-            global_rate_limit: Rate limit applied to all requests
-            path_rate_limits: Rate limits for specific paths
-            prefix_rate_limits: Rate limits for path prefixes
-            method_rate_limits: Rate limits for specific HTTP methods
+            redis_url: Redis URL (overrides other Redis params if provided)
+            redis_host: Redis host
+            redis_port: Redis port
+            redis_password: Redis password
+            redis_db: Redis database number
+            requests: Maximum number of requests allowed per period
+            period: Time period in seconds
+            headers: Whether to add rate limit headers to responses
         """
-        super().__init__(app)
-        self.redis_url = redis_url
-        self.redis = None
-        self.global_rate_limit = global_rate_limit
-        self.path_rate_limits = path_rate_limits or {}
-        self.prefix_rate_limits = prefix_rate_limits or {}
-        self.method_rate_limits = method_rate_limits or {}
-        self.strategies = {}
-    
-    async def initialize(self) -> None:
-        """Initialize the Redis connection and strategies."""
-        if self.redis is None:
-            self.redis = await aioredis.from_url(self.redis_url, decode_responses=True)
-    
-    def get_strategy(self, config: RateLimitConfig) -> RateLimitStrategy:
-        """
-        Get or create a rate limiting strategy for a configuration.
+        # Get settings from environment variables if not provided
+        self.redis_url = redis_url or os.getenv("REDIS_URL")
+        self.redis_host = redis_host or os.getenv("REDIS_HOST", "localhost")
+        self.redis_port = redis_port or int(os.getenv("REDIS_PORT", "6379"))
+        self.redis_password = redis_password or os.getenv("REDIS_PASSWORD", "")
+        self.redis_db = redis_db or int(os.getenv("REDIS_DB", "0"))
+        self.requests = requests or int(os.getenv("RATE_LIMIT_REQUESTS", "100"))
+        self.period = period or int(os.getenv("RATE_LIMIT_PERIOD", "60"))
+        self.headers = headers
         
-        Args:
-            config: Rate limit configuration
-            
-        Returns:
-            Rate limiting strategy
-        """
-        key = f"{config.strategy}:{config.window_seconds}:{config.limit}"
-        
-        if key not in self.strategies:
-            if config.strategy == "sliding":
-                self.strategies[key] = SlidingWindowStrategy(
-                    self.redis, config.window_seconds, config.limit
-                )
+        # Initialize Redis connection
+        self.redis_pool = None
+    
+    async def _get_redis_pool(self) -> redis.ConnectionPool:
+        """Get or create Redis connection pool."""
+        if self.redis_pool is None:
+            if self.redis_url:
+                self.redis_pool = redis.ConnectionPool.from_url(self.redis_url)
             else:
-                self.strategies[key] = FixedWindowStrategy(
-                    self.redis, config.window_seconds, config.limit
+                self.redis_pool = redis.ConnectionPool(
+                    host=self.redis_host,
+                    port=self.redis_port,
+                    password=self.redis_password,
+                    db=self.redis_db,
+                    decode_responses=True
                 )
-        
-        return self.strategies[key]
+        return self.redis_pool
     
-    def get_config_for_request(self, request: Request) -> Optional[RateLimitConfig]:
+    async def _check_rate_limit(self, client_id: str) -> Dict[str, Union[int, bool]]:
         """
-        Get the rate limit configuration for a request.
+        Check if the client has exceeded the rate limit.
         
         Args:
-            request: The request
+            client_id: Client identifier (usually IP address)
             
         Returns:
-            Rate limit configuration or None if no configuration applies
+            Dictionary with rate limit information
         """
+        pool = await self._get_redis_pool()
+        async with redis.Redis(connection_pool=pool) as r:
+            # Current timestamp
+            now = int(time.time())
+            
+            # Create a Redis key for this client
+            key = f"rate_limit:{client_id}"
+            
+            # Create a sliding window of requests
+            pipe = r.pipeline()
+            await pipe.zremrangebyscore(key, 0, now - self.period)
+            await pipe.zadd(key, {now: now})
+            await pipe.expire(key, self.period)
+            await pipe.zcard(key)
+            results = await pipe.execute()
+            
+            # Get the number of requests in the current window
+            request_count = results[3]
+            
+            return {
+                "limit": self.requests,
+                "remaining": max(0, self.requests - request_count),
+                "reset": now + self.period,
+                "allowed": request_count <= self.requests
+            }
+    
+    def add_rate_limit_headers(self, response: Response, rate_limit_info: Dict[str, Union[int, bool]]) -> None:
+        """Add rate limit headers to the response."""
+        if self.headers:
+            response.headers["X-RateLimit-Limit"] = str(rate_limit_info["limit"])
+            response.headers["X-RateLimit-Remaining"] = str(rate_limit_info["remaining"])
+            response.headers["X-RateLimit-Reset"] = str(rate_limit_info["reset"])
+    
+    async def __call__(self, request: Request, call_next: Callable) -> Response:
+        """
+        FastAPI middleware handler for rate limiting.
+        
+        Args:
+            request: FastAPI request object
+            call_next: Function to call the next middleware or endpoint
+            
+        Returns:
+            FastAPI response object
+        """
+        # Get client IP address
+        client_id = request.client.host if request.client else "unknown"
+        
+        # Skip rate limiting for certain paths (optional)
         path = request.url.path
-        method = request.method
-        
-        # Check for exact path match
-        if path in self.path_rate_limits:
-            return self.path_rate_limits[path]
-        
-        # Check for path prefix match
-        for prefix, config in self.prefix_rate_limits.items():
-            if path.startswith(prefix):
-                return config
-        
-        # Check for method match
-        if method in self.method_rate_limits:
-            return self.method_rate_limits[method]
-        
-        # Fall back to global rate limit
-        return self.global_rate_limit
-    
-    async def dispatch(
-        self, request: Request, call_next: RequestResponseEndpoint
-    ) -> Response:
-        """
-        Process the request and apply rate limiting.
-        
-        Args:
-            request: Incoming request
-            call_next: Next middleware or endpoint
-            
-        Returns:
-            Response from the next middleware or endpoint
-        """
-        await self.initialize()
-        
-        # Get the rate limit configuration for the request
-        config = self.get_config_for_request(request)
-        if config is None:
+        if path == "/health" or path.startswith("/docs") or path.startswith("/openapi"):
             return await call_next(request)
         
-        # Get the rate limit key
-        key = config.key_func(request)
-        
-        # Get the rate limiting strategy
-        strategy = self.get_strategy(config)
-        
-        # Check if the request is rate limited
-        is_limited, reset_after = await strategy.is_rate_limited(key)
-        if is_limited:
-            return JSONResponse(
+        try:
+            # Check rate limit
+            rate_limit_info = await self._check_rate_limit(client_id)
+            
+            # If allowed, proceed with the request
+            if rate_limit_info["allowed"]:
+                response = await call_next(request)
+                self.add_rate_limit_headers(response, rate_limit_info)
+                return response
+            
+            # If not allowed, return 429 Too Many Requests
+            response = JSONResponse(
                 status_code=status.HTTP_429_TOO_MANY_REQUESTS,
                 content={
-                    "detail": "Too many requests",
-                    "reset_after": reset_after,
-                },
-                headers={"Retry-After": str(reset_after)},
+                    "detail": "Too many requests. Please try again later.",
+                    "retry_after": self.period
+                }
             )
+            self.add_rate_limit_headers(response, rate_limit_info)
+            return response
         
-        # Increment the counter
-        await strategy.increment(key)
-        
-        # Process the request
-        response = await call_next(request)
-        
-        return response
+        except Exception as e:
+            # If Redis is not available, allow the request and log the error
+            print(f"Rate limiting error: {str(e)}")
+            return await call_next(request)
 
 def add_rate_limit_middleware(
     app: FastAPI,
-    redis_url: str,
-    global_limit: Optional[int] = None,
-    global_window_seconds: Optional[int] = None,
-    path_limits: Optional[Dict[str, Tuple[int, int]]] = None,
-    prefix_limits: Optional[Dict[str, Tuple[int, int]]] = None,
-    method_limits: Optional[Dict[str, Tuple[int, int]]] = None,
+    redis_url: Optional[str] = None,
+    requests: int = 100,
+    period: int = 60
 ) -> None:
     """
-    Add rate limit middleware to a FastAPI application.
+    Add rate limiting middleware to a FastAPI application.
     
     Args:
         app: FastAPI application
-        redis_url: Redis connection URL
-        global_limit: Rate limit applied to all requests
-        global_window_seconds: Time window in seconds for global rate limit
-        path_limits: Rate limits for specific paths (path -> (limit, window_seconds))
-        prefix_limits: Rate limits for path prefixes (prefix -> (limit, window_seconds))
-        method_limits: Rate limits for specific HTTP methods (method -> (limit, window_seconds))
+        redis_url: Redis URL
+        requests: Maximum number of requests allowed per period
+        period: Time period in seconds
     """
-    # Create rate limit configurations
-    global_rate_limit = None
-    if global_limit and global_window_seconds:
-        global_rate_limit = RateLimitConfig(global_limit, global_window_seconds)
-    
-    path_rate_limits = {}
-    if path_limits:
-        for path, (limit, window) in path_limits.items():
-            path_rate_limits[path] = RateLimitConfig(limit, window)
-    
-    prefix_rate_limits = {}
-    if prefix_limits:
-        for prefix, (limit, window) in prefix_limits.items():
-            prefix_rate_limits[prefix] = RateLimitConfig(limit, window)
-    
-    method_rate_limits = {}
-    if method_limits:
-        for method, (limit, window) in method_limits.items():
-            method_rate_limits[method] = RateLimitConfig(limit, window)
-    
-    # Add the middleware
-    app.add_middleware(
-        RateLimitMiddleware,
-        redis_url=redis_url,
-        global_rate_limit=global_rate_limit,
-        path_rate_limits=path_rate_limits,
-        prefix_rate_limits=prefix_rate_limits,
-        method_rate_limits=method_rate_limits,
-    )
+    rate_limiter = RateLimiter(redis_url=redis_url, requests=requests, period=period)
+    app.middleware("http")(rate_limiter.__call__)

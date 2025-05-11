@@ -1,6 +1,5 @@
 """
-Main FastAPI application.
-This is the entry point for the backend API.
+Simplified FastAPI application for testing JWT authentication.
 """
 
 import os
@@ -22,14 +21,8 @@ from fastapi import FastAPI, Depends, HTTPException, Security, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
-# Import API routers
-from backend.api.feedback import feedback_router
-from backend.api.design import design_router
-from backend.api.analysis import analysis_router
-from backend.api.auth import auth_router
-
-# Import middleware
-from backend.security.middlewares.rate_limiter import add_rate_limit_middleware
+# Import auth router only
+from backend.api.auth_simple import auth_router
 
 # Configure logging
 logging.basicConfig(
@@ -40,8 +33,8 @@ logger = logging.getLogger(__name__)
 
 # Create FastAPI application
 app = FastAPI(
-    title="Backend API",
-    description="API for the application",
+    title="JWT Test API",
+    description="API for testing JWT authentication",
     version="1.0.0",
 )
 
@@ -54,15 +47,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Add rate limiting middleware (optional - uncomment to enable)
-# Comment this out if Redis is not available
-# if os.getenv("ENABLE_RATE_LIMITING", "false").lower() == "true":
-#     redis_url = os.getenv("REDIS_URL")
-#     requests = int(os.getenv("RATE_LIMIT_REQUESTS", "100"))
-#     period = int(os.getenv("RATE_LIMIT_PERIOD", "60"))
-#     add_rate_limit_middleware(app, redis_url=redis_url, requests=requests, period=period)
-#     logger.info(f"Rate limiting enabled: {requests} requests per {period} seconds")
-
 # Health check endpoint
 @app.get("/health", tags=["health"])
 async def health_check():
@@ -72,11 +56,8 @@ async def health_check():
     """
     return {"status": "ok"}
 
-# Include API routers
+# Include JWT auth router
 app.include_router(auth_router)
-app.include_router(feedback_router)
-app.include_router(design_router)
-app.include_router(analysis_router)
 
 # Error handlers
 @app.exception_handler(Exception)
@@ -91,9 +72,25 @@ async def generic_exception_handler(request, exc):
 # Run the application
 if __name__ == "__main__":
     import uvicorn
+    
+    # Create and save a JWT secret key if not already set
+    jwt_secret_key = os.getenv("JWT_SECRET_KEY")
+    if not jwt_secret_key:
+        # Generate a secure random key
+        jwt_secret_key = secrets.token_hex(32)
+        print(f"Generated JWT_SECRET_KEY: {jwt_secret_key}")
+        
+        # Write to .env file if possible
+        try:
+            with open('.env', 'a') as f:
+                f.write(f"\nJWT_SECRET_KEY={jwt_secret_key}\n")
+            print("JWT_SECRET_KEY added to .env file")
+        except:
+            print("Could not write to .env file. Please add the JWT_SECRET_KEY manually.")
+    
     uvicorn.run(
-        "backend.api.main:app",
+        "main_simple:app",
         host=os.getenv("HOST", "0.0.0.0"),
-        port=int(os.getenv("PORT", "8000")),
+        port=int(os.getenv("PORT", "8080")),
         reload=os.getenv("DEBUG", "false").lower() == "true",
     ) 

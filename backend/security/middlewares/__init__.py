@@ -42,6 +42,7 @@ def configure_security_middlewares(
     input_validation_rules=None,
     public_paths=None,
     public_path_prefixes=None,
+    use_auth0=False,  # Added for backward compatibility
 ):
     """
     Configure and add all security middlewares to a FastAPI application.
@@ -56,6 +57,7 @@ def configure_security_middlewares(
         input_validation_rules: List of input validation rules
         public_paths: List of paths that don't require authentication
         public_path_prefixes: List of path prefixes that don't require authentication
+        use_auth0: Deprecated, used for backward compatibility
         
     Returns:
         The FastAPI application with middlewares added

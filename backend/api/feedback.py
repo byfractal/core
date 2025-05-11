@@ -13,11 +13,10 @@ from typing import Optional, Dict, Any, List
 root_dir = str(Path(__file__).parent.parent.parent)
 sys.path.append(root_dir)
 
-from fastapi import FastAPI, HTTPException, Query, Depends, BackgroundTasks
+from fastapi import APIRouter, HTTPException, Query, Depends, BackgroundTasks
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 from backend.models.feedback_analyzer import analyze_feedbacks
-from backend.security.auth0 import get_current_user, Auth0User, requires_scopes
 
 # Modèles Pydantic pour les requêtes et les réponses
 class AnalysisRequest(BaseModel):
@@ -44,17 +43,16 @@ class ErrorResponse(BaseModel):
 analysis_cache = {}
 
 # Create router for feedback API
-feedback_router = FastAPI(
-    title="Feedback Analysis API",
-    description="API for analyzing user feedback with page and date filtering",
-    version="1.0.0"
+feedback_router = APIRouter(
+    prefix="/api/feedback",
+    tags=["feedback"],
+    responses={404: {"description": "Not found"}},
 )
 
 @feedback_router.post("/analyze", response_model=AnalysisResponse, 
                      responses={400: {"model": ErrorResponse}, 500: {"model": ErrorResponse}})
 async def analyze_feedback(
-    request: AnalysisRequest,
-    user: Auth0User = Depends(get_current_user)
+    request: AnalysisRequest
 ):
     """
     Analyze user feedback with filtering by page and date range.
@@ -99,8 +97,7 @@ async def analyze_feedback_get(
     start_date: Optional[datetime] = None,
     end_date: Optional[datetime] = None,
     model: str = "gpt-4o",
-    feedback_file: str = "data/amplitude_data/processed/latest.json",
-    user: Auth0User = Depends(get_current_user)
+    feedback_file: str = "data/amplitude_data/processed/latest.json"
 ):
     """
     Analyze user feedback with filtering by page and date range (GET method).
@@ -139,11 +136,9 @@ async def analyze_feedback_get(
         )
 
 @feedback_router.post("/analyze/background", response_model=Dict[str, str])
-@requires_scopes(["read:feedback", "write:feedback"])
 async def analyze_feedback_background(
     background_tasks: BackgroundTasks,
-    request: AnalysisRequest,
-    user: Auth0User = Depends(get_current_user)
+    request: AnalysisRequest
 ):
     """
     Start a background task to analyze feedback (useful for long-running analyses).
@@ -180,8 +175,7 @@ async def analyze_feedback_background(
 
 @feedback_router.get("/analyze/status/{task_id}", response_model=Dict[str, Any])
 async def get_analysis_status(
-    task_id: str,
-    user: Auth0User = Depends(get_current_user)
+    task_id: str
 ):
     """
     Check the status of a background analysis task.
@@ -197,27 +191,26 @@ async def get_analysis_status(
 
 @feedback_router.get("/pages", response_model=List[str])
 async def get_available_pages(
-    feedback_file: str = "data/amplitude_data/processed/latest.json",
-    user: Auth0User = Depends(get_current_user)
+    feedback_file: str = "data/amplitude_data/processed/latest.json"
 ):
     """
-    Get a list of available page IDs from the feedback data.
+    Get a list of available pages in the feedback data.
     
     - **feedback_file**: Path to the feedback data file
     
-    Returns a list of unique page IDs found in the feedback data.
+    Returns a list of page IDs available in the feedback data.
     """
-    from backend.models.feedback_analyzer import load_feedback_data
-    
     try:
-        feedback_data = load_feedback_data(feedback_file)
+        # Load the feedback data
+        with open(feedback_file, 'r') as f:
+            data = json.load(f)
+        
         # Extract unique page IDs
-        page_ids = list(set(item.get("page_id", "") for item in feedback_data))
-        # Filter out empty strings
-        page_ids = [page_id for page_id in page_ids if page_id]
-        return page_ids
+        pages = set()
+        for item in data:
+            if 'page_id' in item and item['page_id']:
+                pages.add(item['page_id'])
+        
+        return list(pages)
     except Exception as e:
-        raise HTTPException(
-            status_code=500,
-            detail=f"Failed to get available pages: {str(e)}"
-        )
+        raise HTTPException(status_code=500, detail=f"Error retrieving pages: {str(e)}")

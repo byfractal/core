@@ -57,8 +57,14 @@ from backend.security.auth import (
     get_current_admin_user,
 )
 
-# Remove Auth0 imports since they're deprecated
-# Add Clerk imports here when implemented
+# Add Auth0 imports for backward compatibility
+from backend.security.auth0 import (
+    Auth0User,
+    get_current_user as get_auth0_user,
+    requires_auth,
+    requires_scopes,
+    requires_roles,
+)
 
 from backend.security.middlewares import (
     # JWT middleware
@@ -86,6 +92,9 @@ __all__ = [
     "get_totp_code", "verify_totp_code", "get_provisional_qr_code", "User", "Token", 
     "TokenData", "Role", "TokenType", "get_current_user", "get_current_active_user", 
     "get_current_admin_user",
+    
+    # Auth0 exports
+    "Auth0User", "get_auth0_user", "requires_auth", "requires_scopes", "requires_roles",
     
     # Encryption module exports (renamed from utils)
     "Encryptor", "encrypt_data", "decrypt_data", "hash_data", "verify_hash",

@@ -12,19 +12,12 @@ from typing import Dict, Any, List, Optional
 root_dir = str(Path(__file__).parent.parent.parent)
 sys.path.append(root_dir)
 
-from fastapi import FastAPI, HTTPException, Query, Path as PathParam, Body, BackgroundTasks, Depends
+from fastapi import APIRouter, HTTPException, Query, Path as PathParam, Body, BackgroundTasks, Depends
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 
 from backend.models.analysis_card import AnalysisRequest, AnalysisResponse, AnalysisCard, SeverityLevel
 from backend.services.analysis_service import AnalysisService
-
-# Créer un router pour l'API d'analyse
-analysis_router = FastAPI(
-    title="Design Analysis API",
-    description="API pour l'analyse UX/UI et la génération de recommandations",
-    version="0.1.0"
-)
 
 # Dépendance pour obtenir le service d'analyse
 def get_analysis_service():
@@ -32,6 +25,13 @@ def get_analysis_service():
 
 # Cache pour stocker les analyses en cours
 analysis_tasks = {}
+
+# Créer un router pour l'API d'analyse
+analysis_router = APIRouter(
+    prefix="/api/analysis",
+    tags=["analysis"],
+    responses={404: {"description": "Not found"}}
+)
 
 @analysis_router.post("/generate", response_model=AnalysisResponse)
 async def generate_analysis(
