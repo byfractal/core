@@ -15,10 +15,12 @@
     "storage",
     "tabs",
     "activeTab",
-    "scripting"
+    "scripting",
+    "declarativeNetRequest"
   ],
   "host_permissions": [
-    "https://*/*"
+    "https://*/*",
+    "http://localhost:*/*"
   ],
   "background": {
     "service_worker": "background.js",
@@ -31,6 +33,9 @@
       "css": ["content.css"]
     }
   ],
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'self'; connect-src 'self' http://localhost:* https://*/*;"
+  },
   "web_accessible_resources": [
     {
       "resources": ["inject.js", "styles.css", "output/recommendation_output.json", "js/analysis-card.js"],
