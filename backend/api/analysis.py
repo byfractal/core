@@ -367,4 +367,28 @@ async def select_pages_for_analysis(
         }
         
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error selecting pages for analysis: {str(e)}") 
+        raise HTTPException(status_code=500, detail=f"Error selecting pages for analysis: {str(e)}")
+
+
+@analysis_router.get("/insights", response_model=Dict[str, Any])
+async def get_insights(
+    service: AnalysisService = Depends(get_analysis_service)
+):
+    """
+    Récupère les insights et recommandations générés par l'IA.
+    Ce endpoint est utilisé par l'extension Chrome pour afficher les cartes d'analyse.
+    """
+    try:
+        # Lire le fichier recommendations_output.json
+        import json
+        from pathlib import Path
+        
+        data_path = Path(__file__).parent.parent / "data" / "recommendations_output_ranked.json"
+        
+        with open(data_path, "r") as f:
+            recommendations = json.load(f)
+        
+        return recommendations
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error retrieving insights: {str(e)}") 
