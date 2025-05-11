@@ -33,7 +33,7 @@
   ],
   "web_accessible_resources": [
     {
-      "resources": ["inject.js", "styles.css", "output/recommendation_output.json"],
+      "resources": ["inject.js", "styles.css", "output/recommendation_output.json", "js/analysis-card.js"],
       "matches": ["https://*/*"]
     }
   ],
