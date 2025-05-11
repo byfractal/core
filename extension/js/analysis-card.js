@@ -1,6 +1,10 @@
 // Globally store the insights data
 let insightsData = null;
 
+// Configuration
+const API_URL = 'http://localhost:8000/api/insights';
+const FALLBACK_URL = chrome.runtime.getURL('output/recommendation_output.json');
+
 // Initialization
 document.addEventListener('DOMContentLoaded', function() {
   console.log("Analysis card page loaded");
@@ -37,79 +41,53 @@ async function fetchInsights(retryCount = 0) {
   cardsContainer.innerHTML = '';
   
   try {
-    // Essayer d'abord de récupérer les données via le background script
     let data = null;
     
+    // Méthode 1: Essayer d'abord de récupérer directement depuis l'API avec URL absolue
     try {
-      console.log("Requesting insights data from background script");
-      
-      // Méthode 1: Utiliser chrome.runtime.sendMessage
-      await new Promise((resolve, reject) => {
-        chrome.runtime.sendMessage({type: "GET_INSIGHTS"}, response => {
-          if (chrome.runtime.lastError) {
-            console.error("Runtime error:", chrome.runtime.lastError);
-            reject(new Error(chrome.runtime.lastError.message));
-            return;
-          }
-          
-          if (response && response.success) {
-            data = response.data;
-            console.log("Data received from background script");
-            resolve();
-          } else {
-            reject(new Error(response?.error || "Failed to fetch insights from background"));
-          }
-        });
+      console.log("Attempting API request with absolute URL", API_URL);
+      const response = await fetch(API_URL, {
+        method: 'GET',
+        headers: {
+          'Accept': 'application/json'
+        }
       });
       
-    } catch (backgroundError) {
-      console.log('Background script request failed:', backgroundError.message);
+      console.log("API response status:", response.status);
       
-      // Méthode 2: Essayez de récupérer directement depuis l'API
+      if (response.ok) {
+        data = await response.json();
+        console.log("API data loaded successfully");
+      } else {
+        throw new Error('API request failed with status ' + response.status);
+      }
+    } catch (apiError) {
+      console.warn('API request failed:', apiError.message);
+      
+      // Méthode 2: Essayer de récupérer depuis le fichier local
       try {
-        console.log("Falling back to direct API request");
-        const response = await fetch('http://localhost:8000/api/insights', {
-          method: 'GET',
-          headers: {
-            'Accept': 'application/json'
-          }
-        });
+        console.log("Falling back to local file", FALLBACK_URL);
+        const response = await fetch(FALLBACK_URL);
+        
+        console.log("Fallback response status:", response.status);
         
         if (response.ok) {
           data = await response.json();
-          console.log("API data loaded successfully");
+          console.log("Fallback data loaded successfully");
         } else {
-          throw new Error('API request failed with status ' + response.status);
+          throw new Error('Fallback request failed with status ' + response.status);
         }
-      } catch (apiError) {
-        console.log('Direct API request failed:', apiError.message);
+      } catch (fallbackError) {
+        console.error('Fallback also failed:', fallbackError.message);
         
-        // Méthode 3: Essayez de récupérer depuis le fichier local
-        try {
-          console.log("Falling back to local file");
-          const fallbackUrl = chrome.runtime.getURL('output/recommendation_output.json');
-          console.log("Fallback URL:", fallbackUrl);
-          
-          const response = await fetch(fallbackUrl);
-          
-          if (response.ok) {
-            data = await response.json();
-            console.log("Fallback data loaded successfully");
-          } else {
-            throw new Error('Fallback request failed with status ' + response.status);
-          }
-        } catch (fallbackError) {
-          console.error('Fallback also failed:', fallbackError.message);
-          
-          // If we have retry attempts left, retry after a delay
-          if (retryCount < 2) {
-            console.log(`Will retry in 1 second (attempt ${retryCount + 2})`);
-            setTimeout(() => fetchInsights(retryCount + 1), 1000);
-            return;
-          }
-          
-          throw new Error(`All data sources failed: ${backgroundError.message} | ${apiError.message} | ${fallbackError.message}`);
+        // If we have retry attempts left, retry after a delay
+        if (retryCount < 2) {
+          console.log(`Will retry in 1 second (attempt ${retryCount + 2})`);
+          setTimeout(() => fetchInsights(retryCount + 1), 1000);
+          return;
         }
+        
+        throw new Error(`Both API and fallback failed: ${apiError.message} | ${fallbackError.message}`);
       }
     }
     
@@ -118,9 +96,11 @@ async function fetchInsights(retryCount = 0) {
       throw new Error('No data received from any source');
     }
     
+    // Log received data structure
+    console.log("Received data structure:", Object.keys(data));
+    
     // Store data globally
     insightsData = data;
-    console.log("Data stored in global variable");
     
     // Update page title - try to use a relevant page name from the data
     if (data.page_id) {
@@ -146,14 +126,6 @@ async function fetchInsights(retryCount = 0) {
     loadingIndicator.style.display = 'none';
     errorMessage.style.display = 'block';
     errorMessage.textContent = 'Failed to load insights: ' + error.message + '. Click Reload Data to try again.';
-    
-    // Check for common security errors
-    if (error.message.includes("NetworkError") || 
-        error.message.includes("Failed to fetch") ||
-        error.message.includes("cors") ||
-        error.message.includes("Content Security Policy")) {
-      errorMessage.textContent += " Possible security restriction (CORS/CSP) detected. Please check console for details.";
-    }
   }
 }
 
@@ -163,8 +135,10 @@ function renderInsightCards(data) {
   const cardsContainer = document.getElementById('analysis-cards-container');
   cardsContainer.innerHTML = '';
   
-  // Handle different JSON structures (recommendations or insights)
+  // Handle different JSON structures - try recommendations first, then insights, then fallback to empty array
   const items = data.recommendations || data.insights || [];
+  
+  console.log(`Found ${items.length} items to render`);
   
   if (items.length === 0) {
     console.log("No items to display");
@@ -172,16 +146,14 @@ function renderInsightCards(data) {
     return;
   }
   
-  console.log(`Rendering ${items.length} items`);
-  
   // For each item in the data
   items.forEach((item, index) => {
-    // Create card element
-    const card = document.createElement('div');
-    card.className = 'analysis-card';
-    card.dataset.index = index;
-    
     try {
+      // Create card element
+      const card = document.createElement('div');
+      card.className = 'analysis-card';
+      card.dataset.index = index;
+      
       // Map fields based on the data structure
       const title = item.title || item.issueTitle || 'Unnamed issue';
       const priority = item.priority || (item.severity === 'needs-improvement' ? 'medium' : 'high');

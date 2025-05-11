@@ -2,6 +2,10 @@
 
 console.log('HCentric UI Optimizer background script initialized');
 
+// Configuration
+const API_URL = 'http://localhost:8000/api/insights';
+const FALLBACK_URL = chrome.runtime.getURL('output/recommendation_output.json');
+
 // Écouteur pour gérer les messages du content script et du popup
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   console.log("Message received in background:", message);
@@ -26,8 +30,8 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 // Fonction pour récupérer les insights depuis le backend
 async function fetchInsights() {
   try {
-    console.log("Fetching insights from backend");
-    const response = await fetch('http://localhost:8000/api/insights', {
+    console.log("Fetching insights from backend", API_URL);
+    const response = await fetch(API_URL, {
       method: 'GET',
       headers: {
         'Accept': 'application/json',
@@ -35,25 +39,32 @@ async function fetchInsights() {
       }
     });
     
+    console.log("API response status:", response.status);
+    
     if (!response.ok) {
       throw new Error(`API responded with status: ${response.status}`);
     }
     
-    return await response.json();
+    const data = await response.json();
+    console.log("Data structure received:", Object.keys(data));
+    return data;
   } catch (error) {
-    console.error("Error in fetchInsights:", error);
+    console.error("Error in API fetchInsights:", error);
     
     // En cas d'échec, essayer de charger le fichier de secours
     try {
-      console.log("Attempting to load fallback file");
-      const fallbackUrl = chrome.runtime.getURL('output/recommendation_output.json');
-      const response = await fetch(fallbackUrl);
+      console.log("Attempting to load fallback file", FALLBACK_URL);
+      const response = await fetch(FALLBACK_URL);
+      
+      console.log("Fallback response status:", response.status);
       
       if (!response.ok) {
         throw new Error(`Fallback file fetch failed with status: ${response.status}`);
       }
       
-      return await response.json();
+      const data = await response.json();
+      console.log("Fallback data structure:", Object.keys(data));
+      return data;
     } catch (fallbackError) {
       console.error("Fallback also failed:", fallbackError);
       throw new Error(`Failed to fetch insights: ${error.message}. Fallback also failed: ${fallbackError.message}`);
