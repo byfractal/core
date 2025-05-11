@@ -19,7 +19,8 @@
   ],
   "host_permissions": [
     "https://*/*",
-    "http://localhost:*/*"
+    "http://localhost:*/*",
+    "http://127.0.0.1:*/*"
   ],
   "background": {
     "service_worker": "background.js",
@@ -33,7 +34,7 @@
     }
   ],
   "content_security_policy": {
-    "extension_pages": "script-src 'self'; object-src 'self'; connect-src 'self' http://localhost:8000/* https://*/*;"
+    "extension_pages": "script-src 'self'; object-src 'self'; connect-src 'self' http://localhost:8000/* http://127.0.0.1:8000/* https://*/*;"
   },
   "web_accessible_resources": [
     {

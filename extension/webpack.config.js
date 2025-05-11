@@ -48,6 +48,8 @@ module.exports = {
         { from: 'content.css', to: 'content.css' },
         { from: 'icons/', to: 'icons/' },
         { from: 'pages/', to: 'pages/' },
+        { from: 'js/', to: 'js/' },
+        { from: 'output/', to: 'output/' }
       ],
     }),
   ],
