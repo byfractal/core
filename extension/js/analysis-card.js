@@ -2,8 +2,7 @@
 let insightsData = null;
 
 // Configuration
-const API_URL = 'http://localhost:8000/api/insights';
-const API_URL_ALT = 'http://127.0.0.1:8000/api/insights';
+// NOTE: Nous simplifions le système pour ne pas dépendre de l'API qui n'est pas encore stable
 const FALLBACK_URL = chrome.runtime.getURL('output/recommendation_output.json');
 
 // Initialization
@@ -42,82 +41,18 @@ async function fetchInsights(retryCount = 0) {
   cardsContainer.innerHTML = '';
   
   try {
-    let data = null;
+    // Charger directement depuis le fichier local pour simplifier le processus
+    console.log("Loading data from local file", FALLBACK_URL);
+    const response = await fetch(FALLBACK_URL);
     
-    // Méthode 1: Essayer API sur localhost
-    try {
-      console.log("Attempting API request with localhost", API_URL);
-      const response = await fetch(API_URL, {
-        method: 'GET',
-        headers: {
-          'Accept': 'application/json'
-        }
-      });
-      
-      console.log("API response status (localhost):", response.status);
-      
-      if (response.ok) {
-        data = await response.json();
-        console.log("API data loaded successfully from localhost");
-      } else {
-        throw new Error('API localhost request failed with status ' + response.status);
-      }
-    } catch (apiError) {
-      console.warn('API localhost request failed:', apiError.message);
-      
-      // Méthode 2: Essayer API sur 127.0.0.1
-      try {
-        console.log("Attempting API request with 127.0.0.1", API_URL_ALT);
-        const response = await fetch(API_URL_ALT, {
-          method: 'GET',
-          headers: {
-            'Accept': 'application/json'
-          }
-        });
-        
-        console.log("API response status (127.0.0.1):", response.status);
-        
-        if (response.ok) {
-          data = await response.json();
-          console.log("API data loaded successfully from 127.0.0.1");
-        } else {
-          throw new Error('API 127.0.0.1 request failed with status ' + response.status);
-        }
-      } catch (apiAltError) {
-        console.warn('API 127.0.0.1 request failed:', apiAltError.message);
-        
-        // Méthode 3: Essayer de récupérer depuis le fichier local
-        try {
-          console.log("Falling back to local file", FALLBACK_URL);
-          const response = await fetch(FALLBACK_URL);
-          
-          console.log("Fallback response status:", response.status);
-          
-          if (response.ok) {
-            data = await response.json();
-            console.log("Fallback data loaded successfully");
-          } else {
-            throw new Error('Fallback request failed with status ' + response.status);
-          }
-        } catch (fallbackError) {
-          console.error('Fallback also failed:', fallbackError.message);
-          
-          // If we have retry attempts left, retry after a delay
-          if (retryCount < 2) {
-            console.log(`Will retry in 1 second (attempt ${retryCount + 2})`);
-            setTimeout(() => fetchInsights(retryCount + 1), 1000);
-            return;
-          }
-          
-          throw new Error(`All API and fallback attempts failed`);
-        }
-      }
+    console.log("Local file response status:", response.status);
+    
+    if (!response.ok) {
+      throw new Error('Failed to load local data: ' + response.status);
     }
     
-    // If we reach here, we have data
-    if (!data) {
-      throw new Error('No data received from any source');
-    }
+    const data = await response.json();
+    console.log("Local data loaded successfully");
     
     // Log received data structure
     console.log("Received data structure:", Object.keys(data));
@@ -150,23 +85,6 @@ async function fetchInsights(retryCount = 0) {
     loadingIndicator.style.display = 'none';
     errorMessage.style.display = 'block';
     errorMessage.textContent = 'Failed to load insights: ' + error.message + '. Click Reload Data to try again.';
-    
-    // In case of catastrophic failure, try one last desperate fallback render with local data
-    try {
-      console.log("EMERGENCY FALLBACK: Trying to load and render local data directly");
-      fetch(FALLBACK_URL)
-        .then(response => response.json())
-        .then(data => {
-          console.log("Emergency fallback data loaded, rendering...");
-          renderInsightCards(data);
-          loadingIndicator.style.display = 'none';
-        })
-        .catch(err => {
-          console.error("Even emergency fallback failed:", err);
-        });
-    } catch (emergencyError) {
-      console.error("Emergency fallback catastrophically failed:", emergencyError);
-    }
   }
 }
 

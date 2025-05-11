@@ -383,7 +383,17 @@ async def get_insights(
         import json
         from pathlib import Path
         
-        data_path = Path(__file__).parent.parent / "data" / "recommendations_output_ranked.json"
+        # Chercher le fichier le plus récent dans le répertoire output
+        output_dir = Path(__file__).parent.parent.parent / "output"
+        recommendation_files = list(output_dir.glob("recommendations_output*.json"))
+        
+        if recommendation_files:
+            # Utiliser le fichier le plus récent
+            latest_file = max(recommendation_files, key=lambda x: x.stat().st_mtime)
+            data_path = latest_file
+        else:
+            # Fallback sur le fichier dans data
+            data_path = Path(__file__).parent.parent / "data" / "recommendations_output_ranked.json"
         
         with open(data_path, "r") as f:
             recommendations = json.load(f)

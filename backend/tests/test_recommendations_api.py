@@ -17,7 +17,7 @@ if parent_dir not in sys.path:
     sys.path.append(parent_dir)
 
 # Base URL for the API
-BASE_URL = "http://localhost:8088"
+BASE_URL = "http://localhost:8080"
 
 def get_token():
     """Get JWT token for authentication."""

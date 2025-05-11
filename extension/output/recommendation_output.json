@@ -1,15 +1,71 @@
 {
-  "timestamp": "2025-05-10T20:22:29.249568",
-  "total_events_analyzed": 576,
+  "timestamp": "2025-05-11T18:38:34.163194",
+  "total_events_analyzed": 823,
   "insights": [
     {
-      "issueTitle": "High time spent on page https://v0-financial-dashboard-seven-bice.vercel.app/analytics",
+      "issueTitle": "High time spent on page https://v0-financial-dashboard-seven-bice.vercel.app/organization",
       "severity": "needs-improvement",
       "rootCause": {
         "context": "Users are spending unusually long time on this page",
         "metric": {
-          "text": "Avg. time spent: 1496.9 seconds",
-          "value": "1496.9s"
+          "text": "Avg. time spent: 473.1 seconds",
+          "value": "473.1s"
+        },
+        "contextualData": "Extended page view times may indicate users are having trouble finding information or completing actions.",
+        "conversionImpact": "This could be causing increased drop-off rates",
+        "source": "Amplitude Analytics"
+      },
+      "recommendedFix": {
+        "suggestion": "Consider reviewing page layout and content organization. Ensure key actions are clearly visible.",
+        "source": "UX Best Practices"
+      },
+      "impactEstimate": "Optimizing this page could reduce average time spent by 40-60% and improve conversion rates",
+      "tags": [
+        "Layout",
+        "Navigation",
+        "User Flow"
+      ],
+      "sources": [
+        "Amplitude",
+        "UX Analysis"
+      ]
+    },
+    {
+      "issueTitle": "High time spent on page https://v0-financial-dashboard-seven-bice.vercel.app/settings",
+      "severity": "needs-improvement",
+      "rootCause": {
+        "context": "Users are spending unusually long time on this page",
+        "metric": {
+          "text": "Avg. time spent: 606.4 seconds",
+          "value": "606.4s"
+        },
+        "contextualData": "Extended page view times may indicate users are having trouble finding information or completing actions.",
+        "conversionImpact": "This could be causing increased drop-off rates",
+        "source": "Amplitude Analytics"
+      },
+      "recommendedFix": {
+        "suggestion": "Consider reviewing page layout and content organization. Ensure key actions are clearly visible.",
+        "source": "UX Best Practices"
+      },
+      "impactEstimate": "Optimizing this page could reduce average time spent by 40-60% and improve conversion rates",
+      "tags": [
+        "Layout",
+        "Navigation",
+        "User Flow"
+      ],
+      "sources": [
+        "Amplitude",
+        "UX Analysis"
+      ]
+    },
+    {
+      "issueTitle": "High time spent on page https://v0-financial-dashboard-seven-bice.vercel.app/projects",
+      "severity": "needs-improvement",
+      "rootCause": {
+        "context": "Users are spending unusually long time on this page",
+        "metric": {
+          "text": "Avg. time spent: 135.9 seconds",
+          "value": "135.9s"
         },
         "contextualData": "Extended page view times may indicate users are having trouble finding information or completing actions.",
         "conversionImpact": "This could be causing increased drop-off rates",
@@ -36,36 +92,8 @@
       "rootCause": {
         "context": "Users are spending unusually long time on this page",
         "metric": {
-          "text": "Avg. time spent: 995.1 seconds",
-          "value": "995.1s"
-        },
-        "contextualData": "Extended page view times may indicate users are having trouble finding information or completing actions.",
-        "conversionImpact": "This could be causing increased drop-off rates",
-        "source": "Amplitude Analytics"
-      },
-      "recommendedFix": {
-        "suggestion": "Consider reviewing page layout and content organization. Ensure key actions are clearly visible.",
-        "source": "UX Best Practices"
-      },
-      "impactEstimate": "Optimizing this page could reduce average time spent by 40-60% and improve conversion rates",
-      "tags": [
-        "Layout",
-        "Navigation",
-        "User Flow"
-      ],
-      "sources": [
-        "Amplitude",
-        "UX Analysis"
-      ]
-    },
-    {
-      "issueTitle": "High time spent on page https://v0-financial-dashboard-jbaz5d4xn-nivekmb04-gmailcoms-projects.vercel.app/dashboard",
-      "severity": "needs-improvement",
-      "rootCause": {
-        "context": "Users are spending unusually long time on this page",
-        "metric": {
-          "text": "Avg. time spent: 834.7 seconds",
-          "value": "834.7s"
+          "text": "Avg. time spent: 201.3 seconds",
+          "value": "201.3s"
         },
         "contextualData": "Extended page view times may indicate users are having trouble finding information or completing actions.",
         "conversionImpact": "This could be causing increased drop-off rates",

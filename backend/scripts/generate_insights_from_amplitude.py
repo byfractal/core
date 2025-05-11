@@ -190,6 +190,19 @@ def main():
     # Generate recommendations
     output_file = output_dir / "recommendations_output.json"
     processor.generate_recommendations(str(latest_file), str(output_file))
+    
+    # Synchroniser avec l'extension
+    try:
+        logger.info("Synchronizing insights with extension...")
+        sync_script = project_root / "backend" / "scripts" / "sync_insights_to_extension.py"
+        if sync_script.exists():
+            import subprocess
+            subprocess.run([sys.executable, str(sync_script)], check=True)
+            logger.info("Synchronization completed successfully")
+        else:
+            logger.warning(f"Sync script not found at {sync_script}")
+    except Exception as e:
+        logger.error(f"Error synchronizing with extension: {e}")
 
 if __name__ == "__main__":
     main() 
